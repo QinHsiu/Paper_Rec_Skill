@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.0.0
+version: 1.2.1
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -166,63 +166,122 @@ Chinese mode:
 
 ## Module 2: Retrieval / 检索模块
 
-Search across multiple sources, score candidates, and keep **top 50** overall.
+Search across **domain-selected** sources, score candidates, and keep **top 50** overall.
 
-### 2.1 Primary Sources / 主要来源
+Full pack tables & venue lists: [sources-reference.md](sources-reference.md)
 
-| Source | Search focus | URL pattern |
-|--------|-------------|-------------|
-| **arXiv** | Preprints, latest methods | arxiv.org |
-| **Hugging Face Papers** | ML papers with community traction | huggingface.co/papers |
-| **GitHub** | Implementations, trending repos | github.com search |
-| **Papers With Code** | SOTA benchmarks, leaderboards | paperswithcode.com |
-| **CCF venues** | Top Chinese-tier conferences | See [sources-reference.md](sources-reference.md) |
+### 2.0 Domain routing / 领域路由（先做）
 
-Search each source with at least the **Specific** and **Keyword** queries from Module 1.
+1. From Module 1 summary + keywords, assign **1–2 Domain IDs**.
+2. Load matching **Packs** (max 3 packs unless user asks for exhaustive search).
+3. Announce once before searching:
 
-### 2.2 Supplementary Sources / 补充来源
+```
+Domain: {ai_cs | chemistry | humanities_ss | ...}
+Packs: {A, B, H, ...}
+```
 
-Use when primary sources yield <30 strong hits or domain is fast-moving:
+| Domain ID | Typical query | Packs |
+|-----------|---------------|-------|
+| `ai_cs` | LLM / CV / NLP / RL | **A, B** (+ **A-CN** if CN LLM) |
+| `cn_llm_survey` | 国产/中文大模型综述 | **A, A-CN, B** |
+| `math_physics` | math, physics, hep | **A, C** |
+| `chemistry` | chemistry, CAS, molecule | **D, H** |
+| `materials` | materials, nano | **D, E, H** |
+| `biomed` | medicine, PubMed, genome | **F, H, A** |
+| `education` | pedagogy, curriculum | **F, H, I** |
+| `humanities_ss` | 哲学/历史/法学/社科 | **I, H** |
+| `economics` | econ, finance, marketing | **K, I, H** |
+| `engineering_energy` | NASA, energy, aerospace | **E, N, H** |
+| `patent_ip` | patent | **L** + parent domain |
+| `thesis` | 硕博论文 | **M** + parent domain |
+| `general_oa` / `cross_domain` | unclear / OA | **H, A, N** |
 
-- Major tech company official accounts / blogs (Google Research, Meta AI, Microsoft Research, OpenAI, DeepMind, etc.)
-- Company research forum homepages
-- Domain influencers' latest papers (e.g., CV → Kaiming He; NLP → follow field leaders the user names)
-- Conference open-access proceedings pages (NeurIPS, ICML, ICLR, CVPR, ACL, etc.)
+Named CN models (Qwen / DeepSeek / GLM / InternLM / 混元 / 豆包 …) → force 2–4 matching **A-CN** labs (see sources-reference.md).
 
-Details and venue lists: [sources-reference.md](sources-reference.md)
+### 2.1 Pack overview / 来源包一览
+
+| Pack | Name | Core sources |
+|------|------|--------------|
+| **A** | AI / CS core | arXiv, HF Papers, PwC, GitHub, Semantic Scholar, DBLP, OpenReview, ACL, CVF |
+| **A-CN** | CN LLM labs | DeepSeek, Qwen, THUDM, InternLM, BAAI, OpenBMB, Yi, Moonshot, Baichuan, Hunyuan, ByteDance, IDEA + Discovery indexes |
+| **B** | AI industry & trends | Global labs + CN industry portals (通义/混元/豆包/盘古/文心/星火/商汤) |
+| **C** | Math / Physics | arXiv categories, Science.gov, CERN CDS |
+| **D** | Chemistry / Materials | DOAJ, SciELO, OSTI, ChemBlink*(metadata only)* |
+| **E** | Engineering / Energy / Aero | NTRS, OSTI, Science.gov, NSTL |
+| **F** | Biomed / Education | ERIC, PubMed-class portals, SciELO, DOAJ, Bioline |
+| **H** | Open Access hubs | DOAJ, OALib, Socolar, SciELO, Cambridge Repo, NAP |
+| **I** | Humanities / SS | NCPSSD, CSSCI, CNKI, Wanfang, JSTOR, NTU journals |
+| **J** | Newspaper archives | 人民日报 / 光明日报 / 大公报 — **only for media history** |
+| **K** | Business / Econ | EconLit, EBSCO-class, SSRN, ScholarVox |
+| **L** | Patents | SooPAT |
+| **M** | Theses | theses.fr, CALIS, UCDRS, CNKI/Wanfang degree DBs |
+| **N** | CN sci-tech hubs | NSTL, CALIS, paper.edu.cn |
+
+**Never use** shadow libraries / pirate ebook sites as retrieval sources (see Excluded list in sources-reference.md).
+
+### 2.2 Search execution / 执行检索
+
+- Search each **activated pack** with at least the **Specific** and **Keyword** queries from Module 1.
+- Always attach **English terms** for international packs.
+- If a pack source needs login (CNKI, JSTOR, Wanfang), still collect metadata/title when possible; mark `access: paywall`.
 
 ### 2.3 Scoring / 打分
 
-Score each candidate on three dimensions (0–10 each):
+Score each candidate on **four** dimensions (0–10 each):
 
 | Dimension | Weight | Criteria |
 |-----------|--------|----------|
-| **Similarity** | 35% | Semantic match to rewritten query / summary |
-| **Relevance** | 35% | Task, method, and domain alignment with user intent |
-| **Importance** | 30% | Venue tier, author/team reputation, citations/traction, recency, code/data availability |
+| **Similarity** | 30% | Semantic match to rewritten query / summary |
+| **Relevance** | 30% | Task, method, domain, **and version/family alignment** with user intent |
+| **Importance** | 20% | Venue tier, team reputation, code/data availability (**not** raw citation count as primary) |
+| **Recency** | 20% | Publication / release date relative to query intent |
 
-**Importance signals** (non-exhaustive):
-- Tier-1 venue (CCF-A, NeurIPS, ICML, ICLR, CVPR, ACL, etc.) → +2–3
-- Industry lab or well-known research group → +1–2
-- Recent (within user-specified or default 2 years) → +1
-- Has official code / HF model / reproducible results → +1
+**Final score** = 0.30×Sim + 0.30×Rel + 0.20×Imp + 0.20×Recency
 
-**Final score** = 0.35×Similarity + 0.35×Relevance + 0.30×Importance
+#### Recency scoring (0–10)
+
+| Age vs today | Default score | If query has 最新 / latest / recent / 今年 |
+|--------------|---------------|------------------------------------------|
+| ≤ 3 months | 10 | 10 |
+| ≤ 6 months | 9 | 10 |
+| ≤ 12 months | 7 | 8 |
+| ≤ 24 months | 5 | 4 |
+| > 24 months | 2 | **1** (demote hard) |
+
+#### Latest-intent hard rules（「最新」硬约束）
+
+When Module 1 detects **latest intent** (最新 / latest / 近期 / 刚刚发布 / newest):
+
+1. **Do not** let citation count or historical Importance outrank a newer same-family paper.
+2. Within the same model family (e.g. Qwen2.5 vs Qwen3 vs Qwen3.5/3.6/3.7), keep the **highest version + newest date** in Top-3; older generations go to Extended List unless user asks for lineage comparison.
+3. Search queries **must** include the newest known version tokens (e.g. `Qwen3.7 OR Qwen3.6 OR Qwen3.5 OR Qwen3`), not only the best-known older name (`Qwen2.5`).
+4. If the newest release has **no arXiv tech report yet** (product blog / GitHub / ModelScope only), still rank it Top-N with `Type: official release note` and state that a formal TR may be pending — **do not** substitute an older TR as if it were the latest.
+5. Citation-heavy older papers may appear only as **baseline / prior version** with explicit label, never as the answer to「最新」.
+
+#### Importance signals (revised)
+
+- Tier-1 venue → +2–3
+- Industry / CN Tier-1 lab official release → +1–2
+- Official code / HF / ModelScope weights → +1
+- **Do not** add large boosts solely for high citation count when latest-intent is active
 
 ### 2.4 Ranking & Filtering / 排序
 
-1. Deduplicate by title / arXiv ID / DOI across sources
-2. Sort by final score descending
-3. Keep **top 50** unique papers
-4. Ensure source diversity: if one source dominates (>70%), backfill from underrepresented sources
+1. Deduplicate by title / arXiv ID / DOI / normalized model-version across sources
+2. Apply **latest-intent / family-version gate** (above) before sorting
+3. Sort by final score descending; on ties, prefer **newer date**, then higher version number
+4. Keep **top 50** unique papers
+5. Ensure source diversity: if one source dominates (>70%), backfill from underrepresented sources
+6. In the report header, state: `Latest-intent: on/off` and `Primary family versions considered: ...`
 
 **Retrieval artifact** (internal; summarize for user):
 
 ```markdown
 ## Top 50 Candidate List
-| Rank | Title | Source | Sim | Rel | Imp | Final | Link |
-|------|-------|--------|-----|-----|-----|-------|------|
-| 1 | ... | arXiv | 9 | 9 | 8 | 8.7 | ... |
+| Rank | Title | Date | Ver | Source | Sim | Rel | Imp | Rec | Final | Link |
+|------|-------|------|-----|--------|-----|-----|-----|-----|-------|------|
+| 1 | ... | 2026-04 | 3.6 | arXiv/blog | 9 | 9 | 8 | 10 | 9.0 | ... |
 ```
 
 For the final report, deep-read the **top 10–15** papers; use metadata-only for ranks 11–50 unless user requests full coverage.
