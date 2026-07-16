@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "key": "arxiv:https://arxiv.org/abs/7777.77777",
+      "arxiv": "https://arxiv.org/abs/7777.77777",
+      "title": "Ten Papers Style Demo",
+      "path": "llm/2026/ten-papers-style-demo",
+      "deleted_at": "2026-07-17",
+      "reason": "user"
+    }
+  ]
+}

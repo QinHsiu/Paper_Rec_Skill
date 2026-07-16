@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+wiki_bridge/__init__.py
+wiki_bridge/__main__.py
+wiki_bridge/cli.py
+wiki_bridge/conventions.py
+wiki_bridge/dashboard.py
+wiki_bridge/indexer.py
+wiki_bridge/writer.py
+wiki_bridge.egg-info/PKG-INFO
+wiki_bridge.egg-info/SOURCES.txt
+wiki_bridge.egg-info/dependency_links.txt
+wiki_bridge.egg-info/entry_points.txt
+wiki_bridge.egg-info/top_level.txt

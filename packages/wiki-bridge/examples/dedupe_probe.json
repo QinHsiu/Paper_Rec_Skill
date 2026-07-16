@@ -1,0 +1,27 @@
+{
+  "papers": [
+    {
+      "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "authors": "DeepSeek-AI",
+      "year": 2025,
+      "venue": "arXiv",
+      "arxiv": "https://arxiv.org/abs/2501.12948",
+      "packs": "A, A-CN",
+      "score": "9.2",
+      "tags": ["llm", "reasoning"],
+      "core_idea": "（重复同步测试）同一 arXiv 应去重，不新增周刊条目。"
+    },
+    {
+      "title": "Skill Pipeline Probe Paper for Weekly Dedupe",
+      "authors": "Paper_Rec Test",
+      "year": 2026,
+      "venue": "test",
+      "arxiv": "https://arxiv.org/abs/9999.99999",
+      "packs": "A",
+      "score": "8.5",
+      "tags": ["llm", "test"],
+      "summary": "用于验证 query→sync 后本周推荐去重追加。",
+      "core_idea": "本周新增一篇探测论文，应出现在一周推荐中。"
+    }
+  ]
+}

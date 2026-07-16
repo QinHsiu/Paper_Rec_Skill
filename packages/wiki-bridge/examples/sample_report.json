@@ -1,0 +1,37 @@
+{
+  "papers": [
+    {
+      "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "authors": "DeepSeek-AI",
+      "year": 2025,
+      "venue": "arXiv / Nature",
+      "arxiv": "https://arxiv.org/abs/2501.12948",
+      "url": "https://huggingface.co/papers/2501.12948",
+      "packs": "A, A-CN",
+      "score": "9.2",
+      "status": "todo",
+      "tags": ["llm", "reasoning", "rl"],
+      "core_idea": "用大规模强化学习激励推理能力；R1-Zero 可无 SFT 涌现推理行为。",
+      "contribution": "开源 R1 管线与蒸馏模型；推理表现对标 o1 量级。",
+      "metrics": "数学/代码/推理任务上与 o1-1217 可比，详见原文表格。",
+      "strengths": "开源完整，arXiv/HF/Nature 渠道齐全。",
+      "weaknesses": "R1-Zero 存在可读性与语言混合问题。"
+    },
+    {
+      "title": "Qwen3 Technical Report",
+      "authors": "Qwen Team",
+      "year": 2025,
+      "venue": "arXiv",
+      "arxiv": "https://arxiv.org/abs/2505.09388",
+      "packs": "A, A-CN",
+      "score": "9.0",
+      "status": "todo",
+      "tags": ["llm", "qwen"],
+      "core_idea": "Qwen3 统一 thinking / non-thinking 模式并引入 thinking budget。",
+      "contribution": "Dense+MoE 全尺寸开源；多语言扩展至 119 种。",
+      "metrics": "代码、数学、agent 等基准达 SOTA 竞争水平。",
+      "strengths": "版本新于 Qwen2.5，适合「最新」意图排序。",
+      "weaknesses": "3.6/3.7 产品发布可能尚无独立 arXiv TR。"
+    }
+  ]
+}
