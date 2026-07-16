@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart TB
-  subgraph agent [Cursor Agent]
+  subgraph agent [Agent Runtime]
     Skill[skill-paper-rec]
   end
   subgraph bridge [wiki-bridge]
@@ -35,11 +35,15 @@ flowchart TB
 | **wiki-bridge** | `packages/wiki-bridge/` | Page naming, report write, index/dashboard | Replacing Skill |
 | **content** | `content/` | Git Markdown store | UI |
 
+Skill runs on any agent that can load `skill/SKILL.md` (Claude Code, Codex, OpenClaw, etc.).
+
 ## Data conventions
 
 | Path | Purpose |
 |------|---------|
-| `content/wiki/pages/<keyword>/<year>/<slug>.md` | One page per paper |
+| `content/wiki/pages/<keyword>/<year>/<slug>/README.md` | One editable file per paper |
+| `content/wiki/pages/<keyword>/README.md` | `/query_*` log for that keyword |
+| `content/wiki/deleted.json` | Delete blacklist (sync skips these) |
 | `content/wiki/pages/_meta/Reading_Index.md` | Auto index |
 | `content/wiki/pages/_meta/Dashboard.md` | Auto stats |
 | `content/weekly/` | Weekly digests (optional) |
@@ -47,6 +51,6 @@ flowchart TB
 
 ## Runtime
 
-1. **Retrieve**: Cursor Agent → `skill/SKILL.md` → Input → Retrieval → Output.
+1. **Retrieve**: Agent → `skill/SKILL.md` → Input → Retrieval → Output.
 2. **Persist** (optional): `wiki_bridge` CLI → `content/wiki/pages/`.
 3. **View**: `apps/start-wiki.ps1` or API `:8787` + Web `:5173`.

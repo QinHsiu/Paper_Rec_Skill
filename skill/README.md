@@ -2,11 +2,11 @@
 
 # Paper_Rec
 
-**Intelligent Literature Retrieval · Cursor Agent Skill**  
-**智能文献检索 · Cursor Agent 技能**
+**Intelligent Literature Retrieval · Agent Skill**  
+**智能文献检索 · Agent 技能（跨平台）**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](VERSION)
-[![Skill](https://img.shields.io/badge/Cursor-Agent%20Skill-000000?style=flat&logo=cursor&logoColor=white)](https://cursor.com/docs/context/skills)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](VERSION)
+[![Agents](https://img.shields.io/badge/Agents-Claude%20·%20Codex%20·%20OpenClaw%20·%20more-3D5A80?style=flat)](SKILL.md)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-green.svg)](https://semver.org/)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](#license)
 
@@ -20,9 +20,9 @@
 
 ## Overview / 概览
 
-**Paper_Rec** is a production-ready Cursor Agent Skill that transforms natural-language research questions into ranked, structured literature reports — without writing a single line of application code.
+**Paper_Rec** is a production-ready **Agent Skill** that transforms natural-language research questions into ranked, structured literature reports — without writing application code. Works with Claude Code, Codex, OpenClaw, and other runtimes that load Markdown skills.
 
-**Paper_Rec** 是一套面向 Cursor Agent 的文献检索技能，将自然语言研究问题转化为排序后的结构化论文报告，全程无需编写应用代码。
+**Paper_Rec** 是一套面向通用 Agent 的文献检索技能，将自然语言研究问题转化为排序后的结构化论文报告。可在 Claude Code、Codex、OpenClaw 等平台挂载使用。
 
 ```mermaid
 flowchart LR
@@ -47,7 +47,7 @@ flowchart LR
 
 | Item | Location | Description |
 |------|----------|-------------|
-| **Current version** | [`VERSION`](VERSION) | Single source of truth (`1.0.0`) |
+| **Current version** | [`VERSION`](VERSION) | Single source of truth (`1.3.0`) |
 | **Change history** | [`CHANGELOG.md`](CHANGELOG.md) | SemVer-compliant release notes |
 | **Skill manifest** | [`SKILL.md`](SKILL.md) | Agent execution spec (`name: paper-rec`) |
 | **Repository** | [github.com/QinHsiu/Paper_Rec_Skill](https://github.com/QinHsiu/Paper_Rec_Skill) | Git remote for version tracking |
@@ -57,12 +57,12 @@ flowchart LR
 1. Update skill logic or docs in this directory
 2. Bump [`VERSION`](VERSION) following [SemVer](https://semver.org/)
 3. Add entry to [`CHANGELOG.md`](CHANGELOG.md)
-4. Sync to `.cursor/skills/paper-rec/` and commit with tag `vX.Y.Z`
+4. Sync the `skill/` pack into your agent’s skills directory and commit with tag `vX.Y.Z`
 
 ```bash
 git add VERSION CHANGELOG.md SKILL.md
-git commit -m "release: v1.0.0"
-git tag v1.0.0
+git commit -m "release: v1.3.0"
+git tag v1.3.0
 git push origin master --tags
 ```
 
@@ -72,17 +72,23 @@ git push origin master --tags
 
 ### 1 · Install / 安装
 
-```bash
-# Project-scoped (recommended for this repo)
-cp -r skill/* .cursor/skills/paper-rec/
+将本目录内容复制到 Agent 可读的 skills / prompts 路径（按平台调整）：
 
-# Personal-scoped (all projects)
-cp -r skill/* ~/.cursor/skills/paper-rec/
+```bash
+# 示例：项目级 skills 目录
+mkdir -p .agents/skills/paper-rec
+cp -r ./* .agents/skills/paper-rec/
+# 或: skills/paper-rec/ · .claude/skills/paper-rec/ · 平台自定义路径
 ```
+
+| Runtime | Note |
+|---------|------|
+| Claude Code / Codex / OpenClaw / … | 挂载 `SKILL.md` 所在目录即可 |
+| 任意 Agent | 能加载本目录 Markdown 指令即可触发 `/query_*` |
 
 Workspace hub: [../README.md](../README.md)
 
-Reload Cursor: `Ctrl+Shift+P` → **Reload Window**
+Reload / restart your agent session after install.
 
 ### 2 · Activate / 启用
 
@@ -172,12 +178,9 @@ Paper_Rec is designed to align with established literature retrieval conventions
 | **Microsoft Research** | [microsoft.com/en-us/research](https://www.microsoft.com/en-us/research/) | Systems + ML crossover |
 | **OpenAI Research** | [openai.com/research](https://openai.com/research) | Foundation model advances |
 
-### Cursor platform reference / Cursor 平台参考
+### Agent platforms / Agent 平台
 
-| Resource | URL |
-|----------|-----|
-| **Cursor Agent Skills** | [cursor.com/docs/context/skills](https://cursor.com/docs/context/skills) |
-| **Skill authoring guide** | [Cursor Skills documentation](https://docs.cursor.com/context/skills) |
+Paper_Rec 不绑定单一 IDE。将 `skill/` 挂到 Claude Code、Codex、OpenClaw 等平台的 skills / 指令目录即可；核心入口始终是 [`SKILL.md`](SKILL.md)。
 
 ### Retrieval best practices enforced by this skill
 
@@ -195,7 +198,7 @@ Paper_Rec is designed to align with established literature retrieval conventions
 ```
 Paper_Rec_Skill/
 ├── SKILL.md                 # Agent skill spec
-├── VERSION                  # Current release (1.0.0)
+├── VERSION                  # Current release (1.3.0)
 ├── CHANGELOG.md             # SemVer release history
 ├── sources-reference.md     # Source & venue reference
 ├── output-template.md       # Report templates
@@ -209,12 +212,12 @@ Paper_Rec_Skill/
 
 ## License
 
-MIT — free to use within Cursor projects and research workflows.
+MIT — free to use in research workflows and any agent runtime that loads this skill.
 
 ---
 
 <div align="center">
 
-**Paper_Rec** · v1.0.0 · Built for researchers who read smart, not hard.
+**Paper_Rec** · v1.3.0 · Retrieve with any agent · remember in your wiki.
 
 </div>

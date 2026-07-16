@@ -1,6 +1,6 @@
 # Paper_Rec_Skill
 
-面向 **Cursor Agent** 的学术论文推荐技能。通过「输入改写 → 多源检索 → 结构化输出」全流程，帮你快速找到相关论文并生成精炼报告，无需编写任何应用代码。
+面向通用 **Agent** 的学术论文推荐技能（Claude Code · Codex · OpenClaw 等）。通过「输入改写 → 多源检索 → 结构化输出」全流程，帮你快速找到相关论文并生成精炼报告，无需编写任何应用代码。
 
 ---
 
@@ -30,20 +30,21 @@ Paper_Rec_Skill/
 
 ## 安装方法
 
-将本目录复制或软链接到 Cursor 技能目录：
+将本目录复制到所用 Agent 的 skills / prompts / 指令目录（路径因平台而异）：
 
-```
-.cursor/skills/paper-rec/
-```
-
-**个人级安装**（所有项目可用）：
-
-```
-~/.cursor/skills/paper-rec/
+```bash
+# 示例：项目级
+mkdir -p .agents/skills/paper-rec
+cp -r ./* .agents/skills/paper-rec/
+# 或 skills/paper-rec/ · .claude/skills/paper-rec/ · 平台自定义路径
 ```
 
-安装完成后，在对话中检索论文或使用下方 slash 命令即可触发该技能。
+| 平台 | 说明 |
+|------|------|
+| Claude Code / Codex / OpenClaw / … | 挂载含 `SKILL.md` 的目录即可 |
+| 其他 Agent | 能加载本目录 Markdown 指令即可触发 `/query_*` |
 
+安装完成后，在对话中使用下方 slash 命令即可触发该技能。
 ---
 
 ## 语言模式与 Slash 命令
@@ -142,8 +143,8 @@ Paper_Rec_Skill/
 
 ## 快速开始
 
-1. 将技能安装到 `.cursor/skills/paper-rec/`
-2. 在 Cursor 对话中输入：
+1. 将 `skill/` 挂到 Agent 可读的 skills 目录
+2. 在对话中输入：
 
    ```
    /query_chinese 推荐几篇关于医学影像 Vision Transformer 的论文
@@ -171,4 +172,4 @@ Paper_Rec_Skill/
 
 ## 许可
 
-可在 Cursor 项目中自由使用。
+可在研究工作流及任意可加载本技能的 Agent 中自由使用。

@@ -30,8 +30,14 @@
 - `docker-compose.yml` (Otter image) — deleted
 - Package rename: `otter_bridge` → `wiki_bridge`
 
-## Cursor skill install path
+## Skill install path（跨平台）
+
+将 `skill/` 挂到所用 Agent 的 skills / prompts 目录，例如：
 
 ```
-skill/  →  .cursor/skills/paper-rec/
+skill/  →  .agents/skills/paper-rec/
+skill/  →  skills/paper-rec/
+skill/  →  .claude/skills/paper-rec/
 ```
+
+具体路径以各平台（Claude Code · Codex · OpenClaw 等）约定为准。

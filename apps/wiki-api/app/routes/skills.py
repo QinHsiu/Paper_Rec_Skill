@@ -1,4 +1,4 @@
-"""Expose Paper_Rec Cursor skill metadata to the SPA."""
+"""Expose Paper_Rec agent skill metadata to the SPA."""
 from __future__ import annotations
 
 from pathlib import Path

@@ -1,6 +1,6 @@
 # Paper_Rec_Skill
 
-A **Cursor Agent Skill** for academic paper recommendation. It runs an end-to-end workflow — query rewriting, multi-source retrieval, scoring, and structured reporting — without requiring any application code.
+An **Agent Skill** for academic paper recommendation. It runs an end-to-end workflow — query rewriting, multi-source retrieval, scoring, and structured reporting — without requiring any application code. Works with Claude Code, Codex, OpenClaw, and other runtimes that load Markdown skills.
 
 ---
 
@@ -30,20 +30,21 @@ Paper_Rec_Skill/
 
 ## Installation
 
-Copy or symlink this directory into your Cursor skills folder:
+Copy this directory into your agent’s skills / prompts / instructions path (varies by platform):
 
-```
-.cursor/skills/paper-rec/
-```
-
-**Personal install** (available across all projects):
-
-```
-~/.cursor/skills/paper-rec/
+```bash
+# Example: project-scoped
+mkdir -p .agents/skills/paper-rec
+cp -r ./* .agents/skills/paper-rec/
+# or: skills/paper-rec/ · .claude/skills/paper-rec/ · platform-specific paths
 ```
 
-After installation, the agent can discover and apply this skill when you search for papers or use the slash commands below.
+| Runtime | Note |
+|---------|------|
+| Claude Code / Codex / OpenClaw / … | Mount the directory that contains `SKILL.md` |
+| Other agents | Any runtime that can load this Markdown pack can trigger `/query_*` |
 
+After installation, use the slash commands below in your agent chat.
 ---
 
 ## Language Modes & Slash Commands
@@ -133,8 +134,8 @@ See [sources-reference.md](sources-reference.md) for the full venue list and sco
 
 ## Quick Start
 
-1. Install the skill into `.cursor/skills/paper-rec/`
-2. Open a Cursor chat and type:
+1. Mount `skill/` into your agent’s skills directory
+2. In the agent chat, type:
 
    ```
    /query_english Recommend papers on vision transformers for medical imaging
@@ -162,4 +163,4 @@ For more examples, see [examples.md](examples.md).
 
 ## License
 
-Use freely within your Cursor projects.
+Use freely in research workflows and any agent runtime that loads this skill.
