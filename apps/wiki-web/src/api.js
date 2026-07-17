@@ -74,6 +74,21 @@ export async function listSkills() {
   return data.skills
 }
 
+export async function listExperiments() {
+  const { data } = await api.get('/exp')
+  return data.experiments
+}
+
+export async function getExperiment(id) {
+  const { data } = await api.get(`/exp/${id}`)
+  return data
+}
+
+export async function getExperimentFile(id, rel) {
+  const { data } = await api.get(`/exp/${id}/file/${rel}`)
+  return data
+}
+
 export async function login(username) {
   const { data } = await api.post('/auth/login', { username })
   return data

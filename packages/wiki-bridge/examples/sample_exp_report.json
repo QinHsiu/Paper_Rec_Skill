@@ -1,0 +1,43 @@
+{
+  "experiment_id": "demo-ocr-handwriting-v1",
+  "title": "Handwriting OCR — Predict-then-Verify demo",
+  "status": "done",
+  "target_met": true,
+  "summary": "坏例聚类显示手写拼音与低分辨率扫描为主要失败模式；Top-1 方案（增广+难例重标）小规模验证后全量训练达标。",
+  "analysis_takeaways": "手写拼音子集 F1 从 0.71 → 0.90；整体 F1 达 0.93。",
+  "paper_refs": ["llm/2025/getting-started"],
+  "target_score": {
+    "task": "handwriting_ocr",
+    "eval_set": "test_handwriting_v2",
+    "metric": "F1",
+    "threshold": 0.92
+  },
+  "metrics": {
+    "primary": {
+      "F1": 0.93,
+      "CER": 0.07,
+      "precision": 0.94,
+      "recall": 0.92
+    },
+    "target_met": true,
+    "run_id": "run-demo-001"
+  },
+  "curves": {
+    "train_loss": {
+      "steps": [1, 2, 3, 4, 5, 6, 7, 8],
+      "values": [1.82, 1.41, 1.12, 0.95, 0.81, 0.72, 0.66, 0.61]
+    },
+    "val_F1": {
+      "steps": [1, 2, 3, 4, 5, 6, 7, 8],
+      "values": [0.62, 0.71, 0.78, 0.84, 0.88, 0.90, 0.92, 0.93]
+    }
+  },
+  "rounds": [
+    "## Round 1\n- analysis_summary: badcases=120 clusters=4\n- chosen: P1\n- decision: continue\n",
+    "## Round 2\n- analysis_summary: after clean + mini-val\n- chosen: P1\n- evaluation: F1=0.93 target_met=true\n- decision: stop\n"
+  ],
+  "future_optimizations": [
+    "扩充繁体手写子集",
+    "加入测试时增强 (TTA) 做二次确认"
+  ]
+}

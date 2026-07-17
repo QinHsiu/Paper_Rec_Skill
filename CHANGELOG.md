@@ -2,7 +2,30 @@
 
 All notable changes to the **Paper_Rec Workspace** follow [Semantic Versioning](https://semver.org/).
 
-Skill-specific history remains in [`skill/CHANGELOG.md`](skill/CHANGELOG.md).
+Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/CHANGELOG.md`](skill-exp/CHANGELOG.md).
+
+---
+
+## [2.5.0] — 2026-07-17
+
+### Added
+
+- Wiki **实验** module: `/api/exp`, SPA `/experiments`, nav entry
+- `wiki_bridge sync-exp` — metrics + loss curves → `content/exp` + `pages/_exp`
+- Sample `packages/wiki-bridge/examples/sample_exp_report.json`
+- Regression: `scripts/regress_exp_wiki.py` (25 checks)
+
+---
+
+## [2.4.0] — 2026-07-17
+
+### Added
+
+- Experiment sandbox skill [`skill-exp/`](skill-exp/) (`exp-sandbox`; see skill CHANGELOG for 1.0.0 / 1.1.0)
+- Commands: `/exp_analysis` (± train/eval), `/exp_training`, `/exp_eval`, `/exp_loop`
+- Experiment logs path convention: `content/exp/<experiment_id>/`
+- Agent reference stubs [`skill-exp/reference/`](skill-exp/reference/) (Predict-then-Verify style)
+- Acknowledgement of Predict-then-Verify ideas from [zjunlp/predict-before-execute](https://github.com/zjunlp/predict-before-execute)
 
 ---
 

@@ -32,12 +32,9 @@
 
 ## Skill install path（跨平台）
 
-将 `skill/` 挂到所用 Agent 的 skills / prompts 目录，例如：
-
 ```
-skill/  →  .agents/skills/paper-rec/
-skill/  →  skills/paper-rec/
-skill/  →  .claude/skills/paper-rec/
+skill/      →  .agents/skills/paper-rec/
+skill-exp/  →  .agents/skills/exp-sandbox/
 ```
 
-具体路径以各平台（Claude Code · Codex · OpenClaw 等）约定为准。
+（或各平台等价的 skills / prompts 目录。）

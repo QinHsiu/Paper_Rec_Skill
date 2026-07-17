@@ -9,6 +9,8 @@ import EntityView from '../views/EntityView.vue'
 import WeeklyView from '../views/WeeklyView.vue'
 import AskView from '../views/AskView.vue'
 import SkillsView from '../views/SkillsView.vue'
+import ExperimentsView from '../views/ExperimentsView.vue'
+import ExpDetailView from '../views/ExpDetailView.vue'
 
 export default createRouter({
   history: createWebHistory(),
@@ -21,6 +23,8 @@ export default createRouter({
     { path: '/search', name: 'search', component: SearchView },
     { path: '/graph', name: 'graph', component: GraphView },
     { path: '/weekly', name: 'weekly', component: WeeklyView },
+    { path: '/experiments', name: 'experiments', component: ExperimentsView },
+    { path: '/experiments/:id', name: 'exp-detail', component: ExpDetailView, props: true },
     { path: '/ask', name: 'ask', component: AskView },
     { path: '/skills', name: 'skills', component: SkillsView },
   ],

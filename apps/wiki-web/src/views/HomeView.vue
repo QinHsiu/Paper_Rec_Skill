@@ -1,49 +1,77 @@
 <template>
   <div class="stack">
-    <header class="page-hero">
-      <h1 class="page-title">阅读实验室</h1>
-      <p class="page-lead">
-        论文笔记以 Markdown 存于 <code>content/wiki/pages</code>，支持互链、图片与图谱。
+    <header class="home-hero">
+      <p class="home-kicker">Literature · Wiki · Experiment</p>
+      <h1 class="home-brand">Paper_Rec</h1>
+      <p class="home-tagline">
+        检索文献、沉淀阅读、验证实验——把研究闭环留在本地 Markdown 里。
       </p>
+      <div class="home-actions">
+        <RouterLink class="home-cta" to="/pages">进入论文库</RouterLink>
+        <RouterLink class="home-cta-ghost" to="/experiments">查看实验</RouterLink>
+      </div>
     </header>
+
+    <div class="flow-strip">
+      <div class="flow-step">
+        <div class="flow-num">01</div>
+        <strong>Retrieve</strong>
+        <span>/query_* 多源检索与结构化报告</span>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">02</div>
+        <strong>Annotate</strong>
+        <span>Wiki 阅读、评分与笔记标记</span>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">03</div>
+        <strong>Experiment</strong>
+        <span>/exp_* 方案验证与训练闭环</span>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">04</div>
+        <strong>Remember</strong>
+        <span>指标与曲线回写实验模块</span>
+      </div>
+    </div>
 
     <div class="home-grid">
       <section class="card">
-        <h2 style="margin-top:0;font-size:1.25rem">从论文库开始</h2>
-        <p class="muted" style="margin:0 0 1.1rem;line-height:1.6">
-          浏览已同步的报告页，或打开入门笔记熟悉编辑与上传。
+        <h2 class="panel-title">继续阅读</h2>
+        <p class="panel-copy">
+          论文以独立 README 存于本地 Git 内容库，支持互链、图片上传与知识图谱。
         </p>
         <div class="row">
-          <RouterLink class="home-cta" to="/pages">进入论文库 →</RouterLink>
-          <RouterLink class="home-link" to="/edit/llm/2025/getting-started">编辑入门页</RouterLink>
+          <RouterLink class="home-link" to="/edit/llm/2025/getting-started">编辑入门页 →</RouterLink>
+          <RouterLink class="home-link" to="/weekly">本周入库 →</RouterLink>
         </div>
       </section>
 
       <section class="card">
-        <h2 style="margin-top:0;font-size:1.25rem">快捷入口</h2>
+        <h2 class="panel-title">快捷入口</h2>
         <ul class="quick-list">
           <li>
             <RouterLink to="/pages">
-              浏览 / 筛选论文
-              <span>按关键词与阅读状态过滤</span>
+              论文库
+              <span>按关键词与阅读状态筛选</span>
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink to="/experiments">
+              实验
+              <span>loss 曲线 · 指标 · 关联论文</span>
             </RouterLink>
           </li>
           <li>
             <RouterLink to="/graph">
               知识图谱
-              <span>标签与 [[wikilink]] 关系</span>
-            </RouterLink>
-          </li>
-          <li>
-            <RouterLink to="/weekly">
-              一周推荐
-              <span>content/weekly 周刊</span>
+              <span>关键词 / 团队 / 实体关系</span>
             </RouterLink>
           </li>
           <li>
             <RouterLink to="/skills">
-              Skill 命令
-              <span>/query_english · chinese · other</span>
+              Skills
+              <span>/query_* · /exp_*</span>
             </RouterLink>
           </li>
         </ul>

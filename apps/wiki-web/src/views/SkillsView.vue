@@ -2,7 +2,7 @@
   <div>
     <header class="page-hero">
       <h1 class="page-title">Skills</h1>
-      <p class="page-lead">Paper_Rec Agent Skill 命令与文档（跨平台）。</p>
+      <p class="page-lead">Agent Skills：文献检索（paper-rec）与实验沙箱（exp-sandbox）。</p>
     </header>
     <div class="card" v-for="s in skills" :key="s.id">
       <h2 style="margin-top:0;font-size:1.2rem">{{ s.name }}</h2>

@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from .dashboard import write_dashboard
+from .exp_writer import load_exp_payload, sync_experiment
 from .indexer import write_reading_index
 from .writer import load_report_json, update_keyword_readmes, write_paper_page, write_query_archive
 
@@ -73,6 +74,14 @@ def cmd_rebuild_index(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sync_exp(args: argparse.Namespace) -> int:
+    payload = load_exp_payload(Path(args.report))
+    outs = sync_experiment(Path(args.wiki_root), payload)
+    print(f"Synced experiment → {outs['exp_dir']}")
+    print(f"Wiki module page → {outs['wiki_page']}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="wiki_bridge", description="Paper_Rec ↔ Wiki Markdown bridge")
     sub = p.add_subparsers(dest="command", required=True)
@@ -92,6 +101,14 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("rebuild-index", help="Regenerate Reading_Index and Dashboard")
     s.add_argument("--wiki-root", required=True)
     s.set_defaults(func=cmd_rebuild_index)
+
+    s = sub.add_parser(
+        "sync-exp",
+        help="Write experiment final results (metrics/curves) into content/exp + wiki _exp",
+    )
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--report", required=True, help="JSON experiment payload")
+    s.set_defaults(func=cmd_sync_exp)
 
     return p
 

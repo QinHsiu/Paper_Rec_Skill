@@ -30,3 +30,16 @@ def uploads_dir() -> Path:
     p = content_dir() / "uploads"
     p.mkdir(parents=True, exist_ok=True)
     return p
+
+
+def exp_dir() -> Path:
+    p = content_dir() / "exp"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def wiki_exp_pages_dir() -> Path:
+    """Wiki mirror for experiments (underscore → skipped by paper scanners)."""
+    p = wiki_pages_dir() / "_exp"
+    p.mkdir(parents=True, exist_ok=True)
+    return p
