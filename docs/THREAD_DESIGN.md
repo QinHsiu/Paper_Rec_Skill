@@ -38,6 +38,7 @@ content/threads/<thread_id>/
 | **J** | OA pdf-fetch; RRF; thread feedback; CSL-JSON; Docker | done (2.19.0) |
 | **K** | Thread-Bench; optional Delta webhook | done (2.20.0) |
 | **L** | Template marketplace; multi-channel Thread Bot | done (2.21.0) |
+| **M** | Benchmark REPORT + LitSearch adapter (credibility P0/1A) | done (2.22.0) |
 
 ## Watch / Delta (Phase B)
 

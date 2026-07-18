@@ -6,6 +6,16 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.22.0] — 2026-07-18
+
+### Added
+
+- **公信力 Phase 0+1A**: [`benchmarks/REPORT.md`](benchmarks/REPORT.md) 成绩单；LitSearch 可复现评测（`litsearch-eval` / `benchmarks/litsearch/`，fixture smoke + HF full）；SciNet / RWGBench stubs
+- Protocol: corpus_clean only · no external search · methods `bm25` | `prerank`
+- **LitSearch full** (2026-07-18): bm25 Recall@5=**0.452** · nDCG@10=**0.397** · MRR=**0.363** · Hit@5=**0.459**（见 REPORT；prerank 因缺 year 弱于 bm25）
+
+---
+
 ## [2.21.0] — 2026-07-18
 
 ### Added

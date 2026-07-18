@@ -7,7 +7,7 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.21.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.22.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
 [![paper-rec](https://img.shields.io/badge/paper--rec-v1.11.0-1A2332?style=for-the-badge)](skill/VERSION)
 [![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.8.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
@@ -353,7 +353,9 @@ Paper_Rec_Skill/
 | [docs/WEBHOOK.md](docs/WEBHOOK.md) | 可选 Delta webhook 推送 |
 | [docs/BOTS.md](docs/BOTS.md) | 飞书 / Telegram / 企微 / QQ 对话 Bot |
 | [packages/thread-bot/README.md](packages/thread-bot/README.md) | Bot 包安装与端点速查 |
+| [benchmarks/REPORT.md](benchmarks/REPORT.md) | 公信力评测成绩单（Thread-Bench · LitSearch…） |
 | [benchmarks/thread-bench/README.md](benchmarks/thread-bench/README.md) | Thread-Bench（主线条件排序评测） |
+| [benchmarks/litsearch/README.md](benchmarks/litsearch/README.md) | LitSearch 可复现评测 |
 | [docs/MCP_PUBLISH.md](docs/MCP_PUBLISH.md) | MCP 目录提交清单 |
 | [docs/tutorials/thread-research-memory.md](docs/tutorials/thread-research-memory.md) | 用 Thread 管研究方向（案例） |
 | [docs/GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md) | 新手可领任务 |

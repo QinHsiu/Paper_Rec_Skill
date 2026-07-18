@@ -559,6 +559,36 @@ def cmd_thread_bench(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_litsearch_eval(args: argparse.Namespace) -> int:
+    from .litsearch_eval import evaluate, load_fixture, load_hf, write_result
+
+    bench = Path(args.bench_root) if args.bench_root else Path("benchmarks/litsearch")
+    if not bench.is_dir():
+        wiki = Path(args.wiki_root).resolve()
+        cand = wiki / "benchmarks" / "litsearch"
+        bench = cand if cand.is_dir() else bench
+    if args.fixture:
+        queries, corpus = load_fixture(bench / "fixtures")
+        tag = "fixture"
+    else:
+        cache = Path(args.cache_dir) if args.cache_dir else bench / "cache"
+        queries, corpus = load_hf(cache_dir=cache)
+        tag = "full"
+    result = evaluate(
+        queries,
+        corpus,
+        method=args.method,
+        top_k=args.top_k,
+        limit_queries=args.limit_queries or None,
+        candidate_pool=args.candidate_pool,
+    )
+    result["tag"] = tag
+    out = Path(args.out) if args.out else bench / "runs" / f"{args.method}_{tag}.json"
+    write_result(out, result, slim=not args.full_per_query)
+    print(json.dumps({"out": str(out), "metrics_mean": result["metrics_mean"], "method": args.method, "tag": tag, "n_queries": result["n_queries"]}, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_notify_webhook(args: argparse.Namespace) -> int:
     from .webhook_notify import build_payload, notify_delta, post_webhook, resolve_webhook_url
 
@@ -882,6 +912,19 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--k", type=int, default=5)
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_thread_bench)
+
+    s = sub.add_parser("litsearch-eval", help="LitSearch Recall@K / MRR / nDCG (fixture or HF full)")
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--bench-root", default="")
+    s.add_argument("--fixture", action="store_true", help="offline smoke fixtures")
+    s.add_argument("--method", choices=("bm25", "prerank"), default="bm25")
+    s.add_argument("--limit-queries", type=int, default=0)
+    s.add_argument("--top-k", type=int, default=100)
+    s.add_argument("--candidate-pool", type=int, default=500)
+    s.add_argument("--cache-dir", default="")
+    s.add_argument("--out", default="")
+    s.add_argument("--full-per-query", action="store_true")
+    s.set_defaults(func=cmd_litsearch_eval)
 
     s = sub.add_parser("notify-webhook", help="POST a test/Delta payload to webhook URL")
     s.add_argument("--webhook", default="", help="or env PAPER_REC_WEBHOOK_URL")

@@ -25,3 +25,8 @@ content/exp/icsrec-beauty-loop-v1/
 content/exp/**/figures/smoke_venue_*
 content/exp/**/figures/verify_*
 content/_bot_sessions/
+
+# Benchmark caches / full runs (keep fixtures + REPORT)
+benchmarks/litsearch/cache/
+benchmarks/litsearch/runs/
+benchmarks/**/last_run.json

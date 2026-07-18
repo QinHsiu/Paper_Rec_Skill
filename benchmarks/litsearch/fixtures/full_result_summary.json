@@ -1,0 +1,48 @@
+{
+  "bench": "litsearch",
+  "tag": "full",
+  "date": "2026-07-18",
+  "n_queries": 597,
+  "n_corpus": 64183,
+  "protocol": {
+    "corpus": "princeton-nlp/LitSearch corpus_clean",
+    "external_search": false,
+    "prerank_candidate_pool": 500
+  },
+  "methods": {
+    "bm25": {
+      "metrics_mean": {
+        "mrr": 0.363399,
+        "recall@1": 0.268844,
+        "hit@1": 0.274707,
+        "recall@5": 0.451815,
+        "hit@5": 0.458961,
+        "recall@10": 0.536963,
+        "hit@10": 0.547739,
+        "ndcg@10": 0.396739
+      },
+      "elapsed_sec": 290.12
+    },
+    "prerank": {
+      "metrics_mean": {
+        "mrr": 0.283005,
+        "recall@1": 0.20268,
+        "hit@1": 0.20603,
+        "recall@5": 0.35684,
+        "hit@5": 0.363484,
+        "recall@10": 0.428364,
+        "hit@10": 0.433836,
+        "ndcg@10": 0.309616
+      },
+      "elapsed_sec": 344.53,
+      "note": "Underperforms bm25 on corpus_clean due to sparse year metadata + recency boost"
+    }
+  },
+  "primary_row": "bm25",
+  "headline": {
+    "recall@5": 0.451815,
+    "ndcg@10": 0.396739,
+    "mrr": 0.363399,
+    "hit@5": 0.458961
+  }
+}

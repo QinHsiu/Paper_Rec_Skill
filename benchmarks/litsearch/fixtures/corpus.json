@@ -1,0 +1,62 @@
+[
+  {
+    "corpusid": 101,
+    "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+    "abstract": "We introduce DPO, a preference optimization method that aligns language models without reinforcement learning from human feedback.",
+    "year": 2023
+  },
+  {
+    "corpusid": 102,
+    "title": "Training language models to follow instructions with human feedback",
+    "abstract": "InstructGPT uses RLHF to align large language models with user intent.",
+    "year": 2022
+  },
+  {
+    "corpusid": 103,
+    "title": "Attention Is All You Need",
+    "abstract": "The Transformer architecture based solely on attention mechanisms.",
+    "year": 2017
+  },
+  {
+    "corpusid": 202,
+    "title": "Evaluating Faithfulness in Retrieval-Augmented Generation",
+    "abstract": "Citation-level faithfulness metrics for RAG systems and human correlation studies.",
+    "year": 2024
+  },
+  {
+    "corpusid": 203,
+    "title": "RAGAS: Automated Evaluation of Retrieval Augmented Generation",
+    "abstract": "A framework for evaluating RAG pipelines including faithfulness and relevancy.",
+    "year": 2023
+  },
+  {
+    "corpusid": 204,
+    "title": "Dense Passage Retrieval for Open-Domain Question Answering",
+    "abstract": "DPR learns dense embeddings for retrieval in open-domain QA.",
+    "year": 2020
+  },
+  {
+    "corpusid": 303,
+    "title": "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?",
+    "abstract": "A benchmark for evaluating code agents on repository-level software engineering tasks.",
+    "year": 2024
+  },
+  {
+    "corpusid": 304,
+    "title": "HumanEval: Evaluating Large Language Models Trained on Code",
+    "abstract": "A hand-written evaluation set for functional correctness of code synthesis.",
+    "year": 2021
+  },
+  {
+    "corpusid": 305,
+    "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+    "abstract": "Bidirectional encoder representations from transformers.",
+    "year": 2019
+  },
+  {
+    "corpusid": 401,
+    "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+    "abstract": "Vision Transformer applies pure transformers to image patches.",
+    "year": 2021
+  }
+]

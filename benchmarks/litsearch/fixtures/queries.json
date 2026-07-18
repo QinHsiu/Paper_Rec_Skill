@@ -1,0 +1,23 @@
+[
+  {
+    "query_set": "smoke",
+    "query": "preference optimization methods for language model alignment",
+    "specificity": 2,
+    "quality": 3,
+    "corpusids": [101]
+  },
+  {
+    "query_set": "smoke",
+    "query": "retrieval augmented generation faithfulness evaluation metrics",
+    "specificity": 2,
+    "quality": 3,
+    "corpusids": [202, 203]
+  },
+  {
+    "query_set": "smoke",
+    "query": "repository level software engineering benchmarks for code agents",
+    "specificity": 2,
+    "quality": 3,
+    "corpusids": [303]
+  }
+]
