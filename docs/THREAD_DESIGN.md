@@ -39,6 +39,7 @@ content/threads/<thread_id>/
 | **K** | Thread-Bench; optional Delta webhook | done (2.20.0) |
 | **L** | Template marketplace; multi-channel Thread Bot | done (2.21.0) |
 | **M** | Benchmark REPORT + LitSearch adapter (credibility P0/1A) | done (2.22.0) |
+| **N** | CEBM-lite evidence_level (1a–5) supplement | done (2.23.0) |
 
 ## Watch / Delta (Phase B)
 
@@ -48,16 +49,36 @@ Skill: `/wiki thread delta`
 
 Claim proposals stay `gate:suggested` until `thread-claim --accept` or API `/claims/accept`.
 
-## Claim–Evidence Map (Phase E / 2.9.0)
+## Claim–Evidence Map (Phase E / 2.9.0+)
 
-Evidence binds a **claim_id** to a paper quote, exp metric, figure, or note (`evidences.jsonl`). Gates: `suggested` → `accepted`.
+Evidence binds a **claim_id** to a paper quote, exp metric, figure, or note (`evidences.jsonl`).
 
-- CLI: `thread-evidence-add|list|gate`
-- API: `/api/threads/{id}/evidences`, `/evidence-map`, gate endpoint; `GET` thread includes `evidences` + `evidence_map`
-- Wiki: PageView select text →「挂到主线」; ThreadDetail evidence panel
+**Anaxa-parity spine** (same grain):
+
+`claim_id` → `paper_path` / `exp_id` → `citation_key` → `quote` + `page` → `support_status` → `confidence` + `gate`
+
+Gates: `suggested` → `accepted`. Confidence ∈ [0,1] (subjective strength of *this* binding).
+
+**CEBM-lite supplement** (JARVIS-inspired, optional, orthogonal):
+
+| Code | Meaning |
+|------|---------|
+| 1a | Systematic review of RCTs |
+| 1b | Individual RCT |
+| 2a / 2b | Cohort review / cohort |
+| 3a / 3b | Case-control review / study |
+| 4 | Case series / poor-quality |
+| 5 | Expert opinion / mechanism / anecdote |
+
+Field: `evidence_level` (+ display `evidence_level_label`). Aliases: `meta`→1a, `rct`→1b, `cohort`→2b, `anecdote`→5, ….  
+Does **not** replace confidence or gate; use for *design-level* strength when writing Related Work / audits.
+
+- CLI: `thread-evidence-add|list|gate` (`--evidence-level`)
+- API: `/api/threads/{id}/evidences`, `/evidence-map`, gate endpoint; coverage includes `cebm_histogram`
+- Wiki: PageView「挂到主线」CEBM 下拉; ThreadDetail shows `CEBM 1b` …
 - MCP: `thread_add_evidence`
 
-Does **not** auto-extract claims from full PDFs (human highlight + agent suggest only).
+Does **not** auto-extract claims from full PDFs (human highlight + agent suggest only). Does **not** implement PRISMA system-review pipelines (out of scope vs JARVIS).
 
 ## Iterative retrieval (Phase F / 2.10.0)
 

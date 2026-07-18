@@ -186,6 +186,7 @@ def patch_evidence(thread_id: str, evidence_id: str, payload: dict[str, Any]):
         support_status=payload.get("support_status"),
         confidence=payload.get("confidence"),
         stance=payload.get("stance"),
+        evidence_level=payload.get("evidence_level"),
         by="user",
     )
 

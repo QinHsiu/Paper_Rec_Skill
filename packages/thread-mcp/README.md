@@ -60,7 +60,7 @@ pip install "mcp>=1.0"
 | `thread_search_context` / `thread_query_hint` | Context + query hints for external search |
 | `thread_score_papers` / `prerank_papers` | Score vs thread / BM25+recency pre-rank |
 | `thread_link_paper` / `thread_link_exp` | Membership |
-| `thread_add_evidence` / `evidence_coverage` | Claim–Evidence Map + confidence UX |
+| `thread_add_evidence` / `evidence_coverage` | Claim–Evidence Map + confidence UX + CEBM-lite |
 | `thread_graph` | Cognitive map JSON |
 | `bibtex_export` / `related_work` / `section_outline` / `paper_draft` | Export & writing frames |
 | `citation_expand` | 1-hop refs (S2/Crossref) |

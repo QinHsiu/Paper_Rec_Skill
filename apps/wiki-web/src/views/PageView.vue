@@ -104,6 +104,20 @@
           <span class="muted" style="font-size:0.8rem">confidence</span>
           <input type="number" min="0" max="1" step="0.1" v-model.number="form.confidence" style="width:4rem" />
         </label>
+        <label>
+          <span class="muted" style="font-size:0.8rem">CEBM</span>
+          <select v-model="form.evidenceLevel">
+            <option value="">—</option>
+            <option value="1a">1a SR of RCTs</option>
+            <option value="1b">1b RCT</option>
+            <option value="2a">2a SR cohort</option>
+            <option value="2b">2b cohort</option>
+            <option value="3a">3a SR case-control</option>
+            <option value="3b">3b case-control</option>
+            <option value="4">4 case series</option>
+            <option value="5">5 opinion / anecdote</option>
+          </select>
+        </label>
         <button class="primary" :disabled="!canSubmit || busy" @click="submitEvidence">
           {{ busy ? '提交中…' : '创建证据' }}
         </button>
@@ -183,6 +197,7 @@ const form = reactive({
   claimId: '',
   supportStatus: 'supports',
   confidence: 0.7,
+  evidenceLevel: '',
 })
 
 const html = computed(() => {
@@ -266,9 +281,10 @@ async function submitEvidence() {
       stance: form.supportStatus === 'insufficient' ? 'related' : form.supportStatus,
       support_status: form.supportStatus,
       confidence: form.confidence,
+      evidence_level: form.evidenceLevel || undefined,
       gate: 'accepted',
     })
-    attachMsg.value = `已创建 ${rec.evidence_id} (conf=${rec.confidence}) → ${form.threadId}/${form.claimId}`
+    attachMsg.value = `已创建 ${rec.evidence_id} (conf=${rec.confidence}${rec.evidence_level ? ', CEBM ' + rec.evidence_level : ''}) → ${form.threadId}/${form.claimId}`
     if (!threadIds.value.includes(form.threadId)) {
       threadIds.value = [...threadIds.value, form.threadId]
     }

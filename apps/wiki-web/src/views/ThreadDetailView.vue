@@ -154,7 +154,9 @@
             </span>
             <span v-if="e.citation_key">[@{{ e.citation_key }}]</span>
             <span v-if="e.page != null">p.{{ e.page }}</span>
-            <span v-if="e.evidence_level">lvl={{ e.evidence_level }}</span>
+            <span v-if="e.evidence_level" :title="e.evidence_level_label || ''">
+              CEBM {{ e.evidence_level }}
+            </span>
             <span>gate={{ e.gate }}</span>
             <span>{{ e.kind }}</span>
           </div>

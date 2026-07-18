@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from . import thread_store as ts
+from .cebm import CEBM_LEVELS, cebm_label, normalize_evidence_level
 
 STANCES = ("supports", "refutes", "related")
 SUPPORT_STATUSES = ("supports", "refutes", "related", "insufficient")
@@ -133,6 +134,7 @@ def add_evidence(
         loc["page_from"] = page_from
     if page_to is not None:
         loc["page_to"] = page_to
+    level = normalize_evidence_level(evidence_level)
     rec: dict[str, Any] = {
         "evidence_id": eid,
         "claim_id": claim_id,
@@ -142,7 +144,8 @@ def add_evidence(
         "quote_loc": loc,
         "citation_key": (citation_key or "").strip() or None,
         "page": page if page is not None else loc.get("page"),
-        "evidence_level": (evidence_level or "").strip() or None,
+        "evidence_level": level,
+        "evidence_level_label": cebm_label(level) if level else None,
         "exp_id": exp_id or None,
         "metric_key": metric_key or None,
         "metric_value": metric_value,
@@ -216,6 +219,7 @@ def patch_evidence(
     support_status: str | None = None,
     confidence: float | None = None,
     stance: str | None = None,
+    evidence_level: str | None = None,
     by: str = "user",
 ) -> dict[str, Any]:
     rows = list_evidences(wiki_root, thread_id)
@@ -232,6 +236,10 @@ def patch_evidence(
                 r["support_status"] = _normalize_support_status("", str(r.get("stance") or "supports"))
             if confidence is not None:
                 r["confidence"] = _normalize_confidence(confidence)
+            if evidence_level is not None:
+                level = normalize_evidence_level(evidence_level)
+                r["evidence_level"] = level
+                r["evidence_level_label"] = cebm_label(level) if level else None
             found = r
             break
     if not found:
@@ -245,6 +253,7 @@ def patch_evidence(
             "evidence_id": evidence_id,
             "support_status": found.get("support_status"),
             "confidence": found.get("confidence"),
+            "evidence_level": found.get("evidence_level"),
             "by": by,
         },
     )
@@ -364,6 +373,14 @@ def hypothesis_evidence_coverage(
         hyp_advice += " 建议补充实验或高置信文献证据。"
     elif total_low > total_high:
         hyp_advice += " 低置信偏多，建议筛选或补强。"
+    level_hist: dict[str, int] = {c: 0 for c in CEBM_LEVELS}
+    level_hist["unset"] = 0
+    for e in evs:
+        lv = normalize_evidence_level(e.get("evidence_level"))
+        if lv:
+            level_hist[lv] = level_hist.get(lv, 0) + 1
+        else:
+            level_hist["unset"] += 1
     return {
         "thread_id": thread_id,
         "hypothesis": data.get("hypothesis"),
@@ -373,6 +390,8 @@ def hypothesis_evidence_coverage(
         "advice": hyp_advice,
         "claims": claim_rows,
         "evidence_count": len(evs),
+        "cebm_histogram": level_hist,
+        "cebm_note": "CEBM-lite (1a–5) is orthogonal to confidence/gate; optional supplement.",
     }
 
 

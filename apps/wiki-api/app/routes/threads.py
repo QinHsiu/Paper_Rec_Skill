@@ -96,6 +96,7 @@ class EvidencePatchBody(BaseModel):
     support_status: str | None = None
     confidence: float | None = None
     stance: str | None = None
+    evidence_level: str | None = None
 
 
 class QueryTraceBody(BaseModel):

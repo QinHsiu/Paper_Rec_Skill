@@ -147,8 +147,11 @@ try:
         support_status: str = "",
         confidence: float = 0.6,
         gate: str = "accepted",
+        citation_key: str = "",
+        page: int | None = None,
+        evidence_level: str = "",
     ) -> str:
-        """Add quote evidence bound to a claim (Claim–Evidence Map)."""
+        """Add quote evidence (Anaxa-parity spine + optional CEBM-lite level 1a–5)."""
         rec = te.add_evidence(
             _root(),
             thread_id,
@@ -160,6 +163,9 @@ try:
             support_status=support_status,
             confidence=confidence,
             gate=gate,
+            citation_key=citation_key,
+            page=page,
+            evidence_level=evidence_level,
             by="mcp",
         )
         return json.dumps(rec, ensure_ascii=False, indent=2)

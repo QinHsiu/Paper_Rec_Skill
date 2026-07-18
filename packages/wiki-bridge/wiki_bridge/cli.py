@@ -776,7 +776,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--confidence", type=float, default=None)
     s.add_argument("--citation-key", default="")
     s.add_argument("--page", type=int, default=None)
-    s.add_argument("--evidence-level", default="", help="optional anecdote|study|meta or CEBM-lite")
+    s.add_argument(
+        "--evidence-level",
+        default="",
+        help="CEBM-lite 1a|1b|2a|2b|3a|3b|4|5 (aliases: meta,rct,cohort,anecdote,…)",
+    )
     s.add_argument("--suggested", action="store_true", help="gate=suggested (default accepted)")
     s.set_defaults(func=cmd_thread_evidence_add)
 

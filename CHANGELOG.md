@@ -6,6 +6,14 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.23.0] — 2026-07-18
+
+### Added
+
+- **CEBM-lite** (`evidence_level` 1a–5): JARVIS-inspired evidence *design* grades as optional supplement to Anaxa-parity spine (`claim`→`citation_key`→`page`→`support_status`→`confidence`+`gate`). Module `wiki_bridge.cebm`; CLI aliases; PageView CEBM select; coverage `cebm_histogram`. Does **not** replace confidence/gate; no PRISMA pipeline.
+
+---
+
 ## [2.22.0] — 2026-07-18
 
 ### Added
