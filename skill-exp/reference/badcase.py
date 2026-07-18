@@ -77,11 +77,36 @@ def plans_from_clusters(
     `tricks.py` / `tricks_catalog.md` (data_clean / label_clean / train_recipe).
     Rank later via preference.pairwise / tournament.
     """
+    from .model_select import (
+        ModelSelectSpec,
+        infer_roles_from_actions,
+        needs_model_select,
+        render_model_select_md,
+    )
+    from .plan_template import merge_model_block
     from .tricks import enrich_cluster_plans, render_plan_md
 
     _ = ask  # refine wording via LLM before tournament if needed
     plans = enrich_cluster_plans(clusters, actions_per_cluster=plans_per_problem)
     # Attach rendered markdown for agent to write content/exp/.../plans/P*.md
     for p in plans:
-        p.meta["plan_md"] = render_plan_md(p)
+        md = render_plan_md(p)
+        blob = " ".join(p.actions) + " " + p.hypothesis + " " + str(p.meta.get("symptom", ""))
+        fam = str(p.meta.get("family", ""))
+        if needs_model_select(blob) or fam in ("label_clean", "train_recipe"):
+            roles = infer_roles_from_actions(p.actions + [fam, str(p.meta.get("symptom", ""))])
+            blocks = "\n".join(
+                render_model_select_md(
+                    ModelSelectSpec(
+                        role=r,
+                        task_hint=p.hypothesis,
+                        family=None,  # agent fills after board + family search
+                    )
+                )
+                for r in roles
+            )
+            md = merge_model_block(md, blocks)
+            p.meta["needs_model_select"] = True
+            p.meta["model_roles"] = roles
+        p.meta["plan_md"] = md
     return plans

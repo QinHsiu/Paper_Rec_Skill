@@ -1,5 +1,22 @@
 # Changelog — exp-sandbox
 
+## [1.7.0] — 2026-07-18
+
+### Added
+
+- Three-pillar solution plan template: **数据侧 / 模型侧 / 训练侧** (`reference/plan_template.md` + `plan_template.py`)
+- Required flow: 现象 → 可视化 → 结论 → 可执行调整（例：不均衡→调训练集比例）→ 分侧 mini-verify
+- `render_plan_md` emits full pillar skeleton into `plans/P*.md`
+
+## [1.6.0] — 2026-07-18
+
+### Added
+
+- Model selection in solution plans: `reference/model_leaderboards.md` + `model_select.py`
+- Roles: `clean_closed` / `clean_open` / `train_base` / `distill_teacher|student` (HF Open LLM LB, Arena, SuperCLUE, …)
+- Family drill-down (e.g. Qwen): ≥3 open variants + comparison table required in `plans/P*.md`
+- `plans_from_clusters` attaches Model selection stubs when actions need models
+
 ## [1.5.0] — 2026-07-18
 
 ### Added
