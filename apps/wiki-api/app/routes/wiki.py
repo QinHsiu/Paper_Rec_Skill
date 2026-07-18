@@ -43,6 +43,44 @@ def list_pages(keyword: str | None = None, status: str | None = None):
     return {"pages": items, "count": len(items)}
 
 
+@router.post("/pages/{path:path}/ingest")
+async def ingest_page_file(
+    path: str,
+    file: UploadFile = File(...),
+    thread_id: str = "",
+    apply_suggest: bool = True,
+):
+    """Upload PDF/txt → fulltext.md + optional suggested claims (always suggested gate).
+
+    Registered before GET /pages/{path} so ``.../ingest`` is not swallowed by the path catch-all.
+    """
+    import tempfile
+    from pathlib import Path
+
+    from app.services import thread_store as ts
+
+    suffix = Path(file.filename or "upload.pdf").suffix or ".pdf"
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(400, "empty file")
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(raw)
+        tmp_path = Path(tmp.name)
+    try:
+        return ts.ingest_paper_file(
+            path, tmp_path, thread_id=thread_id or "", apply_suggest=apply_suggest
+        )
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(400, str(e)) from e
+    finally:
+        try:
+            tmp_path.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
 @router.get("/pages/{path:path}")
 def get_page(path: str):
     fp = pathutil.resolve_paper_file(path)
@@ -172,41 +210,6 @@ def wiki_bibtex(paths: str = ""):
     if not plist:
         raise HTTPException(400, "paths query required")
     return ts.bibtex_for_paths(plist)
-
-
-@router.post("/pages/{path:path}/ingest")
-async def ingest_page_file(
-    path: str,
-    file: UploadFile = File(...),
-    thread_id: str = "",
-    apply_suggest: bool = True,
-):
-    """Upload PDF/txt → fulltext.md + optional suggested claims (always suggested gate)."""
-    import tempfile
-    from pathlib import Path
-
-    from app.services import thread_store as ts
-
-    suffix = Path(file.filename or "upload.pdf").suffix or ".pdf"
-    raw = await file.read()
-    if not raw:
-        raise HTTPException(400, "empty file")
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-        tmp.write(raw)
-        tmp_path = Path(tmp.name)
-    try:
-        return ts.ingest_paper_file(
-            path, tmp_path, thread_id=thread_id or "", apply_suggest=apply_suggest
-        )
-    except FileNotFoundError as e:
-        raise HTTPException(404, str(e)) from e
-    except RuntimeError as e:
-        raise HTTPException(400, str(e)) from e
-    finally:
-        try:
-            tmp_path.unlink(missing_ok=True)
-        except OSError:
-            pass
 
 
 @router.get("/entities/{kind}/{name:path}")
