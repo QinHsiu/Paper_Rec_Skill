@@ -47,7 +47,7 @@ flowchart LR
 
 | Item | Location | Description |
 |------|----------|-------------|
-| **Current version** | [`VERSION`](VERSION) | Single source of truth (`1.3.0`) |
+| **Current version** | [`VERSION`](VERSION) | Single source of truth (`1.4.0`) |
 | **Change history** | [`CHANGELOG.md`](CHANGELOG.md) | SemVer-compliant release notes |
 | **Skill manifest** | [`SKILL.md`](SKILL.md) | Agent execution spec (`name: paper-rec`) |
 | **Repository** | [github.com/QinHsiu/Paper_Rec_Skill](https://github.com/QinHsiu/Paper_Rec_Skill) | Git remote for version tracking |
@@ -159,6 +159,8 @@ Paper_Rec is designed to align with established literature retrieval conventions
 | **Semantic Scholar** | [semanticscholar.org](https://www.semanticscholar.org/) | Citation graph & paper metadata |
 | **DBLP** | [dblp.org](https://dblp.org/) | Authoritative CS bibliography |
 | **OpenReview** | [openreview.net](https://openreview.net/) | ICLR and peer-review transparency |
+| **Connected Papers** | [connectedpapers.com](https://www.connectedpapers.com/) | Graph neighborhood from a seed paper |
+| **AMiner** | [aminer.cn](https://www.aminer.cn/) | Scholar/paper graph (CN-friendly) |
 | **ACL Anthology** | [aclanthology.org](https://aclanthology.org/) | NLP proceedings archive |
 
 ### Venue & ranking standards / 会议与分级标准

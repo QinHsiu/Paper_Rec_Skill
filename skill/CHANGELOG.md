@@ -4,6 +4,15 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.4.0] — 2026-07-18
+
+### Added
+
+- Pack A sources: Connected Papers, AMiner, Google Scholar; JMLR / NeurIPS proceedings hubs
+- Venue planning meta: CCF AI list, ccfddl, aideadlin.es, myhuiban（投稿档期，非正文检索）
+- Pack M: DART-Europe theses portal
+- Excluded: Sci-Hub, Scholar/PDF mirrors, SCIRP-as-sole-source (vetted from Awesome-Resources/Research)
+
 ## [1.3.0] — 2026-07-17
 
 ### Added

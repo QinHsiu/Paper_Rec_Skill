@@ -49,9 +49,12 @@ Default pack for Paper_Rec. Highest priority for ML/AI/CV/NLP/systems queries.
 | Hugging Face Papers | https://huggingface.co/papers | Daily trending ML papers |
 | Papers With Code | https://paperswithcode.com/ | SOTA + code links |
 | GitHub | https://github.com/search | Implementations, stars, topics |
-| Semantic Scholar | https://www.semanticscholar.org/ | Citation graph |
-| DBLP | https://dblp.org/ | CS bibliography / venue lookup |
+| Semantic Scholar | https://www.semanticscholar.org/ | Citation graph · API-friendly metadata |
+| DBLP | https://dblp.org/ | CS bibliography / venue lookup (also https://dblp.uni-trier.de/) |
 | OpenReview | https://openreview.net/ | ICLR & peer-review drafts |
+| Connected Papers | https://www.connectedpapers.com/ | Graph neighborhood from a seed paper |
+| AMiner | https://www.aminer.cn/ | CN-friendly scholar/paper graph (alt https://mrt.aminer.cn/) |
+| Google Scholar | https://scholar.google.com/ | Broad citation search; prefer browser (anti-bot) |
 | ACL Anthology | https://aclanthology.org/ | NLP proceedings |
 | CVF Open Access | https://openaccess.thecvf.com/ | CVPR / ICCV / ECCV |
 
@@ -68,11 +71,21 @@ Default pack for Paper_Rec. Highest priority for ML/AI/CV/NLP/systems queries.
 
 EMNLP, NAACL, ECCV, BMVC, COLING, WSDM, CIKM
 
-### Conference hubs
+### Conference / journal hubs（开放全文）
 
-- NeurIPS: https://papers.nips.cc/
+- NeurIPS: https://papers.nips.cc/ · https://proceedings.neurips.cc/
 - ICML: https://proceedings.mlr.press/
 - ICLR: https://openreview.net/group?id=ICLR.cc
+- JMLR: https://jmlr.csail.mit.edu/papers/ · https://www.jmlr.org/
+
+### Venue planning meta（非正文检索；投稿/档期时启用）
+
+| Source | URL | Use |
+|--------|-----|-----|
+| CCF AI 评估列表 | https://www.ccf.org.cn/Academic_Evaluation/AI/ | CCF 分区参考 |
+| CCF Deadlines | https://ccfddl.github.io/ | 截稿日历 |
+| AI Deadlines | https://aideadlin.es/?sub=ML,CV,NLP | ML/CV/NLP 截稿 |
+| 会伴 myhuiban | https://www.myhuiban.com/?lang=zh_cn | 国内会议日历 |
 
 ---
 
@@ -327,6 +340,7 @@ Use alone or alongside `ai_cs` / `engineering_energy` when the query is IP-focus
 | Source | URL | Region |
 |--------|-----|--------|
 | theses.fr | https://theses.fr/ | France |
+| DART-Europe | https://www.dart-europe.org/basic-search.php | EU theses portal (may block bots; browser OK) |
 | CALIS OPAC | https://opac2.calis.edu.cn/ | CN union catalog |
 | UCDR S / 全国图书馆参考咨询联盟 | http://www.ucdrs.superlib.net/ | Document delivery |
 | UMI / ProQuest-class | https://wwwlib.umi.com/ | Intl theses (access limited) |
@@ -350,11 +364,16 @@ Use alone or alongside `ai_cs` / `engineering_energy` when the query is IP-focus
 
 | Category | Examples | Reason |
 |----------|----------|--------|
-| Shadow libraries | Library Genesis mirrors, Z-Library, BookSC/BookZZ | Copyright risk; unstable |
+| Shadow libraries | Library Genesis, Z-Library, BookSC/BookZZ, **Sci-Hub** (`sci-hub.*`) | Copyright risk; unstable |
+| Scholar / PDF mirrors | `scholar.scqylaw.com`, `gfsoso.99lb.net`, `ac.scmor.com` | Unofficial; often broken / piracy-adjacent |
+| Predatory OA catalogs | SCIRP journal listing as sole source | Quality uneven |
+| Writing-only hubs | home-for-researchers as sole “search” | Not a paper corpus |
 | Doc pirate / 文库破解 | hi138, ebuymed, bingdian-style | Not scholarly; unreliable |
 | Search bookmark hubs | 虫部落 chongbuluo | Meta-directory, not a corpus |
 | Broken / archive-only | CiteSeerX live index, many 404 portals | Not searchable anymore |
 | Product-only chem shops | ChemBlink as sole source | Metadata ≠ papers |
+
+> Pack A supplements (Connected Papers / AMiner / Scholar / JMLR / deadline hubs) curated from [Awesome-Resources/Research](https://github.com/QinHsiu/Awesome-Resources/blob/main/Research/README.md) after a 2026-07 reachability probe; pirate & mirror sites excluded.
 
 ---
 

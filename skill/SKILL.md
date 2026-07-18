@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.3.0
+version: 1.4.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
