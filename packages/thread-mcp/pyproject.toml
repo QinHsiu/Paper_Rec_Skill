@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paper-rec-thread-mcp"
+version = "1.0.0"
+description = "MCP server exposing Paper_Rec Cognitive Thread memory tools"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "mcp>=1.0.0",
+]
+
+[project.scripts]
+paper-rec-threads = "thread_mcp.server:main"
+
+[tool.setuptools.packages.find]
+include = ["thread_mcp*"]

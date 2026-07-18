@@ -51,6 +51,8 @@ const TYPE_CN = {
   company: '公司/机构',
   venue: '来源/会议',
   pack: 'Pack',
+  thread: '研究主线',
+  experiment: '实验',
 }
 
 const canvas = ref(null)
@@ -132,7 +134,7 @@ onMounted(async () => {
           color: n.color,
           href: n.href || n.href_page,
           edit: n.href_edit,
-          r: n.type === 'paper' ? 7 : 11,
+          r: n.type === 'paper' ? 7 : n.type === 'thread' || n.type === 'experiment' ? 13 : 11,
         })),
         backgroundColor: color,
         borderColor: color,

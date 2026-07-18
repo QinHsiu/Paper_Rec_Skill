@@ -64,6 +64,13 @@ def page_card(path: Path) -> dict:
     tags = meta.get("tags") or []
     if isinstance(tags, str):
         tags = [tags]
+    thread_ids: list[str] = []
+    try:
+        from app.services import thread_store as ts
+
+        thread_ids = ts.threads_for_paper(rel)
+    except Exception:
+        thread_ids = []
     return {
         "path": rel,
         "title": meta.get("title") or Path(rel).name,
@@ -78,6 +85,7 @@ def page_card(path: Path) -> dict:
         "rating": meta.get("rating") or "",
         "summary": extract_summary(meta, body),
         "added_at": ensure_added_at(meta, path),
+        "thread_ids": thread_ids,
         "arxiv": meta.get("arxiv") or "",
         "url": meta.get("url") or "",
         "query_ref": meta.get("query_ref") or "",

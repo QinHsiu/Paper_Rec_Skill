@@ -16,6 +16,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--xlabel", default="")
     p.add_argument("--ylabel", default="")
     p.add_argument("--title", default="")
+    p.add_argument(
+        "--venue",
+        default="default",
+        help="style preset: default|cvpr|icml|neurips|acl|nature",
+    )
     args = p.parse_args(argv)
 
     # allow `python -m lib.cli` with package root = skill-draw
@@ -36,6 +41,7 @@ def main(argv: list[str] | None = None) -> int:
         xlabel=args.xlabel,
         ylabel=args.ylabel,
         title=args.title,
+        venue=args.venue or None,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0

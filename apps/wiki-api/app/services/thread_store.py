@@ -1,0 +1,133 @@
+"""Thread store for wiki-api — delegates to wiki_bridge.thread_store."""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+from typing import Any
+
+from app.services import content_root
+
+_BRIDGE = content_root.workspace_root() / "packages" / "wiki-bridge"
+if _BRIDGE.is_dir() and str(_BRIDGE) not in sys.path:
+    sys.path.insert(0, str(_BRIDGE))
+
+from wiki_bridge import thread_store as _ts  # noqa: E402
+
+
+def wiki_root() -> Path:
+    return content_root.workspace_root()
+
+
+def list_threads() -> list[dict[str, Any]]:
+    return _ts.list_threads(wiki_root())
+
+
+def get_thread(thread_id: str) -> dict[str, Any]:
+    data = _ts.load_thread(wiki_root(), thread_id)
+    events = _ts.list_events(wiki_root(), thread_id, limit=100)
+    readme = _ts.thread_dir(wiki_root(), thread_id) / "README.md"
+    notes = ""
+    if readme.is_file():
+        text = readme.read_text(encoding="utf-8")
+        if "## Notes" in text:
+            notes = text.split("## Notes", 1)[1].strip()
+    return {**data, "events": events, "notes": notes}
+
+
+def create_thread(payload: dict[str, Any]) -> dict[str, Any]:
+    return _ts.create_thread(
+        wiki_root(),
+        str(payload.get("title") or ""),
+        thread_id=str(payload.get("thread_id") or payload.get("id") or ""),
+        hypothesis=str(payload.get("hypothesis") or ""),
+        keywords=list(payload.get("keywords") or []),
+        tags=list(payload.get("tags") or []),
+        seed_queries=list(payload.get("seed_queries") or []),
+        seed_terms=list(payload.get("seed_terms") or []),
+        notes=str(payload.get("notes") or ""),
+    )
+
+
+def patch_thread(thread_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    return _ts.update_thread(wiki_root(), thread_id, payload)
+
+
+def link_paper(thread_id: str, path: str, source: str = "api") -> dict[str, Any]:
+    return _ts.link_paper(wiki_root(), thread_id, path, source=source, gate="accepted", by="user")
+
+
+def unlink_paper(thread_id: str, path: str) -> dict[str, Any]:
+    return _ts.unlink_paper(wiki_root(), thread_id, path)
+
+
+def link_exp(thread_id: str, experiment_id: str, source: str = "api") -> dict[str, Any]:
+    return _ts.link_exp(
+        wiki_root(), thread_id, experiment_id, source=source, gate="accepted", by="user"
+    )
+
+
+def timeline(thread_id: str, limit: int = 100) -> list[dict[str, Any]]:
+    return _ts.list_events(wiki_root(), thread_id, limit=limit)
+
+
+def reverse_index() -> dict[str, Any]:
+    return _ts.reverse_index(wiki_root())
+
+
+def threads_for_paper(path: str) -> list[str]:
+    return reverse_index().get("by_paper", {}).get(path.strip("/"), [])
+
+
+def threads_for_exp(exp_id: str) -> list[str]:
+    return reverse_index().get("by_exp", {}).get(exp_id, [])
+
+
+def run_delta(thread_id: str, mode: str = "auto", threshold: float = 0.45, persist: bool = True):
+    from wiki_bridge.thread_delta import run_delta as _run
+
+    return _run(wiki_root(), thread_id, mode=mode, threshold=threshold, persist=persist)
+
+
+def propose_claims(thread_id: str):
+    from wiki_bridge.thread_delta import propose_claim_updates
+
+    return propose_claim_updates(wiki_root(), thread_id, apply=False)
+
+
+def accept_claim(thread_id: str, claim_id: str, status: str, reason: str = ""):
+    from wiki_bridge.thread_delta import accept_claim_update
+
+    return accept_claim_update(wiki_root(), thread_id, claim_id, status, by="user", reason=reason)
+
+
+def score_papers(thread_id: str, papers: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    data = _ts.load_thread(wiki_root(), thread_id)
+    out = []
+    for p in papers:
+        scored = _ts.score_paper_against_thread(
+            data,
+            title=str(p.get("title") or ""),
+            summary=str(p.get("summary") or p.get("core_idea") or ""),
+            tags=list(p.get("tags") or []),
+            keyword=str(p.get("keyword") or ""),
+        )
+        out.append({"path": p.get("path"), "title": p.get("title"), **scored})
+    return out
+
+
+def search_context(thread_id: str) -> dict[str, Any]:
+    """Compact context for Thread-conditioned retrieval (MCP / Skill)."""
+    data = get_thread(thread_id)
+    return {
+        "thread_id": data.get("thread_id"),
+        "title": data.get("title"),
+        "hypothesis": data.get("hypothesis"),
+        "claims": data.get("claims") or [],
+        "open_questions": data.get("open_questions") or [],
+        "evidence_gaps": data.get("evidence_gaps") or [],
+        "seed_queries": data.get("seed_queries") or [],
+        "seed_terms": data.get("seed_terms") or [],
+        "keywords": data.get("keywords") or [],
+        "paper_paths": (data.get("paper_paths") or [])[:20],
+        "experiment_ids": data.get("experiment_ids") or [],
+    }

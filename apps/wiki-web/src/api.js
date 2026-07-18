@@ -89,6 +89,56 @@ export async function getExperimentFile(id, rel) {
   return data
 }
 
+export async function listThreads() {
+  const { data } = await api.get('/threads')
+  return data.threads
+}
+
+export async function getThread(id) {
+  const { data } = await api.get(`/threads/${id}`)
+  return data
+}
+
+export async function createThread(payload) {
+  const { data } = await api.post('/threads', payload)
+  return data
+}
+
+export async function patchThread(id, payload) {
+  const { data } = await api.patch(`/threads/${id}`, payload)
+  return data
+}
+
+export async function threadsForPaper(path) {
+  const { data } = await api.get(`/threads/by-paper/${path}`)
+  return data.thread_ids
+}
+
+export async function threadsForExp(expId) {
+  const { data } = await api.get(`/threads/by-exp/${expId}`)
+  return data.thread_ids
+}
+
+export async function runThreadDelta(id, payload = {}) {
+  const { data } = await api.post(`/threads/${id}/delta`, payload)
+  return data
+}
+
+export async function getThreadClaimSuggestions(id) {
+  const { data } = await api.get(`/threads/${id}/claims/suggestions`)
+  return data
+}
+
+export async function acceptThreadClaim(id, payload) {
+  const { data } = await api.post(`/threads/${id}/claims/accept`, payload)
+  return data
+}
+
+export async function getThreadContext(id) {
+  const { data } = await api.get(`/threads/${id}/context`)
+  return data
+}
+
 export async function login(username) {
   const { data } = await api.post('/auth/login', { username })
   return data

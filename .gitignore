@@ -19,3 +19,8 @@ apps/wiki-web/.vite/
 Thumbs.db
 .idea/
 .vscode/
+
+# Local experiment runs (do not publish)
+content/exp/icsrec-beauty-loop-v1/
+content/exp/**/figures/smoke_venue_*
+content/exp/**/figures/verify_*

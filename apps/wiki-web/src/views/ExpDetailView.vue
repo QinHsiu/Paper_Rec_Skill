@@ -16,11 +16,20 @@
         <span v-for="p in exp.paper_refs || []" :key="p">
           <RouterLink :to="`/page/${p}`">{{ p }}</RouterLink>
         </span>
+        <RouterLink
+          v-for="tid in exp.thread_ids || []"
+          :key="tid"
+          :to="`/threads/${tid}`"
+          class="path-chip"
+        >主线 · {{ tid }}</RouterLink>
       </div>
     </header>
 
     <section class="card">
       <h2 style="margin-top:0;font-size:1.15rem">指标</h2>
+      <div class="chart-wrap" v-if="primaryRows.length">
+        <canvas ref="metricsCanvas" height="220"></canvas>
+      </div>
       <table class="exp-table" v-if="primaryRows.length">
         <thead><tr><th>Metric</th><th>Value</th></tr></thead>
         <tbody>
@@ -28,6 +37,16 @@
         </tbody>
       </table>
       <p v-else class="muted">无 metrics/summary.json</p>
+    </section>
+
+    <section class="card" v-if="curveSeries.length">
+      <h2 style="margin-top:0;font-size:1.15rem">训练曲线（交互）</h2>
+      <div class="chart-wrap">
+        <canvas ref="curvesCanvas" height="280"></canvas>
+      </div>
+      <p class="muted" style="font-size:0.85rem;margin:0.5rem 0 0">
+        悬停查看数值；可点击图例隐藏系列。
+      </p>
     </section>
 
     <section class="card" v-if="figures.length">
@@ -39,17 +58,6 @@
             <code>{{ f.path }}</code>
           </figcaption>
         </figure>
-      </div>
-    </section>
-
-    <section class="card" v-if="curveBlocks.length">
-      <h2 style="margin-top:0;font-size:1.15rem">训练曲线</h2>
-      <div v-for="c in curveBlocks" :key="c.name" style="margin-bottom:1rem">
-        <strong>{{ c.name }}</strong>
-        <div class="spark">{{ c.spark }}</div>
-        <p class="muted" style="font-size:0.85rem;margin:0.35rem 0 0">
-          last={{ c.last }} · n={{ c.n }}
-        </p>
       </div>
     </section>
 
@@ -72,47 +80,105 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { Chart, registerables } from 'chart.js'
 import { getExperiment } from '../api'
+
+Chart.register(...registerables)
 
 const props = defineProps({ id: { type: String, required: true } })
 const exp = ref(null)
+const metricsCanvas = ref(null)
+const curvesCanvas = ref(null)
+let metricsChart
+let curvesChart
 
-const BLOCKS = '▁▂▃▄▅▆▇█'
-function spark(values) {
-  if (!values?.length) return '(empty)'
-  const lo = Math.min(...values)
-  const hi = Math.max(...values)
-  const span = hi - lo || 1
-  return values
-    .slice(-32)
-    .map((v) => BLOCKS[Math.round(((v - lo) / span) * (BLOCKS.length - 1))])
-    .join('')
-}
+const COLORS = ['#1a6b7c', '#c45c26', '#2d6a4f', '#6b4c9a', '#b56576', '#3d5a80']
 
 const primaryRows = computed(() => {
   const m = exp.value?.metrics?.primary || exp.value?.metrics || {}
-  return Object.entries(m).filter(([k]) => k !== 'summary' && k !== 'target_met' && k !== 'run_id')
+  return Object.entries(m).filter(([k, v]) => k !== 'summary' && k !== 'target_met' && k !== 'run_id' && typeof v !== 'object')
 })
 
 const figures = computed(() => exp.value?.figures || [])
 
-const curveBlocks = computed(() => {
+const curveSeries = computed(() => {
   const curves = exp.value?.curves || {}
   return Object.entries(curves).map(([name, series]) => {
-    const values = (series.values || series.y || series || []).map(Number)
-    return {
-      name,
-      spark: spark(values),
-      last: values.length ? values[values.length - 1] : '—',
-      n: values.length,
-    }
-  })
+    const values = (series.values || series.y || (Array.isArray(series) ? series : [])).map(Number)
+    const steps = series.steps || series.x || values.map((_, i) => i + 1)
+    return { name, values, steps }
+  }).filter((c) => c.values.length)
 })
 
-onMounted(async () => {
+function destroyCharts() {
+  metricsChart?.destroy()
+  curvesChart?.destroy()
+  metricsChart = null
+  curvesChart = null
+}
+
+function renderCharts() {
+  destroyCharts()
+  if (metricsCanvas.value && primaryRows.value.length) {
+    const labels = primaryRows.value.map((r) => r[0])
+    const values = primaryRows.value.map((r) => Number(r[1]) || 0)
+    metricsChart = new Chart(metricsCanvas.value, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'metrics',
+            data: values,
+            backgroundColor: labels.map((_, i) => COLORS[i % COLORS.length] + '99'),
+            borderColor: labels.map((_, i) => COLORS[i % COLORS.length]),
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } },
+      },
+    })
+  }
+  if (curvesCanvas.value && curveSeries.value.length) {
+    curvesChart = new Chart(curvesCanvas.value, {
+      type: 'line',
+      data: {
+        datasets: curveSeries.value.map((c, i) => ({
+          label: c.name,
+          data: c.values.map((y, j) => ({ x: Number(c.steps[j] ?? j + 1), y })),
+          borderColor: COLORS[i % COLORS.length],
+          backgroundColor: COLORS[i % COLORS.length] + '33',
+          tension: 0.15,
+          pointRadius: 2,
+        })),
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'nearest', intersect: false },
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          x: { type: 'linear', title: { display: true, text: 'step' } },
+          y: { title: { display: true, text: 'value' } },
+        },
+      },
+    })
+  }
+}
+
+async function load() {
   exp.value = await getExperiment(props.id)
-})
+  await nextTick()
+  renderCharts()
+}
+
+onMounted(load)
+watch(() => props.id, load)
+onBeforeUnmount(destroyCharts)
 </script>
 
 <style scoped>
@@ -120,6 +186,7 @@ onMounted(async () => {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
+  margin-top: 0.75rem;
 }
 .exp-table th,
 .exp-table td {
@@ -127,11 +194,10 @@ onMounted(async () => {
   padding: 0.35rem 0.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
-.spark {
-  font-family: ui-monospace, monospace;
-  font-size: 1.35rem;
-  letter-spacing: 0.02em;
-  margin-top: 0.35rem;
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 820px;
 }
 .exp-md {
   white-space: pre-wrap;

@@ -1,6 +1,6 @@
 # Paper_Rec Wiki API (FastAPI)
 
-Self-hosted wiki backend per `projects/wiki.txt`.
+Self-hosted wiki backend for papers, experiments, and Cognitive Threads.
 
 ## Run
 
@@ -15,11 +15,16 @@ API base: http://127.0.0.1:8787/api/
 
 | Prefix | Role |
 |--------|------|
-| `/api/wiki` | pages CRUD, search, graph, upload |
+| `/api/wiki` | pages CRUD, search, graph (papers + **thread** / **experiment** nodes), upload |
+| `/api/threads` | Cognitive Thread CRUD, delta, claims, context, score, by-paper/by-exp |
+| `/api/exp` | experiment list/detail, metrics/curves, figure assets |
 | `/api/weekly` | weekly digests |
 | `/api/ask` | local wiki Q&A |
 | `/api/skills` | Paper_Rec skill metadata |
 | `/api/auth` | login stub |
+| `/api/health` | content / exp / threads roots |
 | `/uploads` | uploaded images |
 
-Content root: `content/wiki/pages`, `content/weekly`, `content/uploads`.
+Content roots: `content/wiki/pages`, `content/threads`, `content/exp`, `content/weekly`, `content/uploads`.
+
+See [docs/THREAD_DESIGN.md](../../docs/THREAD_DESIGN.md) and [docs/ARCHITECTURE.md](../../docs/ARCHITECTURE.md).

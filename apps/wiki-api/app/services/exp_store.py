@@ -58,6 +58,12 @@ def _card_from_dir(d: Path) -> dict[str, Any] | None:
     meta["updated_at"] = _mtime_iso(d)
     meta["preview"] = _first_para(body)[:200]
     meta["paper_refs"] = _split_list(meta.get("paper_refs") or meta.get("papers") or "")
+    try:
+        from app.services import thread_store as ts
+
+        meta["thread_ids"] = ts.threads_for_exp(d.name)
+    except Exception:
+        meta["thread_ids"] = []
     return meta
 
 

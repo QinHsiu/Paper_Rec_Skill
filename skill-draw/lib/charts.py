@@ -1,7 +1,7 @@
-"""
+﻿"""
 Compact chart primitives for /draw.
 
-API adapted from QinHsiu/plot_demo ideas (line/bar/heatmap/…) but parameterized —
+API adapted from QinHsiu/plot_demo ideas (line/bar/heatmap/鈥? but parameterized 鈥?
 no demo hardcoding, no pylustrator, headless Agg only.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ def plot_line(
     formats: Sequence[str] = ("pdf", "png"),
     grid: bool = True,
 ) -> list[Path]:
-    fig, ax = plt.subplots(figsize=(5.2, 4.0))
+    fig, ax = plt.subplots(figsize=style.get_figsize((5.2, 4.0)))
     if grid:
         ax.grid(linestyle="-.", alpha=0.45)
     colors = style.color_cycle(len(series))
@@ -54,7 +54,7 @@ def plot_bar(
     formats: Sequence[str] = ("pdf", "png"),
     color: str | None = None,
 ) -> list[Path]:
-    fig, ax = plt.subplots(figsize=(5.0, 4.0))
+    fig, ax = plt.subplots(figsize=style.get_figsize((5.0, 4.0)))
     c = color or style.COLORS[3]
     x = np.arange(len(labels))
     ax.bar(x, values, width=0.55, color=c, edgecolor="w", hatch="..")
@@ -76,7 +76,7 @@ def plot_multi_bar(
     out_stem: str | Path,
     formats: Sequence[str] = ("pdf", "png"),
 ) -> list[Path]:
-    fig, ax = plt.subplots(figsize=(7.0, 4.0))
+    fig, ax = plt.subplots(figsize=style.get_figsize((7.0, 4.0)))
     n_m = len(methods)
     total_w, width = 0.8, 0.8 / max(n_m, 1)
     x0 = np.arange(len(categories)) - (total_w - width) / max(n_m, 1)
@@ -111,7 +111,7 @@ def plot_bar_and_line(
     out_stem: str | Path,
     formats: Sequence[str] = ("pdf", "png"),
 ) -> list[Path]:
-    fig, ax1 = plt.subplots(figsize=(5.5, 4.0))
+    fig, ax1 = plt.subplots(figsize=style.get_figsize((5.5, 4.0)))
     x = np.arange(len(categories))
     ax1.bar(x, bar_values, alpha=0.35, color=style.COLORS[0], label=bar_label)
     ax1.set_xticks(x, list(categories), fontsize=11)
@@ -136,7 +136,7 @@ def plot_scatter(
     formats: Sequence[str] = ("pdf", "png"),
     ours_name: str = "Ours",
 ) -> list[Path]:
-    fig, ax = plt.subplots(figsize=(5.2, 4.0))
+    fig, ax = plt.subplots(figsize=style.get_figsize((5.2, 4.0)))
     colors = style.color_cycle(len(points), ours_last=False)
     for i, (xv, yv, name) in enumerate(points):
         is_ours = name.lower() == ours_name.lower() or name == "Ours"
@@ -166,7 +166,7 @@ def plot_heatmap(
 ) -> list[Path]:
     import seaborn as sns
 
-    fig, ax = plt.subplots(figsize=(5.0, 4.2))
+    fig, ax = plt.subplots(figsize=style.get_figsize((5.0, 4.2)))
     sns.heatmap(
         matrix,
         annot=True,
@@ -199,7 +199,7 @@ def plot_box_or_violin(
     out_stem: str | Path,
     formats: Sequence[str] = ("pdf", "png"),
 ) -> list[Path]:
-    fig, ax = plt.subplots(figsize=(5.5, 4.0))
+    fig, ax = plt.subplots(figsize=style.get_figsize((5.5, 4.0)))
     data = [list(map(float, v)) for v in groups.values()]
     labels = list(groups.keys())
     if kind == "violin":
@@ -233,7 +233,7 @@ def plot_hist2d(
     out_stem: str | Path,
     formats: Sequence[str] = ("pdf", "png"),
 ) -> list[Path]:
-    fig, ax = plt.subplots(figsize=(5.0, 4.0))
+    fig, ax = plt.subplots(figsize=style.get_figsize((5.0, 4.0)))
     h = ax.hist2d(x, y, bins=bins, cmap="Blues")
     fig.colorbar(h[3], ax=ax)
     ax.set_xlabel(xlabel, fontsize=12)
@@ -256,7 +256,7 @@ def plot_ablation(
     ours_idx: int = -1,
 ) -> list[Path]:
     """Base / ablations / Ours with hatch groups (plot_demo ablation style)."""
-    fig, ax = plt.subplots(figsize=(6.0, 4.0))
+    fig, ax = plt.subplots(figsize=style.get_figsize((6.0, 4.0)))
     ours_idx = ours_idx if ours_idx >= 0 else len(values) - 1
     colors, hatches = [], []
     for i in range(len(values)):
@@ -293,7 +293,7 @@ def plot_broken_line(
 ) -> list[Path]:
     """Two-panel broken y-axis line chart (simplified from broken_plot.py)."""
     fig, (ax2, ax1) = plt.subplots(
-        2, 1, sharex=True, figsize=(5.5, 5.0), gridspec_kw={"height_ratios": [1, 1], "hspace": 0.08}
+        2, 1, sharex=True, figsize=style.get_figsize((5.5, 5.0)), gridspec_kw={"height_ratios": [1, 1], "hspace": 0.08}
     )
     colors = style.color_cycle(len(series))
     for i, (name, (x, y)) in enumerate(series.items()):
@@ -329,7 +329,7 @@ def plot_tsne(
     formats: Sequence[str] = ("pdf", "png"),
 ) -> list[Path]:
     labels = np.asarray(labels)
-    fig, ax = plt.subplots(figsize=(5.0, 4.5))
+    fig, ax = plt.subplots(figsize=style.get_figsize((5.0, 4.5)))
     palette = np.array(style.COLORS)
     colors = palette[labels % len(palette)]
     ax.scatter(xy[:, 0], xy[:, 1], c=colors, s=18, alpha=0.85)
@@ -339,3 +339,4 @@ def plot_tsne(
         ax.set_title(title, fontsize=14)
     fig.tight_layout()
     return style.save_fig(fig, out_stem, formats)
+

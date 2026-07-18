@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 import matplotlib
 
@@ -22,6 +22,36 @@ COLORS = [
 ]
 MARKERS = ["s", "o", "D", "X", "^", "v", "p", "*", "+", "<", ">"]
 HATCHES = [".", "/", "\\", "x", "-", "+", "|", "o"]
+
+_ACTIVE_PRESET: dict[str, Any] = {
+    "id": "default",
+    "figsize": (5.2, 4.0),
+    "linewidth": 1.8,
+    "markersize": 6,
+}
+
+
+def set_preset(preset: dict[str, Any] | None) -> None:
+    _ACTIVE_PRESET.clear()
+    if preset:
+        _ACTIVE_PRESET.update(preset)
+    else:
+        _ACTIVE_PRESET.update(
+            {"id": "default", "figsize": (5.2, 4.0), "linewidth": 1.8, "markersize": 6}
+        )
+
+
+def get_figsize(default: tuple[float, float] = (5.2, 4.0)) -> tuple[float, float]:
+    fig = _ACTIVE_PRESET.get("figsize") or default
+    return (float(fig[0]), float(fig[1]))
+
+
+def get_linewidth(default: float = 2.0) -> float:
+    return float(_ACTIVE_PRESET.get("linewidth") or default)
+
+
+def get_markersize(default: float = 7.0) -> float:
+    return float(_ACTIVE_PRESET.get("markersize") or default)
 
 
 def apply_style(*, font: str = "Times New Roman", chinese_fallback: bool = True) -> None:

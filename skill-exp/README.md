@@ -5,11 +5,11 @@
 **Automated Experiment Sandbox · Agent Skill**  
 **自动化实验沙箱 · Agent 技能（跨平台）**
 
-[![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-1.8.0-blue.svg)](VERSION)
 [![Agents](https://img.shields.io/badge/Agents-Claude%20·%20Codex%20·%20OpenClaw%20·%20more-3D5A80?style=flat)](SKILL.md)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-green.svg)](https://semver.org/)
 
-*Analysis · Multi-plan · Mini-verify · Train · Eval · Loop · `/draw` figures*
+*Analysis · Multi-plan · Mini-verify · Train · Eval · Loop · `/draw` figures · Thread link*
 
 [English](README.en.md) · [中文](README.zh-CN.md) · [Changelog](CHANGELOG.md)
 
@@ -23,7 +23,7 @@
 
 Works with Claude Code, Codex, OpenClaw, and other runtimes that load Markdown skills.
 
-Companion to [Paper_Rec](../skill/) (literature) and the local Wiki reading notes.
+Companion to [Paper_Rec](../skill/) (literature), Cognitive Threads (`content/threads/`), and the local Wiki reading notes. Finish a run with `wiki_bridge sync-exp --thread <id>` to attach results to a research thread.
 
 ---
 

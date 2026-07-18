@@ -6,11 +6,12 @@ An **Agent Skill** for academic paper recommendation. It runs an end-to-end work
 
 ## Features
 
-- **Three-stage pipeline**: Input → Retrieval → Output
+- **Three-stage pipeline**: Input → Retrieval → Output (plus Thread Modules 1.5 / 2.5)
 - **Multi-source search**: arXiv, Hugging Face Papers, GitHub, Papers With Code, CCF top venues, and supplementary industry sources
-- **Smart ranking**: Top 50 papers scored by similarity, relevance, and importance
+- **Smart ranking**: Top 50 papers scored by similarity, relevance, and importance; optional `thread:<id>` association
 - **Structured reports**: Title, authors, core idea, contribution, metrics, reference value, strengths, and weaknesses (≤2 sentences per field)
 - **Three language modes**: English, Chinese, and adaptive
+- **Wiki / threads**: `/wiki` · `/wiki thread` · `/wiki thread delta`
 
 ---
 

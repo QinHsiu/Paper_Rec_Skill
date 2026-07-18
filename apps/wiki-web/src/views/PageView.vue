@@ -3,13 +3,19 @@
     <header class="card article-head">
       <div>
         <h1 class="page-title">{{ page.meta.title || path }}</h1>
-        <div class="meta-line">
-          <span class="badge" :class="`badge-${page.meta.status || 'todo'}`">
-            {{ page.meta.status || 'todo' }}
-          </span>
-          <span>{{ page.meta.year || '—' }}</span>
-          <span class="path-chip">{{ path }}</span>
-        </div>
+      <div class="meta-line">
+        <span class="badge" :class="`badge-${page.meta.status || 'todo'}`">
+          {{ page.meta.status || 'todo' }}
+        </span>
+        <span>{{ page.meta.year || '—' }}</span>
+        <span class="path-chip">{{ path }}</span>
+        <RouterLink
+          v-for="tid in threadIds"
+          :key="tid"
+          :to="`/threads/${tid}`"
+          class="path-chip"
+        >主线 · {{ tid }}</RouterLink>
+      </div>
       </div>
       <div class="row">
         <RouterLink :to="`/edit/${path}`"><button class="primary">编辑笔记</button></RouterLink>
@@ -25,10 +31,11 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
-import { getPage } from '../api'
+import { getPage, threadsForPaper } from '../api'
 
 const props = defineProps({ path: { type: String, required: true } })
 const page = ref(null)
+const threadIds = ref([])
 
 const html = computed(() => {
   if (!page.value) return ''
@@ -38,6 +45,11 @@ const html = computed(() => {
 
 async function load() {
   page.value = await getPage(props.path)
+  try {
+    threadIds.value = await threadsForPaper(props.path)
+  } catch {
+    threadIds.value = []
+  }
 }
 
 onMounted(load)

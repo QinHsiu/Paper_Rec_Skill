@@ -1,6 +1,6 @@
 ---
 name: exp-sandbox
-version: 1.7.0
+version: 1.8.0
 description: >-
   Automated experiment sandbox: dataset analysis, training, evaluation, and a
   self-improving loop (analyze → multi-plan → mini-verify → train → eval →
@@ -303,17 +303,21 @@ content/exp/<experiment_id>/
 ```bash
 python -m wiki_bridge.cli sync-exp \
   --wiki-root <workspace> \
-  --report ./exp_result.json
+  --report ./exp_result.json \
+  --thread <thread_id>
 ```
 
 This writes:
 - `content/exp/<id>/` (metrics, curves, final_report)
 - `content/wiki/pages/_exp/<id>/README.md` (Wiki 实验页；`_exp` 不会进入论文库索引)
 - index `content/wiki/pages/_exp/README.md`
+- optional: link exp into Cognitive Thread (`content/threads/<id>/`) when `--thread` is set
 
 JSON payload fields: `experiment_id`, `title`, `target_score`, `target_met`, `metrics.primary`, `curves.{name:{steps,values}}`, `paper_refs`, `summary`, `future_optimizations`.
 
 Link Wiki paper notes when methods come from reading (`content/wiki/pages/...`) via `paper_refs`.
+
+When an active research thread exists, mention in the final report whether the experiment fills any `evidence_gaps` / supports any `claims` (cognitive ledger); do not auto-change claim status without user confirmation.
 
 ### End-to-end research loop / 端到端闭环
 

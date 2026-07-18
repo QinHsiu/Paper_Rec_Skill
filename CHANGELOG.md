@@ -6,6 +6,33 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.8.0] — 2026-07-18
+
+### Added
+
+- **Phase B**: Watch/Delta (`thread-delta`, `POST /api/threads/{id}/delta`, deltas/), claim suggest/accept gates, graph nodes for `thread` + `experiment`
+- **Phase C**: Thread Memory MCP (`packages/thread-mcp`) + [`docs/MCP.md`](docs/MCP.md)
+- **Phase D**: Wiki experiment Chart.js interactive curves/metrics; `/draw --venue` presets (cvpr/icml/neurips/acl/nature)
+
+---
+
+## [2.7.0] — 2026-07-18
+
+### Added
+
+- **Cognitive Thread v2** (`content/threads/`): hypothesis / claims / gaps + `events.jsonl` ledger
+- Design contract: [`docs/THREAD_DESIGN.md`](docs/THREAD_DESIGN.md)
+- `wiki_bridge` CLI: `thread-create|list|show|link-paper|link-exp`; `sync-report|sync-exp --thread` (+ optional `--auto-link`)
+- Wiki API `/api/threads` + SPA `/threads` (list, detail, timeline)
+- paper-rec Modules **1.5 / 2.5** and `/wiki thread*`; exp sync can attach to a thread
+
+### Notes
+
+- Auto-association defaults to `gate: suggested` (no silent membership pollution)
+- Manuscript / citation-audit pipelines remain out of scope (complement Anaxa, do not compete)
+
+---
+
 ## [2.6.0] — 2026-07-18
 
 ### Added

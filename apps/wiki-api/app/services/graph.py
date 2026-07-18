@@ -149,6 +149,91 @@ def build_graph() -> dict:
         nodes[pid]["cluster"] = kw
         nodes[pid]["color"] = _cluster_color(kw)
 
+    # Cognitive Thread + experiment nodes (Phase B)
+    try:
+        from app.services import thread_store as ts
+        from app.services import exp_store
+
+        for t in ts.list_threads():
+            tid = t["thread_id"]
+            nid = f"thread:{tid}"
+            detail = ts.get_thread(tid)
+            nodes[nid] = {
+                "id": nid,
+                "label": (t.get("title") or tid)[:48],
+                "title": t.get("title") or tid,
+                "type": "thread",
+                "thread_id": tid,
+                "href": f"/threads/{tid}",
+                "cluster": "thread",
+                "color": _cluster_color("thread"),
+                "paper_count": t.get("paper_count") or 0,
+            }
+            for path in detail.get("paper_paths") or []:
+                if path in nodes:
+                    edges.append(
+                        {
+                            "source": nid,
+                            "target": path,
+                            "kind": "thread_paper",
+                            "cluster": "thread",
+                        }
+                    )
+            for eid in detail.get("experiment_ids") or []:
+                exp_nid = f"exp:{eid}"
+                if exp_nid not in nodes:
+                    try:
+                        card = exp_store.get_experiment(eid)
+                        title = card.get("title") or eid
+                    except FileNotFoundError:
+                        title = eid
+                    nodes[exp_nid] = {
+                        "id": exp_nid,
+                        "label": str(title)[:48],
+                        "title": title,
+                        "type": "experiment",
+                        "experiment_id": eid,
+                        "href": f"/experiments/{eid}",
+                        "cluster": "experiment",
+                        "color": _cluster_color("experiment"),
+                    }
+                edges.append(
+                    {
+                        "source": nid,
+                        "target": exp_nid,
+                        "kind": "thread_exp",
+                        "cluster": "thread",
+                    }
+                )
+        # orphan experiments (not in any thread) still appear
+        for card in exp_store.list_experiments():
+            eid = card.get("id") or card.get("path")
+            exp_nid = f"exp:{eid}"
+            if exp_nid in nodes:
+                continue
+            nodes[exp_nid] = {
+                "id": exp_nid,
+                "label": str(card.get("title") or eid)[:48],
+                "title": card.get("title") or eid,
+                "type": "experiment",
+                "experiment_id": eid,
+                "href": f"/experiments/{eid}",
+                "cluster": "experiment",
+                "color": _cluster_color("experiment"),
+            }
+            for path in card.get("paper_refs") or []:
+                if path in nodes:
+                    edges.append(
+                        {
+                            "source": exp_nid,
+                            "target": path,
+                            "kind": "exp_paper",
+                            "cluster": "experiment",
+                        }
+                    )
+    except Exception:
+        pass
+
     for eid, plist in entity_papers.items():
         if eid in nodes:
             nodes[eid]["paper_count"] = len(set(plist))
@@ -179,6 +264,8 @@ def build_graph() -> dict:
         "company": 28,
         "venue": 18,
         "pack": 12,
+        "thread": 70,
+        "experiment": 62,
     }
     by_type: dict[str, list[str]] = defaultdict(list)
     for nid, node in nodes.items():
@@ -210,7 +297,7 @@ def build_graph() -> dict:
     ]
 
     type_legends = []
-    for typ in ("keyword", "tag", "team", "company", "venue", "pack", "paper"):
+    for typ in ("keyword", "tag", "team", "company", "venue", "pack", "paper", "thread", "experiment"):
         ids = by_type.get(typ) or []
         if not ids:
             continue

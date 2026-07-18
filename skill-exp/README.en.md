@@ -2,7 +2,7 @@
 
 An **Agent Skill** for an automated ML experiment sandbox: analyze data/badcases → propose multiple plans → mini-verify → train with monitors → evaluate against `target_score` → self-loop until done.
 
-Works with Claude Code, Codex, OpenClaw, and other Markdown-skill runtimes.
+Works with Claude Code, Codex, OpenClaw, and other Markdown-skill runtimes. Attach finished runs with `wiki_bridge sync-exp --thread <id>`.
 
 ---
 

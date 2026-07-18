@@ -1,5 +1,12 @@
 # Changelog — exp-sandbox
 
+## [1.8.0] — 2026-07-18
+
+### Added
+
+- `sync-exp --thread <id>` guidance: attach finished runs to Cognitive Thread membership
+- Final report may note claim/gap support (no auto claim status change without user gate)
+
 ## [1.7.0] — 2026-07-18
 
 ### Added

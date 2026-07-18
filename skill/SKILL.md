@@ -1,12 +1,13 @@
 ---
 name: paper-rec
-version: 1.4.0
+version: 1.5.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
   /query_chinese, /query_other, or /wiki. Use when the user asks for paper
   recommendations, literature search, related work, arXiv/HuggingFace/GitHub
-  paper discovery, query改写/论文检索/论文推荐, or wiki library status / start wiki UI.
+  paper discovery, query改写/论文检索/论文推荐, wiki library status / start wiki UI,
+  or research thread / 研究主线 association.
 ---
 
 # Paper Recommendation Skill / 论文推荐技能
@@ -20,10 +21,12 @@ End-to-end workflow: **Input → Retrieval → Output**. Do not write applicatio
 ```
 Task Progress:
 - [ ] Module 1: Input — summarize, extract keywords, rewrite query
+- [ ] Module 1.5 (optional): Thread context inject — hypothesis / claims / gaps
 - [ ] Module 2: Retrieval — search, score, rank top 50
+- [ ] Module 2.5 (optional): Thread-aware rerank + rationale section
 - [ ] Module 3: Output — structured report (≤2 sentences per field)
 - [ ] Module 4 (optional): Persist selected papers to Wiki (`content/wiki/pages`)
-- [ ] Module 5 (`/wiki`): List library papers and/or launch Wiki UI
+- [ ] Module 5 (`/wiki`): List library papers and/or launch Wiki UI / threads
 ```
 
 **Trigger**: User provides a research topic, question, or long description and wants relevant papers.
@@ -168,6 +171,20 @@ Chinese mode:
 - 筛选：年份范围、会议偏好
 ```
 
+### 1.5 Thread Context Inject / 研究主线注入（可选）
+
+**When**: User prefixes `thread:<id>` in the query, or exactly **one** `status:active` thread exists under `content/threads/`, or user asks to use a research thread.
+
+**Action**:
+1. Load `content/threads/<id>/thread.json` (or `wiki_bridge thread-show --wiki-root . --id <id>`).
+2. Inject into rewrite: `hypothesis`, open `claims`, `evidence_gaps`, `seed_queries` / `seed_terms`, plus titles/tags of up to 15 member `paper_paths` if readable.
+3. Produce **extra** rewritten queries from open questions / gaps (one path per gap when useful).
+4. Announce at report top: `Thread: {title} ({id})`.
+
+If multiple active threads and no `thread:` prefix → **ask** which thread to use (or proceed without thread context).
+
+Design contract: `../docs/THREAD_DESIGN.md`.
+
 ---
 
 ## Module 2: Retrieval / 检索模块
@@ -292,6 +309,18 @@ When Module 1 detects **latest intent** (最新 / latest / 近期 / 刚刚发布
 
 For the final report, deep-read the **top 10–15** papers; use metadata-only for ranks 11–50 unless user requests full coverage.
 
+### 2.5 Thread-aware rerank / 主线关联重排（可选）
+
+**When**: A research thread is active for this turn (see Module 1.5).
+
+**Action** (after Top-N list exists):
+1. For each candidate, estimate association **R** using thread `seed_terms` / claims / gaps / keywords (same weights as bridge MVP: term 0.30, claim 0.30, gap 0.20, member tags 0.15, keyword 0.05). Prefer calling scoring logic conceptually aligned with `wiki_bridge.thread_store.score_paper_against_thread`.
+2. Attach **rationale** (hit terms, claim ids, gap refs). Do **not** silently add papers to the thread.
+3. Add a report section **研究主线关联 / Thread relevance** listing strong (≥0.75), weak (0.45–0.75), and uncovered gaps.
+4. When persisting (Module 4), pass `--thread <id>`; use `--auto-link` only if the user explicitly asks to auto-accept strong hits.
+
+Default gate remains `suggested` (cognitive ledger), matching `docs/THREAD_DESIGN.md`.
+
 ---
 
 ## Module 3: Output / 输出模块
@@ -354,8 +383,11 @@ python -m wiki_bridge.cli sync-report \
   --report /path/to/report.json \
   --query-id <slug> \
   --mode query_chinese \
-  --mark-reading
+  --mark-reading \
+  --thread <thread_id>
 ```
+
+Add `--auto-link` only when the user wants papers with R≥0.75 accepted into the thread membership list.
 
 3. Confirm pages under `content/wiki/pages/<keyword>/<year>/<slug>.md`, plus `_meta/Reading_Index` and `_meta/Dashboard`.
 4. Confirm **`content/wiki/pages/<keyword>/README.md`** lists this `/query_*` command (auto-updated by `wiki_bridge`).
@@ -380,6 +412,25 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki` or `/wiki list` or「有哪些论文」 | List papers currently under `content/wiki/pages/` |
 | `/wiki start` or「启动/打开 wiki」 | Start API + Web and open the browser |
 | `/wiki week` | List **this ISO week** papers (same dedupe as SPA 一周推荐) |
+| `/wiki thread` or `/wiki thread list` | List Cognitive Threads under `content/threads/` |
+| `/wiki thread <id>` | Show hypothesis, claims, gaps, members, recent events |
+| `/wiki thread create <title>` | Create thread via bridge (ask hypothesis/keywords if missing) |
+| `/wiki thread delta [id]` | Run Watch/Delta (`auto`/`diff_brief`/`gap_focus`/`exp_bridge`) |
+
+### Thread ops (do this yourself)
+
+```powershell
+cd packages/wiki-bridge
+pip install -e .
+python -m wiki_bridge.cli thread-list --wiki-root ../..
+python -m wiki_bridge.cli thread-show --wiki-root ../.. --id <thread_id>
+python -m wiki_bridge.cli thread-create --wiki-root ../.. --title "..." --hypothesis "..." --keywords "a,b"
+python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id <thread_id> --mode auto --print-md
+python -m wiki_bridge.cli thread-claim --wiki-root ../.. --id <thread_id>
+python -m wiki_bridge.cli thread-claim --wiki-root ../.. --id <thread_id> --claim-id C1 --status supported --accept
+```
+
+SPA: http://127.0.0.1:5173/threads · API `/api/threads` · MCP: `docs/MCP.md` / `packages/thread-mcp`.
 
 ### List papers (do this yourself)
 

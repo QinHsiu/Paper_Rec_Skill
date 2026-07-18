@@ -3,14 +3,15 @@
 # Paper_Rec
 
 ### A Research Operating System for Literature & Experiments  
-### 面向科研闭环的文献检索 · 阅读 Wiki · 实验沙箱
+### 面向科研闭环的文献检索 · 阅读 Wiki · 实验沙箱 · 研究主线
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.6.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
-[![paper-rec](https://img.shields.io/badge/paper--rec-v1.3.0-1A2332?style=for-the-badge)](skill/VERSION)
-[![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.3.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
-[![plot-draw](https://img.shields.io/badge/plot--draw-v1.0.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.8.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![paper-rec](https://img.shields.io/badge/paper--rec-v1.5.0-1A2332?style=for-the-badge)](skill/VERSION)
+[![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.8.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
+[![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
+[![MCP](https://img.shields.io/badge/MCP-Thread%20Memory-0F766E?style=for-the-badge&labelColor=1A2332)](docs/MCP.md)
 [![License](https://img.shields.io/badge/license-MIT-5C6B7A?style=for-the-badge&labelColor=1A2332)](#)
 
 <br/>
@@ -19,11 +20,12 @@
 
 从自然语言问题出发，完成多源文献检索与结构化报告；  
 在自研 Wiki 中阅读、标注与沉淀；  
+用**研究主线**（Cognitive Thread）串联假设 / 证据缺口 / 实验；  
 用实验沙箱做方案验证与训练闭环，并把指标与曲线写回知识库。
 
 <br/>
 
-`Claude Code` · `Codex` · `OpenClaw` · 及其他可加载 Markdown Skill 的 Agent 运行时
+`Claude Code` · `Codex` · `OpenClaw` · `MCP` · 及其他可加载 Markdown Skill 的 Agent 运行时
 
 <br/>
 
@@ -40,25 +42,27 @@
 
 ## 研究闭环
 
-把「找论文 → 读论文 → 做实验 → 记结果」收成一条可复现管线：
+把「找论文 → 挂主线 → 读论文 → 做实验 → 记结果」收成一条可复现管线：
 
 ```mermaid
 flowchart LR
-  A["/query_*<br/>多源检索"] --> B["sync-report<br/>入库 Wiki"]
+  A["/query_*<br/>多源检索"] --> T["Thread<br/>关联提醒"]
+  T --> B["sync-report --thread<br/>入库 Wiki"]
   B --> C["人工阅读<br/>标记 / 笔记"]
   C --> D["/exp_*<br/>分析 · 方案 · 训练"]
-  D --> G["/draw<br/>论文级图表"]
-  D --> E["sync-exp<br/>指标 · 曲线回写"]
+  D --> G["/draw venue<br/>论文级图表"]
+  D --> E["sync-exp --thread<br/>指标 · 曲线回写"]
   G --> E
-  E --> F["Wiki 实验模块<br/>可追溯产物"]
+  E --> F["Wiki 实验 · 主线<br/>可追溯产物"]
 ```
 
 | Stage | What happens |
 |:------|:-------------|
 | **Retrieve** | Query 改写 → 多源召回 → 打分排序 → 结构化报告 |
-| **Curate** | 每篇独立 `README.md` · 评分/状态 · 知识图谱 |
+| **Thread** | 假设 / claims / gaps；Thread-conditioned 关联度 R + ledger gate |
+| **Curate** | 每篇独立 `README.md` · 评分/状态 · 知识图谱（含主线/实验节点） |
 | **Experiment** | Badcase 聚类 → 多方案 Predict-then-Verify → 小规模验证 → 训练/评估 |
-| **Persist** | Loss / 指标曲线与 `paper_refs` 同步至 Wiki「实验」 |
+| **Persist** | Loss / 指标曲线与 `paper_refs` 同步至 Wiki「实验」，可挂主线 |
 
 ---
 
@@ -66,39 +70,52 @@ flowchart LR
 
 <table>
 <tr>
-<td width="33%" valign="top">
+<td width="25%" valign="top">
 
 ### Literature Skill
 **paper-rec**
 
 - `/query_english` · `/query_chinese` · `/query_other`
-- 摘要 · 关键词 · Query 改写
+- Module 1.5 / 2.5 主线注入与重排
 - arXiv · HF · GitHub · PwC · CCF…
 - Top-50 结构化字段报告
 
 [skill/README.md](skill/README.md)
 
 </td>
-<td width="33%" valign="top">
+<td width="25%" valign="top">
 
 ### Experiment + Draw
 **exp-sandbox** · **plot-draw**
 
-- `/exp_*` 沙箱闭环 · `/draw` 论文级出图
-- 自动选图（自包含 [`skill-draw/lib`](skill-draw/lib)）
+- `/exp_*` 沙箱闭环 · `/draw` 出图
+- venue 预设：cvpr / icml / neurips / acl / nature
 - 学术配色 · PDF/PNG · `figures/`
 
 [skill-exp](skill-exp/README.md) · [skill-draw](skill-draw/README.md)
 
 </td>
-<td width="33%" valign="top">
+<td width="25%" valign="top">
+
+### Cognitive Thread
+**研究主线**
+
+- 假设 · claims · evidence gaps
+- Watch / Delta · claim 闸门
+- Wiki `/threads` · 图谱节点
+- Thread Memory **MCP**
+
+[docs/THREAD_DESIGN.md](docs/THREAD_DESIGN.md) · [docs/MCP.md](docs/MCP.md)
+
+</td>
+<td width="25%" valign="top">
 
 ### Reading Lab
 **Self-hosted Wiki**
 
 - FastAPI + Vue3 · Git Markdown
-- 论文库 · 图谱 · 一周推荐 · **实验**
-- 指标 / 曲线 / 关联论文
+- 论文库 · **研究主线** · 实验 · 图谱
+- 交互式曲线（Chart.js）
 
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
@@ -118,6 +135,9 @@ flowchart LR
 | `/query_chinese` | 全中文报告 |
 | `/query_other` | 随输入语言自适应 |
 | `/wiki` · `/wiki week` · `/wiki start` | 库内列表 / 本周 / 启动 UI |
+| `/wiki thread` · `/wiki thread <id>` · `/wiki thread delta` | 研究主线列表 / 详情 / Delta |
+
+Query 可加前缀：`thread:<id> ...`
 
 ### exp-sandbox
 
@@ -133,14 +153,13 @@ flowchart LR
 | Command | Role |
 |:--------|:-----|
 | `/draw` [`chart_id?`] | 数据路径 + 描述 → 自动/指定图表（PDF+PNG） |
+| `venue:` / `--venue` | `cvpr` · `icml` · `neurips` · `acl` · `nature` |
 
 ---
 
 ## 快速开始
 
 ### ① 安装 Skills（跨平台）
-
-将指令包挂到所用 Agent 的 skills / prompts 目录：
 
 ```bash
 mkdir -p .agents/skills/paper-rec .agents/skills/exp-sandbox .agents/skills/plot-draw
@@ -150,10 +169,12 @@ cp -r skill-draw/* .agents/skills/plot-draw/
 ```
 
 ```text
-/query_chinese 多模态大模型对齐的最新进展
+/query_chinese thread:mm-llm-alignment 多模态大模型对齐的最新进展
+/wiki thread mm-llm-alignment
 /draw
 data: content/exp/demo-ocr-handwriting-v1/metrics/curves.json
 desc: train_loss 与 val_F1 曲线
+venue: cvpr
 ```
 
 ### ② 启动 Wiki
@@ -164,27 +185,45 @@ powershell -ExecutionPolicy Bypass -File apps/start-wiki.ps1
 
 | Service | Endpoint |
 |:--------|:---------|
-| Web | http://127.0.0.1:5173/ · [实验](http://127.0.0.1:5173/experiments) |
-| API | http://127.0.0.1:8787/api/health · `/api/exp` |
+| Web | http://127.0.0.1:5173/ · [研究主线](http://127.0.0.1:5173/threads) · [实验](http://127.0.0.1:5173/experiments) |
+| API | http://127.0.0.1:8787/api/health · `/api/threads` · `/api/exp` |
 
-### ③ 报告入库 / 实验回写
+### ③ 主线 · 报告入库 · 实验回写
 
 ```bash
 cd packages/wiki-bridge && pip install -e .
 
-# 文献报告 → 论文库
+# 创建研究主线
+python -m wiki_bridge.cli thread-create \
+  --wiki-root ../.. \
+  --title "多模态对齐" --id mm-llm-alignment \
+  --hypothesis "..." --keywords "multimodal,alignment"
+
+# 文献报告 → 论文库（并写入主线 ledger）
 python -m wiki_bridge.cli sync-report \
   --wiki-root ../.. \
   --report ./examples/sample_report.json \
-  --mode query_chinese --mark-reading
+  --mode query_chinese --mark-reading \
+  --thread mm-llm-alignment
 
-# 实验结果 → content/exp + Wiki「实验」
+# 实验结果 → content/exp + Wiki「实验」+ 挂主线
 python -m wiki_bridge.cli sync-exp \
   --wiki-root ../.. \
-  --report ./examples/sample_exp_report.json
+  --report ./examples/sample_exp_report.json \
+  --thread mm-llm-alignment
+
+# Watch / Delta
+python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id mm-llm-alignment --mode auto
 ```
 
-### ④ 回归自检
+### ④ Thread Memory MCP（可选）
+
+```bash
+cd packages/thread-mcp && pip install -e .
+# 配置见 docs/MCP.md · packages/thread-mcp/README.md
+```
+
+### ⑤ 回归自检
 
 ```bash
 python scripts/regress_exp_wiki.py
@@ -196,22 +235,27 @@ python scripts/regress_exp_wiki.py
 
 ```text
 Paper_Rec_Skill/
-├── skill/                      # paper-rec · 文献检索 Skill
+├── skill/                      # paper-rec · 文献检索 + Thread 钩子
 ├── skill-exp/                  # exp-sandbox · 实验沙箱 + reference/
-├── skill-draw/                 # plot-draw · /draw 图表（自包含 lib/）
+├── skill-draw/                 # plot-draw · /draw + lib/venues.py
 ├── apps/
-│   ├── wiki-api/               # FastAPI  :8787
-│   ├── wiki-web/               # Vue3 SPA :5173
+│   ├── wiki-api/               # FastAPI  :8787  (/api/threads · /api/exp)
+│   ├── wiki-web/               # Vue3 SPA :5173  (/threads · /experiments)
 │   └── start-wiki.ps1
-├── packages/wiki-bridge/       # sync-report · sync-exp
+├── packages/
+│   ├── wiki-bridge/            # sync-report · sync-exp · thread-*
+│   └── thread-mcp/             # Thread Memory MCP Server
 ├── content/
 │   ├── wiki/pages/             # <kw>/<year>/<slug>/README.md
-│   ├── wiki/pages/_exp/        # 实验 Wiki 镜像（不进论文索引）
-│   ├── wiki/deleted.json
-│   ├── exp/                    # 实验产物 · metrics · curves
+│   ├── wiki/pages/_exp/        # 实验 Wiki 镜像
+│   ├── threads/                # Cognitive Thread · thread.json + events
+│   ├── exp/                    # 实验产物 · metrics · curves · figures
 │   ├── weekly/
 │   └── uploads/
 ├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── THREAD_DESIGN.md
+│   └── MCP.md
 ├── scripts/regress_exp_wiki.py
 ├── VERSION
 └── CHANGELOG.md
@@ -219,11 +263,13 @@ Paper_Rec_Skill/
 
 | Layer | Owns |
 |:------|:-----|
-| **skill/** | 检索流水线与 `/wiki` 运维指令 |
-| **skill-exp/** | 实验闭环与 Predict-then-Verify 参考实现 |
-| **wiki-api / wiki-web** | 阅读、图谱、一周推荐、实验浏览 |
-| **wiki-bridge** | 结构化报告 ↔ Git Markdown |
-| **content/** | 唯一内容真源（可版本管理、可同步） |
+| **skill/** | 检索流水线、主线注入/重排、`/wiki thread*` |
+| **skill-exp/** | 实验闭环；`sync-exp --thread` |
+| **skill-draw/** | `/draw` + venue 顶会风格 |
+| **wiki-api / wiki-web** | 阅读、主线、实验看板、图谱 |
+| **wiki-bridge** | 结构化报告 ↔ Git Markdown / Threads |
+| **thread-mcp** | MCP 暴露主线记忆工具 |
+| **content/** | 唯一内容真源（可版本管理） |
 
 ---
 
@@ -232,9 +278,10 @@ Paper_Rec_Skill/
 | Principle | Meaning |
 |:----------|:--------|
 | **Agent-native** | 以 Markdown Skill 驱动，不绑定单一 IDE |
-| **Git as database** | 笔记与实验记录即文件，可 diff、可备份 |
+| **Git as database** | 笔记、实验与主线即文件，可 diff、可备份 |
+| **Cognitive before OS** | 护城河是研究主线记忆，而非全能发表流水线 |
 | **Predict before burn** | 先多方案偏好排序与小规模验证，再全量训练 |
-| **Human in the loop** | 检索与沙箱自动化；阅读标记与目标定义留给研究者 |
+| **Human in the loop** | 自动关联默认 `suggested`；入库/claim 需 gate |
 
 实验沙箱在方案排序思路上借鉴 [zjunlp/predict-before-execute](https://github.com/zjunlp/predict-before-execute)（Predict-then-Verify）；详见 [skill-exp/README.md](skill-exp/README.md#acknowledgement--借鉴说明)。
 
@@ -246,9 +293,12 @@ Paper_Rec_Skill/
 |:----|:---------|
 | [skill/README.md](skill/README.md) | 文献 Skill 中英入口 |
 | [skill-exp/README.md](skill-exp/README.md) | 实验 Skill · 借鉴说明 |
-| [skill-draw/README.md](skill-draw/README.md) | `/draw` 出图 · `lib/` 自包含 |
-| [skill-exp/reference/](skill-exp/reference/) | Agent 可执行的参考伪代码 |
+| [skill-draw/README.md](skill-draw/README.md) | `/draw` 出图 · venue 预设 |
+| [packages/wiki-bridge/README.md](packages/wiki-bridge/README.md) | sync + thread CLI |
+| [packages/thread-mcp/README.md](packages/thread-mcp/README.md) | MCP 安装与工具表 |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 模块边界与数据约定 |
+| [docs/THREAD_DESIGN.md](docs/THREAD_DESIGN.md) | Cognitive Thread v2 契约 |
+| [docs/MCP.md](docs/MCP.md) | Thread Memory MCP |
 | [docs/MIGRATION.md](docs/MIGRATION.md) | 路径迁移 |
 | [CHANGELOG.md](CHANGELOG.md) | Workspace 版本历史 |
 
@@ -258,7 +308,7 @@ Paper_Rec_Skill/
 
 ### Paper_Rec
 
-*Retrieve with any agent. Read in your own wiki. Iterate until the metric moves.*
+*Retrieve with any agent. Read in your own wiki. Follow the thread until the metric moves.*
 
 <br/>
 

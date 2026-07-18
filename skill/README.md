@@ -5,12 +5,12 @@
 **Intelligent Literature Retrieval · Agent Skill**  
 **智能文献检索 · Agent 技能（跨平台）**
 
-[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](VERSION)
 [![Agents](https://img.shields.io/badge/Agents-Claude%20·%20Codex%20·%20OpenClaw%20·%20more-3D5A80?style=flat)](SKILL.md)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-green.svg)](https://semver.org/)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](#license)
 
-*Query rewriting · Multi-source retrieval · Structured synthesis*
+*Query rewriting · Multi-source retrieval · Thread-conditioned ranking · Structured synthesis*
 
 [English Docs](README.en.md) · [中文文档](README.zh-CN.md) · [Changelog](CHANGELOG.md)
 
@@ -20,9 +20,9 @@
 
 ## Overview / 概览
 
-**Paper_Rec** is a production-ready **Agent Skill** that transforms natural-language research questions into ranked, structured literature reports — without writing application code. Works with Claude Code, Codex, OpenClaw, and other runtimes that load Markdown skills.
+**Paper_Rec** is a production-ready **Agent Skill** that transforms natural-language research questions into ranked, structured literature reports — without writing application code. Works with Claude Code, Codex, OpenClaw, and other runtimes that load Markdown skills. Supports **Cognitive Thread** hooks (Module 1.5 / 2.5) and `/wiki thread*`.
 
-**Paper_Rec** 是一套面向通用 Agent 的文献检索技能，将自然语言研究问题转化为排序后的结构化论文报告。可在 Claude Code、Codex、OpenClaw 等平台挂载使用。
+**Paper_Rec** 是一套面向通用 Agent 的文献检索技能，将自然语言研究问题转化为排序后的结构化论文报告。可在 Claude Code、Codex、OpenClaw 等平台挂载使用。支持**研究主线**（Module 1.5 / 2.5）与 `/wiki thread*`。
 
 ```mermaid
 flowchart LR

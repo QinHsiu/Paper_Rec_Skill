@@ -43,3 +43,10 @@ def wiki_exp_pages_dir() -> Path:
     p = wiki_pages_dir() / "_exp"
     p.mkdir(parents=True, exist_ok=True)
     return p
+
+
+def threads_dir() -> Path:
+    """Cognitive Thread store (hypothesis / claims / gaps / ledger)."""
+    p = content_dir() / "threads"
+    p.mkdir(parents=True, exist_ok=True)
+    return p

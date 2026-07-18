@@ -39,10 +39,12 @@ flowchart TB
 | **skill-exp-sandbox** | `skill-exp/` | `/exp_*` + `reference/` + sync-exp → Wiki 实验 | Replacing Wiki UI |
 | **wiki-api** | `apps/wiki-api/` | Papers + `/api/exp` + weekly + graph | Retrieval / training |
 | **wiki-web** | `apps/wiki-web/` | Vue SPA | Persistence format |
-| **wiki-bridge** | `packages/wiki-bridge/` | sync-report · **sync-exp** · index/dashboard | Running train jobs |
-| **content** | `content/` | Git Markdown store (wiki + exp) | UI |
+| **wiki-bridge** | `packages/wiki-bridge/` | sync-report · **sync-exp** · **thread-*** · index/dashboard | Running train jobs |
+| **content** | `content/` | Git Markdown store (wiki + exp + **threads**) | UI |
 
 Skills run on any agent that can load the corresponding `SKILL.md` (Claude Code, Codex, OpenClaw, etc.).
+
+**Cognitive Thread**: see [THREAD_DESIGN.md](THREAD_DESIGN.md) — hypothesis / claims / gaps + ledger; Watch/Delta; MCP in [MCP.md](MCP.md). Not a manuscript pipeline.
 
 ## Data conventions
 
@@ -53,6 +55,7 @@ Skills run on any agent that can load the corresponding `SKILL.md` (Claude Code,
 | `content/wiki/deleted.json` | Delete blacklist (sync skips these) |
 | `content/exp/<experiment_id>/` | Exp plans, rounds, metrics, curves, final report |
 | `content/wiki/pages/_exp/<id>/README.md` | Wiki 实验模块镜像（不进入论文索引） |
+| `content/threads/<thread_id>/` | Cognitive Thread v2（`thread.json` + `events.jsonl`） |
 | `content/wiki/pages/_meta/Reading_Index.md` | Auto index |
 | `content/wiki/pages/_meta/Dashboard.md` | Auto stats |
 | `content/weekly/` | Weekly digests (optional) |

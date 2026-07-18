@@ -4,6 +4,17 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.5.0] — 2026-07-18
+
+### Added
+
+- Cognitive Thread hooks: Module **1.5** (context inject) · Module **2.5** (thread-aware rerank + rationale)
+- `/wiki thread` · `/wiki thread <id>` · `/wiki thread create`
+- `sync-report --thread` / optional `--auto-link` guidance
+- Contract: `../docs/THREAD_DESIGN.md`
+
+---
+
 ## [1.4.0] — 2026-07-18
 
 ### Added

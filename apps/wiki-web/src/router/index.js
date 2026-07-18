@@ -11,6 +11,8 @@ import AskView from '../views/AskView.vue'
 import SkillsView from '../views/SkillsView.vue'
 import ExperimentsView from '../views/ExperimentsView.vue'
 import ExpDetailView from '../views/ExpDetailView.vue'
+import ThreadsView from '../views/ThreadsView.vue'
+import ThreadDetailView from '../views/ThreadDetailView.vue'
 
 export default createRouter({
   history: createWebHistory(),
@@ -23,6 +25,8 @@ export default createRouter({
     { path: '/search', name: 'search', component: SearchView },
     { path: '/graph', name: 'graph', component: GraphView },
     { path: '/weekly', name: 'weekly', component: WeeklyView },
+    { path: '/threads', name: 'threads', component: ThreadsView },
+    { path: '/threads/:id', name: 'thread-detail', component: ThreadDetailView, props: true },
     { path: '/experiments', name: 'experiments', component: ExperimentsView },
     { path: '/experiments/:id', name: 'exp-detail', component: ExpDetailView, props: true },
     { path: '/ask', name: 'ask', component: AskView },

@@ -1,5 +1,10 @@
 # Changelog · plot-draw
 
+## 1.2.0
+
+- Venue style presets: `lib/venues.py` (`cvpr|icml|neurips|acl|nature|default`)
+- `draw(..., venue=)` and CLI `--venue`; figsize/linewidth follow preset
+
 ## 1.1.0
 
 - Self-contained `lib/` (style, charts, io, select, draw, cli) — no `../plot_demo` import

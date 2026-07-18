@@ -1,10 +1,11 @@
 ---
 name: plot-draw
-version: 1.1.0
+version: 1.2.0
 description: >-
   Publication-quality chart drawing skill. Activated by /draw. Infers best chart
   type from data path + text description (or uses a user-specified type), applies
-  academic color/marker styles via self-contained skill-draw/lib, and exports PNG/PDF.
+  academic color/marker styles via self-contained skill-draw/lib, venue presets
+  (cvpr/icml/neurips/acl/nature), and exports PNG/PDF.
   Use for 画图/可视化/折线柱状热力箱线/ablation plots, experiment curves, and
   when /exp_analysis /exp_training /exp_eval need figures.
 ---
@@ -30,17 +31,19 @@ Do **not** invent data. Load only paths the user provides (or paths produced by 
 /draw
 data: content/exp/demo-ocr-handwriting-v1/metrics/curves.json
 desc: 训练 loss 与 val F1 随 step 变化，论文插图风格
+venue: cvpr
 
 /draw multi_bar
 data: ./results/ablation.csv
 desc: 四方法在五个数据量上的 HR@20 对比，突出 Ours
+venue: icml
 
 /draw
 data: D:/data/labels_dist.json
 desc: 训练集标签分布
 ```
 
-Strip `/draw` and optional type token; remaining text is context.
+Strip `/draw` and optional type token; remaining text is context. Pass `venue:` / `style:` (`cvpr|icml|neurips|acl|nature|default`) into `lib.draw(..., venue=...)` or CLI `--venue`. Presets: [`lib/venues.py`](lib/venues.py).
 
 If the user asks to plot **without** `/draw` but clearly wants a figure, suggest `/draw` or apply this skill when already in an `/exp_*` turn that needs figures.
 
@@ -59,6 +62,7 @@ Collect (ask if missing):
 | `format` | no | Prefer `pdf` + `png` (PDF for TeX) |
 | `title` / `xlabel` / `ylabel` | no | Infer from `desc` when omitted |
 | `palette` | no | Default academic (see [color-palettes.md](color-palettes.md)) |
+| `venue` / `style` | no | Venue preset: `cvpr` · `icml` · `neurips` · `acl` · `nature` · `default` |
 
 ---
 

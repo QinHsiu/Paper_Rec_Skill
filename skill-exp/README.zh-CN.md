@@ -2,7 +2,7 @@
 
 面向通用 Agent 的**自动化实验沙箱**技能：分析数据与 badcase → 生成多套方案 → 小规模验证 → 训练监控 → 评估达标 → 自循环迭代。
 
-可挂载于 Claude Code、Codex、OpenClaw 等平台。
+可挂载于 Claude Code、Codex、OpenClaw 等平台。实验结束可用 `wiki_bridge sync-exp --thread <id>` 挂到研究主线。
 
 ---
 

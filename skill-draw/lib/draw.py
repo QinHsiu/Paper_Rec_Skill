@@ -20,7 +20,13 @@ def draw(
     xlabel: str = "",
     ylabel: str = "",
     title: str = "",
+    venue: Optional[str] = None,
 ) -> dict[str, Any]:
+    from . import style, venues
+
+    preset = venues.apply_venue(venue)
+    style.set_preset(preset)
+
     obj = io_data.load_any(data_path)
     schema = infer_schema_from_obj(obj)
     decision = select_chart(schema, desc, forced=chart)
@@ -116,6 +122,8 @@ def draw(
         "lib_fn": decision.lib_fn,
         "files": [str(p) for p in paths],
         "data": str(data_path),
+        "venue": preset.get("id"),
+        "venue_label": preset.get("label"),
     }
 
 
