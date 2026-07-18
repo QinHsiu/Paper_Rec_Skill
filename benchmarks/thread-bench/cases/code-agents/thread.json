@@ -1,0 +1,32 @@
+{
+  "type": "research_thread",
+  "thread_id": "bench-code-llm",
+  "title": "Code LLM Agents (bench)",
+  "status": "active",
+  "hypothesis": "Tool-using code agents need repository-level context beyond single-file completion",
+  "claims": [
+    {
+      "id": "C1",
+      "text": "repo-level benchmarks expose failures invisible on HumanEval",
+      "status": "open"
+    },
+    {
+      "id": "C2",
+      "text": "agent scaffolds with search tools improve multi-file bug fixing",
+      "status": "open"
+    }
+  ],
+  "evidence_gaps": [
+    {
+      "claim_id": "C2",
+      "need": "ablation",
+      "note": "ablate search tool vs no-tool agent on SWE-bench style tasks"
+    }
+  ],
+  "keywords": ["code", "agent", "llm", "swe-bench"],
+  "tags": ["bench"],
+  "seed_queries": ["repository level code agent SWE-bench"],
+  "seed_terms": ["code", "agent", "repository", "swe-bench", "tool"],
+  "paper_paths": [],
+  "experiment_ids": []
+}

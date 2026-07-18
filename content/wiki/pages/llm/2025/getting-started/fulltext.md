@@ -1,7 +1,7 @@
 ---
 title: "Getting Started fulltext"
 type: fulltext
-source: "tmp3054y0_t.txt"
+source: "sample_extract.txt"
 ---
 
 # Getting Started — Fulltext (auto)

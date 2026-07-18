@@ -1,0 +1,28 @@
+{
+  "type": "research_thread",
+  "thread_id": "bench-rag-eval",
+  "title": "RAG Evaluation Methods (bench)",
+  "status": "active",
+  "hypothesis": "Faithfulness metrics correlate with human judgments for RAG systems",
+  "claims": [
+    {
+      "id": "C1",
+      "text": "citation-level faithfulness metrics outperform answer-only BLEU for RAG eval",
+      "status": "open"
+    }
+  ],
+  "open_questions": [],
+  "evidence_gaps": [
+    {
+      "claim_id": "C1",
+      "need": "benchmark",
+      "note": "need public dataset pairing faithfulness scores with human ratings"
+    }
+  ],
+  "keywords": ["rag", "evaluation", "faithfulness", "citation"],
+  "tags": ["bench"],
+  "seed_queries": ["RAG faithfulness evaluation citation"],
+  "seed_terms": ["rag", "faithfulness", "citation", "evaluation", "hallucination"],
+  "paper_paths": [],
+  "experiment_ids": []
+}

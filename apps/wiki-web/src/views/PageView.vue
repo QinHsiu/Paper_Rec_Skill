@@ -27,7 +27,11 @@
         <button @click="runCitationExpand" :disabled="citeBusy">
           {{ citeBusy ? '引用扩展…' : '引用扩展' }}
         </button>
+        <button @click="runFetchPdf" :disabled="fetchBusy">
+          {{ fetchBusy ? '获取全文…' : '获取全文' }}
+        </button>
         <button @click="copyBibtex">导出 BibTeX</button>
+        <button @click="copyCsl">导出 CSL-JSON</button>
         <label class="file-btn">
           上传 PDF/TXT
           <input type="file" accept=".pdf,.txt,.md" hidden @change="onIngestFile" />
@@ -145,6 +149,8 @@ import {
   citationExpand,
   createThreadEvidence,
   exportBibtex,
+  exportCslJson,
+  fetchPaperPdf,
   getPage,
   getThread,
   ingestPaperFile,
@@ -168,6 +174,7 @@ const citeBusy = ref(false)
 const citeMsg = ref('')
 const citeRefs = ref([])
 const citeProvider = ref('')
+const fetchBusy = ref(false)
 const recClaims = ref([])
 const recEvs = ref([])
 const articleEl = ref(null)
@@ -318,6 +325,35 @@ async function runCitationExpand() {
     citeRefs.value = []
   } finally {
     citeBusy.value = false
+  }
+}
+
+async function runFetchPdf() {
+  fetchBusy.value = true
+  ingestMsg.value = 'OA 下载中…'
+  try {
+    const out = await fetchPaperPdf(props.path)
+    const src = out.fetch?.source || '—'
+    ingestMsg.value = `已获取全文 via ${src} · sections ${(out.ingest?.sections || []).join(',') || '—'}`
+  } catch (e) {
+    ingestMsg.value = e?.response?.data?.detail || e.message || String(e)
+  } finally {
+    fetchBusy.value = false
+  }
+}
+
+async function copyCsl() {
+  try {
+    const data = await exportCslJson([props.path])
+    const text = data.csl_json || JSON.stringify(data.items || [], null, 2)
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      attachMsg.value = `CSL-JSON 已复制 (${data.count})`
+    } else {
+      attachMsg.value = text.slice(0, 200)
+    }
+  } catch (e) {
+    attachMsg.value = e?.response?.data?.detail || e.message || String(e)
   }
 }
 

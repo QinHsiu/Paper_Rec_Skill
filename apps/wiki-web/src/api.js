@@ -205,6 +205,23 @@ export async function citationExpand(path, topK = 5) {
   return data
 }
 
+export async function fetchPaperPdf(path, keepPdf = true) {
+  const { data } = await api.post(`/wiki/pages/${path}/fetch-pdf`, null, {
+    params: { keep_pdf: keepPdf },
+  })
+  return data
+}
+
+export async function threadFeedback(id, payload) {
+  const { data } = await api.post(`/threads/${id}/feedback`, payload)
+  return data
+}
+
+export async function exportCslJson(paths) {
+  const { data } = await api.get('/wiki/csl-json', { params: { paths: paths.join(',') } })
+  return data
+}
+
 export async function exportBibtex(paths) {
   const { data } = await api.get('/wiki/bibtex', { params: { paths: paths.join(',') } })
   return data

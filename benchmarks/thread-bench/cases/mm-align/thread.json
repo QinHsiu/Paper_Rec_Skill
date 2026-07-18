@@ -1,0 +1,35 @@
+{
+  "type": "research_thread",
+  "thread_id": "bench-mm-align",
+  "title": "Multimodal Alignment (bench snapshot)",
+  "status": "active",
+  "hypothesis": "Unified objective for multimodal preference alignment",
+  "claims": [
+    {
+      "id": "C1",
+      "text": "preference data quality dominates algorithm choice for multimodal alignment",
+      "status": "open"
+    },
+    {
+      "id": "C2",
+      "text": "RLHF-style preference optimization transfers to vision-language models",
+      "status": "open"
+    }
+  ],
+  "open_questions": [
+    {"id": "Q1", "text": "Does synthetic preference data cause reward hacking in LMM alignment?"}
+  ],
+  "evidence_gaps": [
+    {
+      "claim_id": "C1",
+      "need": "empirical",
+      "note": "need controlled ablation on preference data quality"
+    }
+  ],
+  "keywords": ["multimodal", "alignment", "rlhf", "preference"],
+  "tags": ["bench"],
+  "seed_queries": ["multimodal LLM alignment preference"],
+  "seed_terms": ["alignment", "multimodal", "rlhf", "preference", "dpo"],
+  "paper_paths": [],
+  "experiment_ids": []
+}

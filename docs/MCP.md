@@ -78,3 +78,14 @@ See [`packages/thread-mcp/README.md`](../packages/thread-mcp/README.md).
 | `thread_delta` / `thread_claim_*` | Watch + claim gates |
 | `wiki_list_papers` | Local wiki cards |
 | `exp_list` / `exp_get_metrics` | Local experiment metrics |
+
+## Compose with search MCPs
+
+Paper_Rec MCP = **memory**. For multi-source search / OA PDF download chains, also install:
+
+- [scholar-mcp](https://github.com/Liyux3/scholar-mcp) (`uvx scholar-mcp`) — RRF search + PDF tools  
+- or [PaperSeek](https://github.com/MingfengHong/paperseek) (`paperseek-mcp`) — iterative literature agent  
+
+Then: search MCP → candidates → `rrf_fuse` / `prerank_papers` / `thread_score_papers` → `thread_link_*` / `pdf_fetch` / `thread_add_evidence`.
+
+Local OA fetch (no Sci-Hub): Wiki「获取全文」or `wiki_bridge pdf-fetch`.

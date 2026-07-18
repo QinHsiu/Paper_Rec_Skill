@@ -208,6 +208,7 @@ def cmd_thread_link_exp(args: argparse.Namespace) -> int:
 
 def cmd_thread_delta(args: argparse.Namespace) -> int:
     from .thread_delta import run_delta
+    from .webhook_notify import notify_delta
 
     result = run_delta(
         Path(args.wiki_root),
@@ -216,9 +217,14 @@ def cmd_thread_delta(args: argparse.Namespace) -> int:
         threshold=float(args.threshold),
         persist=not args.dry_run,
     )
+    # ensure thread_id for notify
+    result.setdefault("thread_id", args.id)
     print(json.dumps({k: v for k, v in result.items() if k != "markdown"}, ensure_ascii=False, indent=2))
     if args.print_md:
         print("\n" + result.get("markdown", ""))
+    if getattr(args, "webhook", "") or getattr(args, "notify", False):
+        note = notify_delta(result, webhook_url=getattr(args, "webhook", "") or "")
+        print(json.dumps({"notify": note}, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -258,6 +264,9 @@ def cmd_thread_evidence_add(args: argparse.Namespace) -> int:
         stance=args.stance or "supports",
         support_status=getattr(args, "support_status", "") or "",
         confidence=getattr(args, "confidence", None),
+        citation_key=getattr(args, "citation_key", "") or "",
+        page=getattr(args, "page", None),
+        evidence_level=getattr(args, "evidence_level", "") or "",
         gate="suggested" if args.suggested else "accepted",
         by="user",
     )
@@ -475,6 +484,111 @@ def cmd_evidence_coverage(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_pdf_fetch(args: argparse.Namespace) -> int:
+    from .pdf_fetch import fetch_and_ingest
+
+    out = fetch_and_ingest(Path(args.wiki_root), args.path, keep_pdf=not args.no_keep)
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0 if out.get("fetch", {}).get("success") else 1
+
+
+def cmd_rrf_fuse(args: argparse.Namespace) -> int:
+    from .rrf import rrf_fuse_from_payload
+
+    payload = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    out = rrf_fuse_from_payload(payload, k=args.k, top_n=args.top_n)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(
+        json.dumps(
+            {"rrf": out["rrf"], "lane_hits": out["lane_hits"], "kept_n": out["kept_n"], "input_n": out["input_n"]},
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
+def cmd_csl_json(args: argparse.Namespace) -> int:
+    from .csl_json_export import export_csl_json
+    from . import thread_store as ts
+
+    paths = [p.strip() for p in (args.paths or "").split(",") if p.strip()]
+    if args.thread:
+        data = ts.load_thread(Path(args.wiki_root), args.thread)
+        paths = list(dict.fromkeys(paths + list(data.get("paper_paths") or [])))
+    out = export_csl_json(Path(args.wiki_root), paths)
+    if args.out:
+        Path(args.out).write_text(out["csl_json"], encoding="utf-8")
+        print(json.dumps({"path": args.out, "count": out["count"], "warnings": out["warnings"]}, ensure_ascii=False))
+    else:
+        print(out["csl_json"])
+    return 0
+
+
+def cmd_thread_feedback(args: argparse.Namespace) -> int:
+    from . import thread_store as ts
+
+    out = ts.record_feedback(
+        Path(args.wiki_root),
+        args.thread,
+        action=args.action,
+        path=args.path,
+        note=args.note,
+    )
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_thread_bench(args: argparse.Namespace) -> int:
+    from .thread_bench import evaluate_bench, evaluate_case
+
+    if args.bench_root:
+        root = Path(args.bench_root)
+    else:
+        wiki = Path(args.wiki_root).resolve()
+        cand = wiki / "benchmarks" / "thread-bench"
+        root = cand if cand.is_dir() else Path("benchmarks/thread-bench")
+    if args.case:
+        out = evaluate_case(root / "cases" / args.case, k=args.k)
+    else:
+        out = evaluate_bench(root, k=args.k)
+    text = json.dumps(out, ensure_ascii=False, indent=2)
+    if args.out:
+        Path(args.out).write_text(text + "\n", encoding="utf-8")
+    print(text)
+    return 0
+
+
+def cmd_notify_webhook(args: argparse.Namespace) -> int:
+    from .webhook_notify import build_payload, notify_delta, post_webhook, resolve_webhook_url
+
+    url = resolve_webhook_url(args.webhook)
+    if args.dry_run or not url:
+        payload = build_payload(
+            thread_id=args.thread or "demo",
+            mode=args.mode or "test",
+            title=args.title or "webhook dry-run",
+            candidates=[{"path": "demo/paper", "title": "Demo", "R": 0.8}],
+            delta_path="",
+            markdown_preview=args.message or "Paper_Rec webhook test",
+        )
+        print(json.dumps({"dry_run": True, "url": url or None, "payload": payload}, ensure_ascii=False, indent=2))
+        return 0 if args.dry_run or not url else 1
+    if args.json:
+        result = json.loads(Path(args.json).read_text(encoding="utf-8"))
+        print(json.dumps(notify_delta(result, webhook_url=url), ensure_ascii=False, indent=2))
+        return 0
+    payload = build_payload(
+        thread_id=args.thread or "manual",
+        mode=args.mode or "notify",
+        title=args.title or "",
+        candidates=[],
+        markdown_preview=args.message or "Paper_Rec notify",
+    )
+    print(json.dumps(post_webhook(url, payload), ensure_ascii=False, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="wiki_bridge", description="Paper_Rec ↔ Wiki Markdown bridge")
     sub = p.add_subparsers(dest="command", required=True)
@@ -557,6 +671,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--threshold", type=float, default=0.45)
     s.add_argument("--dry-run", action="store_true")
     s.add_argument("--print-md", action="store_true")
+    s.add_argument("--webhook", default="", help="POST Delta summary (or PAPER_REC_WEBHOOK_URL)")
+    s.add_argument("--notify", action="store_true", help="notify using PAPER_REC_WEBHOOK_URL")
     s.set_defaults(func=cmd_thread_delta)
 
     s = sub.add_parser("thread-claim", help="Propose or accept claim status updates")
@@ -585,6 +701,9 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["", "supports", "refutes", "related", "insufficient"],
     )
     s.add_argument("--confidence", type=float, default=None)
+    s.add_argument("--citation-key", default="")
+    s.add_argument("--page", type=int, default=None)
+    s.add_argument("--evidence-level", default="", help="optional anecdote|study|meta or CEBM-lite")
     s.add_argument("--suggested", action="store_true", help="gate=suggested (default accepted)")
     s.set_defaults(func=cmd_thread_evidence_add)
 
@@ -680,6 +799,56 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--wiki-root", required=True)
     s.add_argument("--thread", required=True)
     s.set_defaults(func=cmd_evidence_coverage)
+
+    s = sub.add_parser("pdf-fetch", help="Legal OA PDF download → pdf-ingest (no Sci-Hub)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--path", required=True, help="wiki paper path")
+    s.add_argument("--no-keep", action="store_true", help="do not keep PDF under _pdf/")
+    s.set_defaults(func=cmd_pdf_fetch)
+
+    s = sub.add_parser("rrf-fuse", help="Reciprocal Rank Fusion across lanes/sources")
+    s.add_argument("--json", required=True, help="{lanes:{...}} or list with source field")
+    s.add_argument("--k", type=int, default=60)
+    s.add_argument("--top-n", type=int, default=200)
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_rrf_fuse)
+
+    s = sub.add_parser("csl-json-export", help="Export CSL-JSON for Zotero")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--paths", default="")
+    s.add_argument("--thread", default="")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_csl_json)
+
+    s = sub.add_parser("thread-feedback", help="Record accept|skip|read|pin feedback on a paper")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--action", required=True, choices=["accept", "skip", "read", "pin"])
+    s.add_argument("--path", default="", help="wiki paper path")
+    s.add_argument("--note", default="")
+    s.set_defaults(func=cmd_thread_feedback)
+
+    s = sub.add_parser("thread-bench", help="Run Thread-Bench evaluation (claim coverage / R@K)")
+    s.add_argument(
+        "--bench-root",
+        default="",
+        help="default: <wiki-root>/benchmarks/thread-bench or ./benchmarks/thread-bench",
+    )
+    s.add_argument("--wiki-root", default=".", help="used to locate benchmarks/ if --bench-root omitted")
+    s.add_argument("--case", default="", help="single case id under cases/")
+    s.add_argument("--k", type=int, default=5)
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_thread_bench)
+
+    s = sub.add_parser("notify-webhook", help="POST a test/Delta payload to webhook URL")
+    s.add_argument("--webhook", default="", help="or env PAPER_REC_WEBHOOK_URL")
+    s.add_argument("--dry-run", action="store_true")
+    s.add_argument("--json", default="", help="Delta result JSON file")
+    s.add_argument("--thread", default="")
+    s.add_argument("--mode", default="notify")
+    s.add_argument("--title", default="")
+    s.add_argument("--message", default="")
+    s.set_defaults(func=cmd_notify_webhook)
 
     return p
 

@@ -103,6 +103,11 @@ def add_evidence(
     gate: str = "accepted",
     by: str = "user",
     evidence_id: str = "",
+    citation_key: str = "",
+    page: int | None = None,
+    page_from: int | None = None,
+    page_to: int | None = None,
+    evidence_level: str = "",
 ) -> dict[str, Any]:
     data = ts.load_thread(wiki_root, thread_id)
     claim_id = (claim_id or "").strip()
@@ -121,13 +126,23 @@ def add_evidence(
     if any(str(r.get("evidence_id")) == eid for r in rows):
         raise FileExistsError(eid)
     paper_path = (paper_path or "").strip().strip("/")
+    loc = dict(quote_loc or {})
+    if page is not None and "page" not in loc:
+        loc["page"] = page
+    if page_from is not None:
+        loc["page_from"] = page_from
+    if page_to is not None:
+        loc["page_to"] = page_to
     rec: dict[str, Any] = {
         "evidence_id": eid,
         "claim_id": claim_id,
         "kind": kind,
         "paper_path": paper_path,
         "quote": (quote or "").strip(),
-        "quote_loc": quote_loc or {},
+        "quote_loc": loc,
+        "citation_key": (citation_key or "").strip() or None,
+        "page": page if page is not None else loc.get("page"),
+        "evidence_level": (evidence_level or "").strip() or None,
         "exp_id": exp_id or None,
         "metric_key": metric_key or None,
         "metric_value": metric_value,

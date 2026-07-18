@@ -151,6 +151,9 @@
             <span v-if="e.confidence != null" :class="isHighConf(e) ? 'conf-high' : 'conf-low'">
               conf={{ e.confidence }}
             </span>
+            <span v-if="e.citation_key">[@{{ e.citation_key }}]</span>
+            <span v-if="e.page != null">p.{{ e.page }}</span>
+            <span v-if="e.evidence_level">lvl={{ e.evidence_level }}</span>
             <span>gate={{ e.gate }}</span>
             <span>{{ e.kind }}</span>
           </div>
@@ -223,14 +226,17 @@
     <section class="card">
       <h2 style="margin-top:0;font-size:1.15rem">关联论文</h2>
       <div class="meta-line" v-if="(thread.paper_paths || []).length">
-        <RouterLink
-          v-for="p in thread.paper_paths"
-          :key="p"
-          :to="`/page/${p}`"
-          class="path-chip"
-        >{{ p }}</RouterLink>
+        <div v-for="p in thread.paper_paths" :key="p" style="display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;margin-bottom:0.35rem">
+          <RouterLink :to="`/page/${p}`" class="path-chip">{{ p }}</RouterLink>
+          <button style="font-size:0.8rem" @click="sendFeedback('accept', p)">接受</button>
+          <button style="font-size:0.8rem" @click="sendFeedback('pin', p)">钉住</button>
+          <button style="font-size:0.8rem" @click="sendFeedback('skip', p)">略过</button>
+        </div>
       </div>
       <p v-else class="muted" style="margin:0">暂无。sync-report --thread 或手动挂接。</p>
+      <p class="muted" style="font-size:0.85rem;margin:0.5rem 0 0">
+        反馈写入 events（accept/skip/pin），并轻量调整 seed_terms。
+      </p>
     </section>
 
     <section class="card">
@@ -294,6 +300,7 @@ import {
   getThreadGraph,
   runThreadDelta,
   setThreadEvidenceGate,
+  threadFeedback,
 } from '../api'
 
 Chart.register(...registerables)
@@ -555,6 +562,16 @@ async function exportThreadBib() {
     const data = await exportBibtex(paths)
     bibPreview.value = data.bibtex || ''
     actionMsg.value = `BibTeX ${data.count} 条` + (data.warnings?.length ? ` · 警告 ${data.warnings.length}` : '')
+  } catch (e) {
+    actionMsg.value = e?.response?.data?.detail || e.message || String(e)
+  }
+}
+
+async function sendFeedback(action, path) {
+  try {
+    const out = await threadFeedback(props.id, { action, path })
+    actionMsg.value = `反馈 ${action} · ${path}` + (out.seed_terms ? ` · seeds ${out.seed_terms.length}` : '')
+    await load()
   } catch (e) {
     actionMsg.value = e?.response?.data?.detail || e.message || String(e)
   }

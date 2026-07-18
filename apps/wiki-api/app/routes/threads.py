@@ -76,7 +76,16 @@ class EvidenceCreate(BaseModel):
     stance: str = "supports"
     support_status: str = ""
     confidence: float | None = None
+    citation_key: str = ""
+    page: int | None = None
+    evidence_level: str = ""
     gate: str = "accepted"
+
+
+class FeedbackBody(BaseModel):
+    action: str
+    path: str = ""
+    note: str = ""
 
 
 class EvidenceGateBody(BaseModel):
@@ -252,6 +261,18 @@ def patch_evidence(thread_id: str, evidence_id: str, body: EvidencePatchBody):
         return thread_store.patch_evidence(thread_id, evidence_id, body.model_dump(exclude_none=True))
     except FileNotFoundError:
         raise HTTPException(404, f"not found: {thread_id}/{evidence_id}") from None
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+
+
+@router.post("/{thread_id}/feedback")
+def feedback(thread_id: str, body: FeedbackBody):
+    try:
+        return thread_store.record_feedback(
+            thread_id, body.action, path=body.path, note=body.note
+        )
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
     except ValueError as e:
         raise HTTPException(400, str(e)) from e
 

@@ -20,3 +20,8 @@
 {"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-18T10:24:24Z"}
 {"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-18T10:24:51Z"}
 {"kind": "paper_draft", "path": "drafts/paper_draft/", "venue": "generic", "chapters": ["abstract", "introduction", "related_work", "methodology", "experiments", "conclusion"], "ts": "2026-07-18T10:24:51Z"}
+{"kind": "feedback", "action": "pin", "path": "llm/2025/demo", "note": "test", "by": "user", "ts": "2026-07-18T10:51:34Z"}
+{"kind": "feedback", "action": "read", "path": "llm/2025/getting-started", "note": "", "by": "user", "ts": "2026-07-18T10:58:35Z"}
+{"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-18T10:58:35Z"}
+{"kind": "paper_draft", "path": "drafts/paper_draft/", "venue": "generic", "chapters": ["abstract", "introduction", "related_work", "methodology", "experiments", "conclusion"], "ts": "2026-07-18T10:58:35Z"}
+{"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-18T10:58:36Z"}

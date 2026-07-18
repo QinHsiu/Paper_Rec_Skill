@@ -168,6 +168,9 @@ def add_evidence(thread_id: str, payload: dict[str, Any]):
         stance=str(payload.get("stance") or "supports"),
         support_status=str(payload.get("support_status") or ""),
         confidence=payload.get("confidence"),
+        citation_key=str(payload.get("citation_key") or ""),
+        page=payload.get("page"),
+        evidence_level=str(payload.get("evidence_level") or ""),
         gate=str(payload.get("gate") or "accepted"),
         by=str(payload.get("by") or "user"),
     )
@@ -296,6 +299,22 @@ def citation_expand(paper_path: str, top_k: int = 5) -> dict[str, Any]:
     from wiki_bridge.citation_expand import expand_citations
 
     return expand_citations(wiki_root(), paper_path, top_k=top_k)
+
+
+def pdf_fetch(paper_path: str, keep_pdf: bool = True) -> dict[str, Any]:
+    from wiki_bridge.pdf_fetch import fetch_and_ingest
+
+    return fetch_and_ingest(wiki_root(), paper_path, keep_pdf=keep_pdf)
+
+
+def record_feedback(thread_id: str, action: str, path: str = "", note: str = "") -> dict[str, Any]:
+    return _ts.record_feedback(wiki_root(), thread_id, action=action, path=path, note=note)
+
+
+def csl_json_for_paths(paths: list[str]) -> dict[str, Any]:
+    from wiki_bridge.csl_json_export import export_csl_json
+
+    return export_csl_json(wiki_root(), paths)
 
 
 def bibtex_for_paths(paths: list[str]) -> dict[str, Any]:

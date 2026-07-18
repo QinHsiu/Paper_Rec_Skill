@@ -35,6 +35,8 @@ content/threads/<thread_id>/
 | **G** | Cognitive map graph + timeline; PDF-lite; BibTeX; Related Work outline | done (2.12.0) |
 | **H** | Install scripts; evidence confidence; PDF upload pipeline; query auto; writing recommend; MCP tools | done (2.14.0) |
 | **I** | configure MCP; paper_draft; prerank; evidence UX; citation-expand | done (2.16.0) |
+| **J** | OA pdf-fetch; RRF; thread feedback; CSL-JSON; Docker | done (2.19.0) |
+| **K** | Thread-Bench; optional Delta webhook | done (2.20.0) |
 
 ## Watch / Delta (Phase B)
 

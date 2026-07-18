@@ -4,6 +4,23 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.11.0] — 2026-07-18
+
+### Added
+
+- Thread-Bench ops; Delta `--notify` webhook (see `docs/WEBHOOK.md`)
+
+---
+
+## [1.10.0] — 2026-07-18
+
+### Added
+
+- Module 2.3.5: RRF fuse before prerank; `pdf-fetch` OA fulltext; report `RRF:` header
+- `/wiki` feedback / csl-json / fetch-pdf ops
+
+---
+
 ## [1.9.0] — 2026-07-18
 
 ### Added

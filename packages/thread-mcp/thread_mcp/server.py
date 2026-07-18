@@ -243,6 +243,51 @@ try:
         return json.dumps(prerank(query, papers, top_k=top_k), ensure_ascii=False, indent=2)
 
     @mcp.tool()
+    def rrf_fuse(lanes_json: str, k: int = 60, top_n: int = 200) -> str:
+        """Reciprocal Rank Fusion. lanes_json = {lane:[papers...]} or list with source."""
+        from wiki_bridge.rrf import rrf_fuse_from_payload
+
+        payload = json.loads(lanes_json)
+        return json.dumps(rrf_fuse_from_payload(payload, k=k, top_n=top_n), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def pdf_fetch(paper_path: str) -> str:
+        """Legal OA PDF download → fulltext ingest for a wiki paper path (no Sci-Hub)."""
+        from wiki_bridge.pdf_fetch import fetch_and_ingest
+
+        return json.dumps(fetch_and_ingest(_root(), paper_path), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def thread_feedback(thread_id: str, action: str, path: str = "", note: str = "") -> str:
+        """Record accept|skip|read|pin feedback; may tweak seed_terms."""
+        return json.dumps(
+            ts.record_feedback(_root(), thread_id, action=action, path=path, note=note),
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    @mcp.tool()
+    def csl_json_export(paths: str = "", thread_id: str = "") -> str:
+        """Export CSL-JSON for Zotero. paths=comma-separated; or thread_id members."""
+        from wiki_bridge.csl_json_export import export_csl_json
+
+        plist = [p.strip() for p in paths.split(",") if p.strip()]
+        if thread_id:
+            data = ts.load_thread(_root(), thread_id)
+            plist = list(dict.fromkeys(plist + list(data.get("paper_paths") or [])))
+        return json.dumps(export_csl_json(_root(), plist), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def thread_bench(k: int = 5, case_id: str = "") -> str:
+        """Run Thread-Bench (Recall@K / claim coverage). Optional case_id under cases/."""
+        from wiki_bridge.thread_bench import evaluate_bench, evaluate_case
+
+        root = _root() / "benchmarks" / "thread-bench"
+        if case_id:
+            return json.dumps(evaluate_case(root / "cases" / case_id, k=k), ensure_ascii=False, indent=2)
+        return json.dumps(evaluate_bench(root, k=k), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
     def thread_delta(thread_id: str, mode: str = "auto") -> str:
         """Run Watch/Delta brief (diff_brief|gap_focus|new_digest|exp_bridge|auto)."""
         result = run_delta(_root(), thread_id, mode=mode, persist=True)

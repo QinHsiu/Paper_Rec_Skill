@@ -94,6 +94,22 @@ def citation_expand(path: str, top_k: int = 5):
         raise HTTPException(502, str(e)) from e
 
 
+@router.post("/pages/{path:path}/fetch-pdf")
+def fetch_pdf(path: str, keep_pdf: bool = True):
+    """Legal OA PDF download → fulltext.md ingest (no Sci-Hub)."""
+    from app.services import thread_store as ts
+
+    try:
+        out = ts.pdf_fetch(path, keep_pdf=keep_pdf)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(400, str(e)) from e
+    if not out.get("fetch", {}).get("success"):
+        raise HTTPException(404, out.get("fetch", {}).get("message") or "OA PDF not found")
+    return out
+
+
 @router.get("/pages/{path:path}")
 def get_page(path: str):
     fp = pathutil.resolve_paper_file(path)
@@ -223,6 +239,17 @@ def wiki_bibtex(paths: str = ""):
     if not plist:
         raise HTTPException(400, "paths query required")
     return ts.bibtex_for_paths(plist)
+
+
+@router.get("/csl-json")
+def wiki_csl_json(paths: str = ""):
+    """Export CSL-JSON for Zotero (comma-separated wiki paths)."""
+    from app.services import thread_store as ts
+
+    plist = [p.strip() for p in paths.split(",") if p.strip()]
+    if not plist:
+        raise HTTPException(400, "paths query required")
+    return ts.csl_json_for_paths(plist)
 
 
 @router.get("/entities/{kind}/{name:path}")

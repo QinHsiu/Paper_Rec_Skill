@@ -267,18 +267,34 @@ Score each candidate on **four** dimensions (0–10 each):
 
 **When**: `/query_* auto`, Thread-conditioned retrieval, or merged candidate pool **> 30**. Default **on** for auto; user can say `prerank:off` / `不预排` to skip.
 
-**Action** (after merge/dedupe, **before** full 2.3 LLM-style scoring of the long list):
+**Action** (after multi-source / multi-path merge, **before** full 2.3 LLM-style scoring):
 
-1. Cap working set at ≤200 unique candidates.
+0. **RRF fuse** (default **on** for auto / multi-path). Group candidates by `source` or `path_id`, then:
+
+```bash
+python -m wiki_bridge.cli rrf-fuse --json lanes.json --top-n 200 --out fused.json
+```
+
+   Report: `RRF: on/off · lane_hits={...}`. User can say `rrf:off`.
+
+1. Cap working set at ≤200 unique candidates (post-RRF).
 2. Run lightweight pre-rank:
 
 ```bash
-python -m wiki_bridge.cli prerank --json candidates.json --query "<rewritten>" --top-k 30 --out preranked.json
+python -m wiki_bridge.cli prerank --json fused.json --query "<rewritten>" --top-k 30 --out preranked.json
 ```
 
    Score ≈ BM25(title+abstract) + recency(≤3y boost) + optional log citation signal.
 3. Keep **Top-30** for Module 2.3 / 2.5 fine scoring; list dropped count in Retrieval Trace.
-4. Report header: `Prerank: on/off · kept N/M`.
+4. Report header: `RRF: on/off` · `Prerank: on/off · kept N/M`.
+
+**OA fulltext** (optional, after pick): Wiki「获取全文」or:
+
+```bash
+python -m wiki_bridge.cli pdf-fetch --wiki-root . --path <keyword/year/slug>
+```
+
+Legal chain only (arXiv → S2 OA → Unpaywall → PMC…). **No Sci-Hub.**
 
 **Do not** crawl citation networks here (that is optional PageView「引用扩展」).
 
@@ -486,6 +502,8 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki claim-suggest <path> --thread id` | Suggested claims/evidences from fulltext |
 | `/wiki bibtex [--thread id]` | Export BibTeX for paths / thread members |
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
+| `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
+| `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
 
 ### Thread ops (do this yourself)
 
@@ -503,6 +521,10 @@ python -m wiki_bridge.cli evidence-coverage --wiki-root ../.. --thread <thread_i
 python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path llm/2025/foo
 python -m wiki_bridge.cli claim-suggest --wiki-root ../.. --path llm/2025/foo --thread <id> --apply
 python -m wiki_bridge.cli citation-expand --wiki-root ../.. --path llm/2025/foo --top-k 5
+python -m wiki_bridge.cli pdf-fetch --wiki-root ../.. --path llm/2025/foo
+python -m wiki_bridge.cli rrf-fuse --json lanes.json --out fused.json
+python -m wiki_bridge.cli thread-feedback --wiki-root ../.. --thread <id> --action pin --path llm/2025/foo
+python -m wiki_bridge.cli csl-json-export --wiki-root ../.. --thread <id> --out refs.json
 python -m wiki_bridge.cli bibtex-export --wiki-root ../.. --thread <id> --out refs.bib
 python -m wiki_bridge.cli thread-claim --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli thread-claim --wiki-root ../.. --id <thread_id> --claim-id C1 --status supported --accept

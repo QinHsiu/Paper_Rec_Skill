@@ -6,6 +6,28 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.20.0] — 2026-07-18
+
+### Added
+
+- **P3 Thread-Bench**: `benchmarks/thread-bench/` (3 cases) + `wiki_bridge thread-bench` (Recall@K / MRR / claim coverage / gap fill)
+- **P3 webhook Bot (light)**: `notify-webhook` + `thread-delta --notify|--webhook`; [`docs/WEBHOOK.md`](docs/WEBHOOK.md); env `PAPER_REC_WEBHOOK_URL`
+
+---
+
+## [2.19.0] — 2026-07-18
+
+### Added
+
+- **P0**: `pdf-fetch` legal OA chain → ingest (arXiv/S2/Unpaywall/PMC; no Sci-Hub); PageView「获取全文」
+- **P0**: `rrf-fuse` Reciprocal Rank Fusion + Skill 2.3.5 RRF step; MCP `rrf_fuse`
+- **P1**: `thread-feedback` accept|skip|read|pin + seed_terms tweak; Thread UI buttons
+- **P1**: Evidence `citation_key` / `page` / `evidence_level`; `csl-json-export` for Zotero
+- **P2**: `docker-compose.yml` (wiki-api + wiki-web); MCP compose docs
+- Plan: v7 (repo-external `paper-rec-plans/OPTIMIZATION_PLAN_v7.md`)
+
+---
+
 ## [2.16.0] — 2026-07-18
 
 ### Added

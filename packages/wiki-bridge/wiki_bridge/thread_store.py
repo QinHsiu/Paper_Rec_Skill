@@ -62,6 +62,7 @@ def default_thread(
         "tags": list(tags or []),
         "seed_queries": list(seed_queries or []),
         "seed_terms": list(seed_terms or []),
+        "profile_notes": "",
         "paper_paths": [],
         "experiment_ids": [],
         "watch": {
@@ -250,6 +251,53 @@ def append_query_trace(
     return written
 
 
+def record_feedback(
+    wiki_root: Path,
+    thread_id: str,
+    *,
+    action: str,
+    path: str = "",
+    note: str = "",
+    by: str = "user",
+    bump_seed: bool = True,
+) -> dict[str, Any]:
+    """Weak feedback loop: accept|skip|read|pin → events + optional seed_terms tweak."""
+    action = (action or "").strip().lower()
+    if action not in ("accept", "skip", "read", "pin"):
+        raise ValueError("action must be accept|skip|read|pin")
+    data = load_thread(wiki_root, thread_id)
+    path = (path or "").strip().strip("/")
+    event = {
+        "kind": "feedback",
+        "action": action,
+        "path": path,
+        "note": note,
+        "by": by,
+    }
+    append_event(wiki_root, thread_id, event)
+
+    if action == "accept" and path:
+        link_paper(wiki_root, thread_id, path, source="feedback", gate="accepted", by=by)
+        data = load_thread(wiki_root, thread_id)
+
+    if bump_seed and path:
+        slug = path.split("/")[-1].replace("-", " ")
+        tokens = [t for t in re.split(r"\s+", slug) if len(t) > 2][:4]
+        seeds = list(data.get("seed_terms") or [])
+        if action in ("accept", "pin", "read"):
+            for t in tokens:
+                if t not in seeds:
+                    seeds.append(t)
+            data["seed_terms"] = seeds[:40]
+            save_thread(wiki_root, data)
+        elif action == "skip":
+            lower = {t.lower() for t in tokens}
+            data["seed_terms"] = [s for s in seeds if s.lower() not in lower] or seeds
+            save_thread(wiki_root, data)
+
+    return {"thread_id": thread_id, "event": event, "seed_terms": data.get("seed_terms")}
+
+
 def list_events(wiki_root: Path, thread_id: str, *, limit: int = 100) -> list[dict[str, Any]]:
     path = thread_dir(wiki_root, thread_id) / "events.jsonl"
     if not path.is_file():
@@ -322,6 +370,7 @@ def update_thread(wiki_root: Path, thread_id: str, patch: dict[str, Any]) -> dic
         "paper_paths",
         "experiment_ids",
         "watch",
+        "profile_notes",
     }
     for k, v in patch.items():
         if k in allowed:

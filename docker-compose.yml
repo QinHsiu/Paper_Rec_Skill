@@ -1,0 +1,28 @@
+# Wiki stack — API + Web (optional)
+# From Paper_Rec_Skill root:
+#   docker compose up --build
+# API :8787  Web :5173  (content/ mounted read-write)
+
+services:
+  wiki-api:
+    build:
+      context: .
+      dockerfile: apps/wiki-api/Dockerfile
+    ports:
+      - "8787:8787"
+    environment:
+      PAPER_REC_ROOT: /workspace
+    volumes:
+      - ./:/workspace
+    working_dir: /workspace/apps/wiki-api
+
+  wiki-web:
+    build:
+      context: ./apps/wiki-web
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_PROXY: http://wiki-api:8787
+    depends_on:
+      - wiki-api
