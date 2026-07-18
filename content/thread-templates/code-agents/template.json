@@ -1,0 +1,16 @@
+{
+  "template_id": "code-agents",
+  "title": "Repository-Level Code Agents",
+  "description": "Tool-using agents beyond HumanEval.",
+  "source_thread": null,
+  "tags": [
+    "builtin",
+    "se"
+  ],
+  "claims_n": 2,
+  "gaps_n": 1,
+  "has_drafts": false,
+  "has_evidences": false,
+  "version": 1,
+  "builtin": true
+}

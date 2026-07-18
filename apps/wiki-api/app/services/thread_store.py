@@ -317,6 +317,45 @@ def csl_json_for_paths(paths: list[str]) -> dict[str, Any]:
     return export_csl_json(wiki_root(), paths)
 
 
+def list_templates(seed: bool = True) -> list:
+    from wiki_bridge.thread_templates import ensure_builtin_templates, list_templates as _list
+
+    if seed:
+        ensure_builtin_templates(wiki_root())
+    return _list(wiki_root())
+
+
+def import_template(template_id: str, new_thread_id: str = "", title: str = "") -> dict[str, Any]:
+    from wiki_bridge.thread_templates import ensure_builtin_templates, import_template as _imp
+
+    ensure_builtin_templates(wiki_root())
+    return _imp(wiki_root(), template_id, new_thread_id=new_thread_id, title=title)
+
+
+def export_template(
+    thread_id: str,
+    *,
+    template_id: str = "",
+    title: str = "",
+    description: str = "",
+    tags: list | None = None,
+    include_drafts: bool = True,
+    include_evidences: bool = False,
+) -> dict[str, Any]:
+    from wiki_bridge.thread_templates import export_template as _exp
+
+    return _exp(
+        wiki_root(),
+        thread_id,
+        template_id=template_id,
+        title=title,
+        description=description,
+        tags=tags,
+        include_drafts=include_drafts,
+        include_evidences=include_evidences,
+    )
+
+
 def bibtex_for_paths(paths: list[str]) -> dict[str, Any]:
     from wiki_bridge.bibtex_export import export_bibtex
 

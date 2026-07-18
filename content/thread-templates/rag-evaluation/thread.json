@@ -1,0 +1,51 @@
+{
+  "type": "research_thread_template",
+  "title": "RAG Evaluation & Faithfulness",
+  "hypothesis": "Citation-level faithfulness correlates with human judgments",
+  "claims": [
+    {
+      "id": "C1",
+      "text": "Citation-level metrics beat answer-only n-gram scores",
+      "status": "open",
+      "evidence_ids": []
+    }
+  ],
+  "open_questions": [],
+  "evidence_gaps": [
+    {
+      "claim_id": "C1",
+      "need": "benchmark",
+      "note": "public human-rated faithfulness set"
+    }
+  ],
+  "keywords": [
+    "rag",
+    "faithfulness",
+    "evaluation",
+    "citation"
+  ],
+  "tags": [
+    "builtin",
+    "nlp"
+  ],
+  "seed_queries": [
+    "RAG faithfulness evaluation"
+  ],
+  "seed_terms": [
+    "rag",
+    "faithfulness",
+    "citation",
+    "hallucination"
+  ],
+  "profile_notes": "",
+  "paper_paths": [],
+  "experiment_ids": [],
+  "watch": {
+    "enabled": false,
+    "cadence": "weekly",
+    "sources_hint": [
+      "arxiv"
+    ],
+    "last_delta_at": null
+  }
+}

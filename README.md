@@ -7,7 +7,7 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.20.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.21.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
 [![paper-rec](https://img.shields.io/badge/paper--rec-v1.11.0-1A2332?style=for-the-badge)](skill/VERSION)
 [![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.8.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
@@ -275,18 +275,21 @@ Paper_Rec_Skill/
 │   ├── wiki-web/               # Vue3 SPA :5173  (/threads · /experiments)
 │   └── start-wiki.ps1
 ├── packages/
-│   ├── wiki-bridge/            # sync-report · sync-exp · thread-*
-│   └── thread-mcp/             # Thread Memory MCP Server
+│   ├── wiki-bridge/            # sync-report · sync-exp · thread-* · templates
+│   ├── thread-mcp/             # Thread Memory MCP Server
+│   └── thread-bot/             # 飞书 / Telegram / 企微 / QQ 对话网关
 ├── content/
 │   ├── wiki/pages/             # <kw>/<year>/<slug>/README.md
 │   ├── wiki/pages/_exp/        # 实验 Wiki 镜像
 │   ├── threads/                # Cognitive Thread · thread.json + events + evidences
+│   ├── thread-templates/       # 主线模板市场
 │   ├── exp/                    # 实验产物 · metrics · curves · figures
 │   ├── weekly/
 │   └── uploads/
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── THREAD_DESIGN.md
+│   ├── BOTS.md
 │   └── MCP.md
 ├── scripts/regress_exp_wiki.py
 ├── VERSION
@@ -301,6 +304,7 @@ Paper_Rec_Skill/
 | **wiki-api / wiki-web** | 阅读、主线、实验看板、图谱 |
 | **wiki-bridge** | 结构化报告 ↔ Git Markdown / Threads |
 | **thread-mcp** | MCP 暴露主线记忆工具 |
+| **thread-bot** | 多渠道路对话 Bot（飞书/Telegram/企微/QQ） |
 | **content/** | 唯一内容真源（可版本管理） |
 
 ---
@@ -332,6 +336,7 @@ Paper_Rec_Skill/
 | [docs/THREAD_DESIGN.md](docs/THREAD_DESIGN.md) | Cognitive Thread v2 契约 |
 | [docs/MCP.md](docs/MCP.md) | Thread Memory MCP |
 | [docs/WEBHOOK.md](docs/WEBHOOK.md) | 可选 Delta webhook 推送 |
+| [docs/BOTS.md](docs/BOTS.md) | 飞书 / Telegram / 企微 / QQ 对话 Bot |
 | [benchmarks/thread-bench/README.md](benchmarks/thread-bench/README.md) | Thread-Bench（主线条件排序评测） |
 | [docs/MCP_PUBLISH.md](docs/MCP_PUBLISH.md) | MCP 目录提交清单 |
 | [docs/tutorials/thread-research-memory.md](docs/tutorials/thread-research-memory.md) | 用 Thread 管研究方向（案例） |

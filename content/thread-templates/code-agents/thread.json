@@ -1,0 +1,58 @@
+{
+  "type": "research_thread_template",
+  "title": "Repository-Level Code Agents",
+  "hypothesis": "Repo-level context + search tools improve multi-file repair",
+  "claims": [
+    {
+      "id": "C1",
+      "text": "Repo benchmarks expose failures invisible on HumanEval",
+      "status": "open",
+      "evidence_ids": []
+    },
+    {
+      "id": "C2",
+      "text": "Search tools help multi-file bug fixing",
+      "status": "open",
+      "evidence_ids": []
+    }
+  ],
+  "open_questions": [],
+  "evidence_gaps": [
+    {
+      "claim_id": "C2",
+      "need": "ablation",
+      "note": "search tool vs no-tool on SWE-bench style"
+    }
+  ],
+  "keywords": [
+    "code",
+    "agent",
+    "swe-bench",
+    "repository"
+  ],
+  "tags": [
+    "builtin",
+    "se"
+  ],
+  "seed_queries": [
+    "SWE-bench code agent repository"
+  ],
+  "seed_terms": [
+    "code",
+    "agent",
+    "repository",
+    "swe-bench",
+    "tool"
+  ],
+  "profile_notes": "",
+  "paper_paths": [],
+  "experiment_ids": [],
+  "watch": {
+    "enabled": false,
+    "cadence": "weekly",
+    "sources_hint": [
+      "arxiv"
+    ],
+    "last_delta_at": null
+  }
+}

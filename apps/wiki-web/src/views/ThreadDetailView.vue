@@ -23,6 +23,7 @@
         <button :disabled="suggestBusy" @click="loadSuggestions">主张建议</button>
         <button :disabled="rwBusy" @click="makeRelatedWork">Related Work 提纲</button>
         <button :disabled="draftBusy" @click="makePaperDraft">多章草稿包</button>
+        <button :disabled="exportTplBusy" @click="exportAsTemplate">导出为模板</button>
         <button @click="exportThreadBib">导出 BibTeX</button>
       </div>
       <p v-if="actionMsg" class="muted" style="margin:0.5rem 0 0">{{ actionMsg }}</p>
@@ -292,6 +293,7 @@ import { Chart, registerables } from 'chart.js'
 import {
   acceptThreadClaim,
   exportBibtex,
+  exportThreadTemplate,
   generatePaperDraft,
   generateRelatedWork,
   getEvidenceCoverage,
@@ -315,6 +317,7 @@ const deltaBusy = ref(false)
 const suggestBusy = ref(false)
 const rwBusy = ref(false)
 const draftBusy = ref(false)
+const exportTplBusy = ref(false)
 const actionMsg = ref('')
 const rwPreview = ref(null)
 const draftPreview = ref(null)
@@ -549,6 +552,18 @@ async function makePaperDraft() {
     actionMsg.value = e?.response?.data?.detail || e.message || String(e)
   } finally {
     draftBusy.value = false
+  }
+}
+
+async function exportAsTemplate() {
+  exportTplBusy.value = true
+  try {
+    const out = await exportThreadTemplate(props.id, {})
+    actionMsg.value = `已导出模板 ${out.template_id} → ${out.path}`
+  } catch (e) {
+    actionMsg.value = e?.response?.data?.detail || e.message || String(e)
+  } finally {
+    exportTplBusy.value = false
   }
 }
 

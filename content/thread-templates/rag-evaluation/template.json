@@ -1,0 +1,16 @@
+{
+  "template_id": "rag-evaluation",
+  "title": "RAG Evaluation & Faithfulness",
+  "description": "Grounded generation evaluation research line.",
+  "source_thread": null,
+  "tags": [
+    "builtin",
+    "nlp"
+  ],
+  "claims_n": 1,
+  "gaps_n": 1,
+  "has_drafts": false,
+  "has_evidences": false,
+  "version": 1,
+  "builtin": true
+}

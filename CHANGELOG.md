@@ -6,6 +6,15 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.21.0] — 2026-07-18
+
+### Added
+
+- **主线模板市场**: `thread-template-list|export|import`；Wiki API `GET /threads/templates` + import/export；Threads 页一键导入 / 详情「导出为模板」；内置 multimodal-alignment / rag-evaluation / code-agents
+- **多渠道路对话 Bot**: `packages/thread-bot` — 飞书 / Telegram / 企业微信 / QQ(OneBot) + 通用 `/bot/chat`；统一命令 `/threads` `/use` `/delta` `/templates` `/import` `/feedback` `/query`；见 [`docs/BOTS.md`](docs/BOTS.md)
+
+---
+
 ## [2.20.0] — 2026-07-18
 
 ### Added

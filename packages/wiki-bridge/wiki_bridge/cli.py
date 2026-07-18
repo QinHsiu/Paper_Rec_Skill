@@ -589,6 +589,49 @@ def cmd_notify_webhook(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_template_list(args: argparse.Namespace) -> int:
+    from .thread_templates import ensure_builtin_templates, list_templates
+
+    root = Path(args.wiki_root)
+    if args.seed:
+        ensure_builtin_templates(root)
+    print(json.dumps(list_templates(root), ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_template_export(args: argparse.Namespace) -> int:
+    from .thread_templates import export_template
+
+    tags = [t.strip() for t in (args.tags or "").split(",") if t.strip()]
+    out = export_template(
+        Path(args.wiki_root),
+        args.thread,
+        template_id=args.template_id or "",
+        title=args.title or "",
+        description=args.description or "",
+        tags=tags or None,
+        include_drafts=not args.no_drafts,
+        include_evidences=args.evidences,
+    )
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_template_import(args: argparse.Namespace) -> int:
+    from .thread_templates import ensure_builtin_templates, import_template
+
+    root = Path(args.wiki_root)
+    ensure_builtin_templates(root)
+    out = import_template(
+        root,
+        args.template,
+        new_thread_id=args.id or "",
+        title=args.title or "",
+    )
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="wiki_bridge", description="Paper_Rec ↔ Wiki Markdown bridge")
     sub = p.add_subparsers(dest="command", required=True)
@@ -849,6 +892,29 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--title", default="")
     s.add_argument("--message", default="")
     s.set_defaults(func=cmd_notify_webhook)
+
+    s = sub.add_parser("thread-template-list", help="List thread templates (marketplace)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--seed", action="store_true", help="ensure builtin templates")
+    s.set_defaults(func=cmd_template_list)
+
+    s = sub.add_parser("thread-template-export", help="Export a thread as marketplace template")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--template-id", default="")
+    s.add_argument("--title", default="")
+    s.add_argument("--description", default="")
+    s.add_argument("--tags", default="")
+    s.add_argument("--no-drafts", action="store_true")
+    s.add_argument("--evidences", action="store_true")
+    s.set_defaults(func=cmd_template_export)
+
+    s = sub.add_parser("thread-template-import", help="Import template → new thread")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--template", required=True)
+    s.add_argument("--id", default="", help="new thread id")
+    s.add_argument("--title", default="")
+    s.set_defaults(func=cmd_template_import)
 
     return p
 

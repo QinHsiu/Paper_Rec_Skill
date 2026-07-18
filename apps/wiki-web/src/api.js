@@ -91,7 +91,22 @@ export async function getExperimentFile(id, rel) {
 
 export async function listThreads() {
   const { data } = await api.get('/threads')
-  return data.threads
+  return data.threads || data
+}
+
+export async function listThreadTemplates() {
+  const { data } = await api.get('/threads/templates')
+  return data.templates || []
+}
+
+export async function importThreadTemplate(payload) {
+  const { data } = await api.post('/threads/templates/import', payload)
+  return data
+}
+
+export async function exportThreadTemplate(id, payload = {}) {
+  const { data } = await api.post(`/threads/${id}/export-template`, payload)
+  return data
 }
 
 export async function getThread(id) {

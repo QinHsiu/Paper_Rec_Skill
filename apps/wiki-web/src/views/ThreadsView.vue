@@ -8,6 +8,32 @@
     </header>
 
     <div class="card" style="margin-bottom:1rem">
+      <h2 style="margin-top:0;font-size:1.05rem">主线模板市场</h2>
+      <p class="muted" style="margin-top:0;font-size:0.88rem">
+        从模板一键创建研究主线（假设 / claims / gaps / seeds）。也可在详情页「导出为模板」。
+      </p>
+      <div v-if="templates.length">
+        <div v-for="tpl in templates" :key="tpl.template_id" class="week-item">
+          <div class="row" style="justify-content:space-between;align-items:center;gap:0.5rem">
+            <div>
+              <strong>{{ tpl.title || tpl.template_id }}</strong>
+              <code style="margin-left:0.35rem">{{ tpl.template_id }}</code>
+              <span v-if="tpl.builtin" class="badge" style="margin-left:0.35rem">builtin</span>
+              <p class="muted" style="margin:0.35rem 0 0;font-size:0.88rem">
+                {{ tpl.description || '—' }} · claims {{ tpl.claims_n ?? '—' }} · gaps {{ tpl.gaps_n ?? '—' }}
+              </p>
+            </div>
+            <button class="primary" :disabled="importing === tpl.template_id" @click="doImport(tpl)">
+              {{ importing === tpl.template_id ? '导入…' : '导入' }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <p v-else class="muted" style="margin:0">加载模板中或为空…</p>
+      <p v-if="tplMsg" class="muted" style="margin:0.5rem 0 0">{{ tplMsg }}</p>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem">
       <h2 style="margin-top:0;font-size:1.05rem">新建主线</h2>
       <div class="row" style="flex-wrap:wrap;gap:0.5rem;align-items:flex-end">
         <label style="flex:1;min-width:12rem">
@@ -62,12 +88,15 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { createThread, listThreads } from '../api'
+import { createThread, importThreadTemplate, listThreadTemplates, listThreads } from '../api'
 
 const router = useRouter()
 const items = ref([])
+const templates = ref([])
 const creating = ref(false)
+const importing = ref('')
 const createErr = ref('')
+const tplMsg = ref('')
 const form = reactive({ title: '', hypothesis: '', keywords: '' })
 
 function statusBadge(s) {
@@ -78,6 +107,26 @@ function statusBadge(s) {
 
 async function refresh() {
   items.value = await listThreads()
+  try {
+    templates.value = await listThreadTemplates()
+  } catch {
+    templates.value = []
+  }
+}
+
+async function doImport(tpl) {
+  tplMsg.value = ''
+  importing.value = tpl.template_id
+  try {
+    const out = await importThreadTemplate({ template_id: tpl.template_id })
+    tplMsg.value = `已创建主线 ${out.thread_id}`
+    await refresh()
+    router.push(`/threads/${out.thread_id}`)
+  } catch (e) {
+    tplMsg.value = e?.response?.data?.detail || e.message || String(e)
+  } finally {
+    importing.value = ''
+  }
 }
 
 async function create() {

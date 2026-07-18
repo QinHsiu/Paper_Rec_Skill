@@ -119,6 +119,57 @@ def create_thread(body: ThreadCreate):
     return data
 
 
+class TemplateImportBody(BaseModel):
+    template_id: str
+    new_thread_id: str = ""
+    title: str = ""
+
+
+class TemplateExportBody(BaseModel):
+    template_id: str = ""
+    title: str = ""
+    description: str = ""
+    tags: list[str] = Field(default_factory=list)
+    include_drafts: bool = True
+    include_evidences: bool = False
+
+
+@router.get("/templates")
+def list_templates(seed: bool = True):
+    return {"templates": thread_store.list_templates(seed=seed)}
+
+
+@router.post("/templates/import")
+def import_template(body: TemplateImportBody):
+    try:
+        return thread_store.import_template(
+            body.template_id, new_thread_id=body.new_thread_id, title=body.title
+        )
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e)) from e
+    except FileExistsError as e:
+        raise HTTPException(409, f"thread exists: {e}") from e
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+
+
+@router.post("/{thread_id}/export-template")
+def export_template(thread_id: str, body: TemplateExportBody | None = None):
+    body = body or TemplateExportBody()
+    try:
+        return thread_store.export_template(
+            thread_id,
+            template_id=body.template_id,
+            title=body.title,
+            description=body.description,
+            tags=body.tags,
+            include_drafts=body.include_drafts,
+            include_evidences=body.include_evidences,
+        )
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
+
+
 @router.get("/by-paper/{path:path}")
 def by_paper(path: str):
     return {"path": path, "thread_ids": thread_store.threads_for_paper(path)}

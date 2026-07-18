@@ -1,0 +1,58 @@
+{
+  "type": "research_thread_template",
+  "title": "Multimodal LLM Alignment",
+  "hypothesis": "Unified preference objectives transfer to vision-language models",
+  "claims": [
+    {
+      "id": "C1",
+      "text": "Preference data quality dominates algorithm choice",
+      "status": "open",
+      "evidence_ids": []
+    },
+    {
+      "id": "C2",
+      "text": "RLHF-style methods transfer to VLMs",
+      "status": "open",
+      "evidence_ids": []
+    }
+  ],
+  "open_questions": [],
+  "evidence_gaps": [
+    {
+      "claim_id": "C1",
+      "need": "empirical",
+      "note": "ablation on preference data quality"
+    }
+  ],
+  "keywords": [
+    "multimodal",
+    "alignment",
+    "rlhf",
+    "preference"
+  ],
+  "tags": [
+    "builtin",
+    "llm"
+  ],
+  "seed_queries": [
+    "multimodal LLM preference alignment"
+  ],
+  "seed_terms": [
+    "alignment",
+    "multimodal",
+    "rlhf",
+    "dpo",
+    "preference"
+  ],
+  "profile_notes": "",
+  "paper_paths": [],
+  "experiment_ids": [],
+  "watch": {
+    "enabled": false,
+    "cadence": "weekly",
+    "sources_hint": [
+      "arxiv"
+    ],
+    "last_delta_at": null
+  }
+}

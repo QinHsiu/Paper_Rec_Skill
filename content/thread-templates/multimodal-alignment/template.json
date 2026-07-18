@@ -1,0 +1,16 @@
+{
+  "template_id": "multimodal-alignment",
+  "title": "Multimodal LLM Alignment",
+  "description": "Preference / RLHF style multimodal alignment research line.",
+  "source_thread": null,
+  "tags": [
+    "builtin",
+    "llm"
+  ],
+  "claims_n": 2,
+  "gaps_n": 1,
+  "has_drafts": false,
+  "has_evidences": false,
+  "version": 1,
+  "builtin": true
+}
