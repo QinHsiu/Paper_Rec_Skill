@@ -2,7 +2,7 @@
 
 依据 `projects/same.txt`（2026-07-18 测评）与当时 workspace **2.8.0** 校准后的落地计划。
 
-**状态（2026-07-18）**：**2.9.0** P0+P1 已落地；**2.10.0** P2+P3 已落地。P4 仍开放。
+**状态（2026-07-18）**：**2.9.0–2.10.1** 已覆盖 P0–P4（Evidence · MCP · 迭代检索 · 多 run · 贡献文档）。后续为体验打磨与社群运营。
 
 ## 0. 测评口径校准（避免重复造已有能力）
 
@@ -187,7 +187,7 @@ Module 1.5 Thread inject
 |------|------|----------|
 | **2.9.0** ✅ | P0 Claim–Evidence + P1 MCP 零 PYTHONPATH / wiki·exp·evidence | 已发布 |
 | **2.10.0** ✅ | P2 迭代检索轨迹 + P3 多 run 对比 | 已发布 |
-| **2.10.x** | P4 CONTRIBUTING + 案例 | 持续 |
+| **2.10.1** ✅ | P4 CONTRIBUTING + 案例 + good-first-issues | 已发布 |
 
 ---
 
@@ -203,6 +203,6 @@ Module 1.5 Thread inject
 
 ## 10. 建议的下一步动作
 
-1. ~~确认 P0 / 开工 2.9.0~~ → **已完成**  
-2. ~~2.10.0 = P2 迭代检索 + P3 多 run 看板~~ → **已完成**  
-3. 下一主线轻量：**P4** CONTRIBUTING + mm-llm-alignment 案例教程；可选平行坐标 / 更深迭代检索
+1. ~~P0–P4 / 2.9–2.10.1~~ → **已完成**  
+2. 开启 GitHub Discussions；按 [`GOOD_FIRST_ISSUES.md`](GOOD_FIRST_ISSUES.md) 建 Issues 并打 `good first issue`  
+3. 可选：平行坐标看板、更深迭代检索、更多案例线程

@@ -7,12 +7,12 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.10.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
-[![paper-rec](https://img.shields.io/badge/paper--rec-v1.5.0-1A2332?style=for-the-badge)](skill/VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.10.1-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![paper-rec](https://img.shields.io/badge/paper--rec-v1.6.0-1A2332?style=for-the-badge)](skill/VERSION)
 [![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.8.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
 [![MCP](https://img.shields.io/badge/MCP-Thread%20Memory-0F766E?style=for-the-badge&labelColor=1A2332)](docs/MCP.md)
-[![License](https://img.shields.io/badge/license-MIT-5C6B7A?style=for-the-badge&labelColor=1A2332)](#)
+[![License](https://img.shields.io/badge/license-MIT-5C6B7A?style=for-the-badge&labelColor=1A2332)](LICENSE)
 
 <br/>
 
@@ -34,7 +34,8 @@
 [能力](#-核心能力) ·
 [命令](#-slash-commands) ·
 [架构](#-架构一览) ·
-[文档](#-文档地图)
+[文档](#-文档地图) ·
+[贡献](#-贡献)
 
 </div>
 
@@ -299,8 +300,21 @@ Paper_Rec_Skill/
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 模块边界与数据约定 |
 | [docs/THREAD_DESIGN.md](docs/THREAD_DESIGN.md) | Cognitive Thread v2 契约 |
 | [docs/MCP.md](docs/MCP.md) | Thread Memory MCP |
+| [docs/tutorials/thread-research-memory.md](docs/tutorials/thread-research-memory.md) | 用 Thread 管研究方向（案例） |
+| [docs/GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md) | 新手可领任务 |
 | [docs/MIGRATION.md](docs/MIGRATION.md) | 路径迁移 |
 | [CHANGELOG.md](CHANGELOG.md) | Workspace 版本历史 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 环境 · PR 清单 · Skill 改法 |
+
+---
+
+## 贡献
+
+欢迎 Issue / PR。先读 [CONTRIBUTING.md](CONTRIBUTING.md)；新手任务见 [GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md)。
+
+设计讨论请用 [GitHub Discussions](https://github.com/QinHsiu/Paper_Rec_Skill/discussions)（若仓库尚未开启：Settings → Features → Discussions）。
+
+案例教程：[用 Thread 管一个研究方向](docs/tutorials/thread-research-memory.md)。
 
 ---
 

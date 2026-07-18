@@ -6,6 +6,15 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.10.1] — 2026-07-18
+
+### Added
+
+- **P4 community**: [`CONTRIBUTING.md`](CONTRIBUTING.md), [`docs/GOOD_FIRST_ISSUES.md`](docs/GOOD_FIRST_ISSUES.md), tutorial [`docs/tutorials/thread-research-memory.md`](docs/tutorials/thread-research-memory.md), root [`LICENSE`](LICENSE)
+- README links to Discussions + contributing entry
+
+---
+
 ## [2.10.0] — 2026-07-18
 
 ### Added
