@@ -2,7 +2,7 @@
 
 Hypothesis-centric **Research Thread** for Paper_Rec. Differentiates from Anaxa (quest→manuscript audit), PaperSeek (generic discovery), YFR (topic monitoring/survey ops), and article-mcp (search MCP) by owning **long-horizon personal research memory**: claims, gaps, evidence gates, lit↔exp links.
 
-See also: competitor notes in workspace `projects/same.txt`. MCP: [MCP.md](MCP.md).
+See also: [MCP.md](MCP.md). Competitor landscape notes are maintained privately outside this repository.
 
 ## Non-goals (explicit)
 

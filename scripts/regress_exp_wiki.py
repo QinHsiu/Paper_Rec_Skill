@@ -30,12 +30,9 @@ def check(name: str, cond: bool, detail: str = "") -> None:
 def main() -> int:
     print("=== Exp + Wiki regression ===")
 
-    # 1) Install markers
-    agents = ROOT.parents[1] / ".agents" / "skills"  # may not exist; also check .cursor
-    cursor_exp = Path(r"d:\PycharmProjects\pythonProject\.cursor\skills\exp-sandbox\SKILL.md")
-    cursor_pr = Path(r"d:\PycharmProjects\pythonProject\.cursor\skills\paper-rec\SKILL.md")
-    check("skill exp-sandbox installed (.cursor)", cursor_exp.is_file())
-    check("skill paper-rec installed (.cursor)", cursor_pr.is_file())
+    # 1) In-repo skills (portable — no machine-local paths)
+    check("skill exp-sandbox in repo", (ROOT / "skill-exp" / "SKILL.md").is_file())
+    check("skill paper-rec in repo", (ROOT / "skill" / "SKILL.md").is_file())
     check("skill-exp reference exists", (ROOT / "skill-exp" / "reference" / "orchestrator.py").is_file())
 
     # 2) sync-exp

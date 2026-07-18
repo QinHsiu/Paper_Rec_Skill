@@ -7,7 +7,7 @@
         "thread_mcp.server"
       ],
       "env": {
-        "PAPER_REC_ROOT": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill"
+        "PAPER_REC_ROOT": "/path/to/Paper_Rec_Skill"
       }
     }
   }

@@ -16,7 +16,7 @@ pip install -e ../wiki-bridge
 ## Quick start
 
 ```powershell
-$env:PAPER_REC_ROOT = "D:\path\to\Paper_Rec_Skill"
+$env:PAPER_REC_ROOT = (Resolve-Path ../..).Path
 python -m thread_bot repl          # local stdin
 python -m thread_bot serve         # HTTP :8790
 python -m thread_bot seed-templates

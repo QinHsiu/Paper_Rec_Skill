@@ -39,7 +39,7 @@ desc: 四方法在五个数据量上的 HR@20 对比，突出 Ours
 venue: icml
 
 /draw
-data: D:/data/labels_dist.json
+data: /path/to/labels_dist.json
 desc: 训练集标签分布
 ```
 

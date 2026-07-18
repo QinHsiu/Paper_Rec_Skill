@@ -22,7 +22,7 @@ paper-rec-configure --apply      # write docs/mcp.example.json + .cursor/mcp.jso
 ## Run
 
 ```bash
-set PAPER_REC_ROOT=D:\PycharmProjects\pythonProject\projects\Paper_Rec_Skill
+set PAPER_REC_ROOT=/path/to/Paper_Rec_Skill
 paper-rec-threads
 # or: python -m thread_mcp.server
 ```
@@ -38,7 +38,7 @@ paper-rec-threads
       "command": "python",
       "args": ["-m", "thread_mcp.server"],
       "env": {
-        "PAPER_REC_ROOT": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill"
+        "PAPER_REC_ROOT": "/path/to/Paper_Rec_Skill"
       }
     }
   }

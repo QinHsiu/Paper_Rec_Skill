@@ -5,8 +5,8 @@ Public scorecard for **Paper_Rec**. Reproduce from this repo; do not treat marke
 | Field | Value |
 |-------|--------|
 | Workspace | [`VERSION`](../VERSION) **2.22.0** |
-| Full LitSearch run | **2026-07-18** · eval code @ `df1c7ba`+ (see CHANGELOG 2.22.0) |
-| Plan | `projects/paper-rec-plans/CREDIBILITY_PLAN_v1.md` (repo-external) |
+| Full LitSearch run | **2026-07-18** · see CHANGELOG 2.22.0 |
+| Scorecard | this file + [`litsearch/fixtures/full_result_summary.json`](litsearch/fixtures/full_result_summary.json) |
 
 ## Protocol principles
 

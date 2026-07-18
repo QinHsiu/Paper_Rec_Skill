@@ -203,7 +203,11 @@ def run_delta(
         d.mkdir(parents=True, exist_ok=True)
         out = d / f"{_utc_date()}-{mode}.md"
         out.write_text(md, encoding="utf-8")
-        result["delta_path"] = str(out)
+        try:
+            rel = out.resolve().relative_to(Path(wiki_root).resolve()).as_posix()
+        except ValueError:
+            rel = f"content/threads/{thread_id}/deltas/{out.name}"
+        result["delta_path"] = rel
         watch["last_delta_at"] = ts.utc_now_iso()
         watch["enabled"] = bool(watch.get("enabled", True))
         data["watch"] = watch
@@ -216,7 +220,7 @@ def run_delta(
                 "mode": mode,
                 "added_papers": [p["path"] for p in top[:10]],
                 "new_gaps": [],
-                "path": out.as_posix(),
+                "path": rel,
             },
         )
         # also emit claim suggestions as ledger events

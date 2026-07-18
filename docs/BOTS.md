@@ -5,7 +5,7 @@
 ## Quick start
 
 ```powershell
-$env:PAPER_REC_ROOT = "D:\PycharmProjects\pythonProject\projects\Paper_Rec_Skill"
+$env:PAPER_REC_ROOT = (Resolve-Path .).Path
 cd packages/thread-bot
 pip install -e .
 # 本地 REPL

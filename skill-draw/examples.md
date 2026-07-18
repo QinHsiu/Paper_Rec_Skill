@@ -33,7 +33,7 @@ palette: heatmap_warm
 
 ```text
 /draw
-data: D:/datasets/ocr/train_label_counts.json
+data: /path/to/ocr/train_label_counts.json
 desc: 训练标签类别分布，检查长尾
 ```
 

@@ -1,13 +1,13 @@
 {"kind": "note", "text": "thread created: Multimodal LLM Alignment", "ts": "2026-07-18T08:42:53Z"}
 {"kind": "paper_linked", "path": "llm/2025/getting-started", "source": "smoke", "relevance": null, "rationale": [], "gate": "accepted", "by": "user", "ts": "2026-07-18T08:43:10Z"}
-{"kind": "delta", "mode": "gap_focus", "added_papers": [], "new_gaps": [], "path": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill/content/threads/mm-llm-alignment/deltas/2026-07-18-gap_focus.md", "ts": "2026-07-18T08:50:58Z"}
+{"kind": "delta", "mode": "gap_focus", "added_papers": [], "new_gaps": [], "path": "content/threads/mm-llm-alignment/deltas/2026-07-18-gap_focus.md", "ts": "2026-07-18T08:50:58Z"}
 {"kind": "paper_scored", "path": "demo/2026/fake-paper", "title": "Alignment with Preference Data", "R": 0.6214, "rationale": ["terms:alignment,data,multimodal,preference,rlhf", "supports:C1", "gaps:C1", "keyword:multimodal"], "gate": "suggested", "ts": "2026-07-18T08:54:55Z"}
-{"kind": "delta", "mode": "diff_brief", "added_papers": [], "new_gaps": [], "path": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill/content/threads/mm-llm-alignment/deltas/2026-07-18-diff_brief.md", "ts": "2026-07-18T08:54:56Z"}
+{"kind": "delta", "mode": "diff_brief", "added_papers": [], "new_gaps": [], "path": "content/threads/mm-llm-alignment/deltas/2026-07-18-diff_brief.md", "ts": "2026-07-18T08:54:56Z"}
 {"kind": "paper_linked", "path": "demo/2026/fake-paper", "source": "verify", "relevance": null, "rationale": [], "gate": "accepted", "by": "user", "ts": "2026-07-18T08:54:56Z"}
 {"kind": "claim_update", "claim_id": "C1", "status": "supported", "gate": "accepted", "by": "verify", "reason": "1 member paper(s): demo/2026/fake-paper", "ts": "2026-07-18T08:54:56Z"}
-{"kind": "delta", "mode": "gap_focus", "added_papers": ["demo/2026/fake-paper"], "new_gaps": [], "path": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill/content/threads/mm-llm-alignment/deltas/2026-07-18-gap_focus.md", "ts": "2026-07-18T08:54:56Z"}
-{"kind": "delta", "mode": "diff_brief", "added_papers": [], "new_gaps": [], "path": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill/content/threads/mm-llm-alignment/deltas/2026-07-18-diff_brief.md", "ts": "2026-07-18T08:54:57Z"}
-{"kind": "delta", "mode": "diff_brief", "added_papers": [], "new_gaps": [], "path": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill/content/threads/mm-llm-alignment/deltas/2026-07-18-diff_brief.md", "ts": "2026-07-18T08:55:31Z"}
+{"kind": "delta", "mode": "gap_focus", "added_papers": ["demo/2026/fake-paper"], "new_gaps": [], "path": "content/threads/mm-llm-alignment/deltas/2026-07-18-gap_focus.md", "ts": "2026-07-18T08:54:56Z"}
+{"kind": "delta", "mode": "diff_brief", "added_papers": [], "new_gaps": [], "path": "content/threads/mm-llm-alignment/deltas/2026-07-18-diff_brief.md", "ts": "2026-07-18T08:54:57Z"}
+{"kind": "delta", "mode": "diff_brief", "added_papers": [], "new_gaps": [], "path": "content/threads/mm-llm-alignment/deltas/2026-07-18-diff_brief.md", "ts": "2026-07-18T08:55:31Z"}
 {"kind": "paper_linked", "path": "llm/2025/getting-started", "source": "evidence", "relevance": null, "rationale": [], "gate": "accepted", "by": "verify", "ts": "2026-07-18T09:14:02Z"}
 {"kind": "evidence_added", "evidence_id": "E1", "claim_id": "C1", "stance": "supports", "gate": "accepted", "paper_path": "llm/2025/getting-started", "by": "verify", "ts": "2026-07-18T09:14:02Z"}
 {"kind": "query_iter", "round": 0, "queries": ["mm llm alignment"], "path_id": "broad", "by": "verify", "raw_hits": 40, "kept": 18, "ts": "2026-07-18T09:19:43Z"}

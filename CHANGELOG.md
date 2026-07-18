@@ -43,7 +43,7 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 - **P1**: `thread-feedback` accept|skip|read|pin + seed_terms tweak; Thread UI buttons
 - **P1**: Evidence `citation_key` / `page` / `evidence_level`; `csl-json-export` for Zotero
 - **P2**: `docker-compose.yml` (wiki-api + wiki-web); MCP compose docs
-- Plan: v7 (repo-external `paper-rec-plans/OPTIMIZATION_PLAN_v7.md`)
+- Plan notes for v7 (retrieval / Thread-Bench / webhook) — internal; not published in-repo
 
 ---
 
