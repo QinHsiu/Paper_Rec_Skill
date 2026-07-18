@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "paper-rec-threads": {
+      "command": "C:\\Python314\\python.exe",
+      "args": [
+        "-m",
+        "thread_mcp.server"
+      ],
+      "env": {
+        "PAPER_REC_ROOT": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill"
+      }
+    }
+  }
+}

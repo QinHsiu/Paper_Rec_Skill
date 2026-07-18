@@ -19,6 +19,7 @@ def _paper_title(wiki_root: Path, path: str) -> str:
 
 
 def build_related_work_outline(wiki_root: Path, thread_id: str) -> dict[str, Any]:
+    wiki_root = Path(wiki_root).resolve()
     data = ts.load_thread(wiki_root, thread_id)
     evidences = te.list_evidences(wiki_root, thread_id)
     by_claim: dict[str, list[dict[str, Any]]] = {}

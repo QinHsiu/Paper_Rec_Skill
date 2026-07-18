@@ -4,6 +4,16 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.9.0] — 2026-07-18
+
+### Added
+
+- Module **2.3.5** prerank (BM25 + recency); `/query_* auto` includes prerank
+- `/draft` · `/wiki thread draft` → multi-chapter Markdown paper draft pack
+- `/wiki cite-expand`; evidence-coverage guidance
+
+---
+
 ## [1.8.0] — 2026-07-18
 
 ### Added

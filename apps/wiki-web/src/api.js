@@ -188,6 +188,23 @@ export async function generateRelatedWork(id) {
   return data
 }
 
+export async function generatePaperDraft(id, venue = 'generic') {
+  const { data } = await api.post(`/threads/${id}/paper-draft`, { venue })
+  return data
+}
+
+export async function getEvidenceCoverage(id) {
+  const { data } = await api.get(`/threads/${id}/evidence-coverage`)
+  return data
+}
+
+export async function citationExpand(path, topK = 5) {
+  const { data } = await api.post(`/wiki/pages/${path}/citation-expand`, null, {
+    params: { top_k: topK },
+  })
+  return data
+}
+
 export async function exportBibtex(paths) {
   const { data } = await api.get('/wiki/bibtex', { params: { paths: paths.join(',') } })
   return data

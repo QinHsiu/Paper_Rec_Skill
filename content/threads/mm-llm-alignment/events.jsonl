@@ -17,3 +17,6 @@
 {"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-18T09:44:34Z"}
 {"kind": "section_outline", "section": "method", "path": "drafts/method_outline.md", "ts": "2026-07-18T09:57:18Z"}
 {"kind": "evidence_patch", "evidence_id": "E1", "support_status": "supports", "confidence": 0.9, "by": "user", "ts": "2026-07-18T09:57:18Z"}
+{"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-18T10:24:24Z"}
+{"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-18T10:24:51Z"}
+{"kind": "paper_draft", "path": "drafts/paper_draft/", "venue": "generic", "chapters": ["abstract", "introduction", "related_work", "methodology", "experiments", "conclusion"], "ts": "2026-07-18T10:24:51Z"}

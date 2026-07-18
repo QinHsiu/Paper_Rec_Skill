@@ -302,6 +302,23 @@ def related_work(thread_id: str):
         raise HTTPException(404, f"thread not found: {thread_id}") from None
 
 
+@router.post("/{thread_id}/paper-draft")
+def paper_draft(thread_id: str, body: dict[str, Any] | None = None):
+    venue = str((body or {}).get("venue") or "generic")
+    try:
+        return thread_store.paper_draft(thread_id, venue=venue)
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
+
+
+@router.get("/{thread_id}/evidence-coverage")
+def evidence_coverage(thread_id: str):
+    try:
+        return thread_store.evidence_coverage(thread_id)
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
+
+
 @router.post("/{thread_id}/section-outline")
 def section_outline(thread_id: str, body: dict[str, Any] | None = None):
     from wiki_bridge.writing_assist import build_section_outline

@@ -263,6 +263,25 @@ Score each candidate on **four** dimensions (0–10 each):
 
 **Final score** = 0.30×Sim + 0.30×Rel + 0.20×Imp + 0.20×Recency
 
+### 2.3.5 Pre-ranking / 预重排（召回 → LLM 精排）
+
+**When**: `/query_* auto`, Thread-conditioned retrieval, or merged candidate pool **> 30**. Default **on** for auto; user can say `prerank:off` / `不预排` to skip.
+
+**Action** (after merge/dedupe, **before** full 2.3 LLM-style scoring of the long list):
+
+1. Cap working set at ≤200 unique candidates.
+2. Run lightweight pre-rank:
+
+```bash
+python -m wiki_bridge.cli prerank --json candidates.json --query "<rewritten>" --top-k 30 --out preranked.json
+```
+
+   Score ≈ BM25(title+abstract) + recency(≤3y boost) + optional log citation signal.
+3. Keep **Top-30** for Module 2.3 / 2.5 fine scoring; list dropped count in Retrieval Trace.
+4. Report header: `Prerank: on/off · kept N/M`.
+
+**Do not** crawl citation networks here (that is optional PageView「引用扩展」).
+
 #### Recency scoring (0–10)
 
 | Age vs today | Default score | If query has 最新 / latest / recent / 今年 |
@@ -316,7 +335,7 @@ For the final report, deep-read the **top 10–15** papers; use metadata-only fo
 
 **Default**: When a single active thread is injected via 1.5, enable **1** refine wave automatically. User can say `no-iterative` / `不迭代` to skip. Do **not** iterate on plain `/query_*` with zero thread context.
 
-**`/query_* auto`**: Force Module 1.5 (ask/pick thread if needed) → 2a all paths → 2b one refine → 2.5 R → write Retrieval Trace / `query-trace`. One-shot end-to-end under Thread; **no** citation-network crawl.
+**`/query_* auto`**: Force Module 1.5 (ask/pick thread if needed) → 2a all paths → 2b one refine → **2.3.5 prerank** → 2.3/2.5 R → write Retrieval Trace / `query-trace`. One-shot end-to-end under Thread; **no** citation-network crawl.
 
 **Action** (before / during 2.2):
 1. Build **up to 4** query paths from rewritten + thread state:
@@ -462,9 +481,11 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki thread create <title>` | Create thread via bridge (ask hypothesis/keywords if missing) |
 | `/wiki thread delta [id]` | Run Watch/Delta (`auto`/`diff_brief`/`gap_focus`/`exp_bridge`) |
 | `/wiki thread related-work [id]` | Write Related Work outline under `drafts/` |
+| `/draft` or `/wiki thread draft [id]` | Multi-chapter Markdown paper draft pack (`drafts/paper_draft/`) |
 | `/wiki pdf <path> --pdf file` | Ingest PDF/txt → `fulltext.md` beside paper |
 | `/wiki claim-suggest <path> --thread id` | Suggested claims/evidences from fulltext |
 | `/wiki bibtex [--thread id]` | Export BibTeX for paths / thread members |
+| `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
 
 ### Thread ops (do this yourself)
 
@@ -477,14 +498,17 @@ python -m wiki_bridge.cli thread-create --wiki-root ../.. --title "..." --hypoth
 python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id <thread_id> --mode auto --print-md
 python -m wiki_bridge.cli thread-graph --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli related-work --wiki-root ../.. --thread <thread_id> --print-md
+python -m wiki_bridge.cli paper-draft --wiki-root ../.. --thread <thread_id> --venue generic
+python -m wiki_bridge.cli evidence-coverage --wiki-root ../.. --thread <thread_id>
 python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path llm/2025/foo
 python -m wiki_bridge.cli claim-suggest --wiki-root ../.. --path llm/2025/foo --thread <id> --apply
+python -m wiki_bridge.cli citation-expand --wiki-root ../.. --path llm/2025/foo --top-k 5
 python -m wiki_bridge.cli bibtex-export --wiki-root ../.. --thread <id> --out refs.bib
 python -m wiki_bridge.cli thread-claim --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli thread-claim --wiki-root ../.. --id <thread_id> --claim-id C1 --status supported --accept
 ```
 
-SPA: http://127.0.0.1:5173/threads · API `/api/threads` · MCP: `docs/MCP.md` / `packages/thread-mcp`.
+SPA: http://127.0.0.1:5173/threads · API `/api/threads` · MCP: `docs/MCP.md` / `packages/thread-mcp` · configure: `paper-rec-configure` / `scripts/configure-mcp.ps1`.
 
 ### List papers (do this yourself)
 

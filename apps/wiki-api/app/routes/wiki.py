@@ -81,6 +81,19 @@ async def ingest_page_file(
             pass
 
 
+@router.post("/pages/{path:path}/citation-expand")
+def citation_expand(path: str, top_k: int = 5):
+    """1-hop references via Semantic Scholar / Crossref (no auto PDF ingest)."""
+    from app.services import thread_store as ts
+
+    try:
+        return ts.citation_expand(path, top_k=top_k)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(502, str(e)) from e
+
+
 @router.get("/pages/{path:path}")
 def get_page(path: str):
     fp = pathutil.resolve_paper_file(path)

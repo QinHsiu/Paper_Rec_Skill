@@ -138,36 +138,44 @@ def suggest_claims_from_fulltext(
     if not ft.is_file():
         raise FileNotFoundError(f"fulltext.md missing for {paper_path}; run pdf-ingest first")
     _, body = parse_frontmatter(ft.read_text(encoding="utf-8"))
-    # Prefer abstract + conclusion blocks
-    chunks: list[str] = []
-    for sec in ("Abstract", "Conclusion", "Experiments", "Method"):
+    # Prefer abstract + conclusion (higher confidence), then experiments/method
+    section_blobs: list[tuple[str, str, float]] = []
+    for sec, conf in (
+        ("Abstract", 0.85),
+        ("Conclusion", 0.85),
+        ("Experiments", 0.7),
+        ("Method", 0.65),
+    ):
         m = re.search(rf"## {sec}\s*\n(.*?)(?=\n## |\Z)", body, re.S | re.I)
         if m:
-            chunks.append(m.group(1))
-    blob = "\n".join(chunks) or body
-    sents = re.split(r"(?<=[。.!?])\s+", blob)
+            section_blobs.append((sec.lower(), m.group(1), conf))
+    if not section_blobs:
+        section_blobs.append(("fulltext", body, 0.6))
     cands: list[dict[str, Any]] = []
     verbs = re.compile(
         r"\b(show|demonstrate|propose|achieve|outperform|find|suggest|indicate|"
         r"证明|提出|优于|表明|发现)\b",
         re.I,
     )
-    for s in sents:
-        s = s.strip()
-        if len(s) < 40 or len(s) > 280:
-            continue
-        if not verbs.search(s):
-            continue
-        cands.append(
-            {
-                "text": s,
-                "paper_path": paper_path.strip("/"),
-                "source_section": "fulltext",
-                "gate": "suggested",
-            }
-        )
-        if len(cands) >= max_claims:
-            break
+    for sec_name, blob, conf in section_blobs:
+        sents = re.split(r"(?<=[。.!?])\s+", blob)
+        for s in sents:
+            s = s.strip()
+            if len(s) < 40 or len(s) > 280:
+                continue
+            if not verbs.search(s):
+                continue
+            cands.append(
+                {
+                    "text": s,
+                    "paper_path": paper_path.strip("/"),
+                    "source_section": sec_name,
+                    "gate": "suggested",
+                    "confidence": conf,
+                }
+            )
+            if len(cands) >= max_claims:
+                return cands
     return cands
 
 
@@ -221,6 +229,7 @@ def apply_claim_suggestions(
                 paper_path=paper_path.strip("/"),
                 quote=cand["text"][:500],
                 stance="supports",
+                confidence=float(cand.get("confidence") or 0.7),
                 gate="suggested",
                 by="pdf_suggest",
             )

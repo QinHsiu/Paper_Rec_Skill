@@ -6,6 +6,19 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.16.0] — 2026-07-18
+
+### Added
+
+- **P0**: `paper-rec-configure` / `scripts/configure-mcp.*` — dry-run by default, `--apply` writes Cursor / Claude Desktop MCP config
+- **P0**: `paper-draft` / `/draft` / `POST .../paper-draft` — multi-chapter Markdown pack with `[Claim:]` / `[Exp:]` / `[E:]` provenance (not LaTeX)
+- **P1**: `prerank` CLI + Skill Module 2.3.5 (BM25 + recency → Top-30); MCP `prerank_papers`
+- **P1**: Evidence UX — coverage API/UI, conf≥0.8 highlight, gate/conf filters; abstract/conclusion suggest higher confidence
+- **P2**: `citation-expand` / PageView「引用扩展」— S2/Crossref 1-hop (no auto ingest)
+- Plan: configure · paper_draft · prerank · evidence UX · citation-expand (v6)
+
+---
+
 ## [2.14.0] — 2026-07-18
 
 ### Added
@@ -13,7 +26,7 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 - **P0**: `install.sh` / `scripts/install.ps1` + `scripts/start-wiki.*`; Evidence `confidence` + `support_status` (CLI/API/UI/MCP)
 - **P1**: Wiki PDF/TXT upload → `POST .../ingest` + claim-suggest pipeline; `/query_* auto`; S2/OpenAlex/Crossref/PubMed routing notes
 - **P2**: Writing assist `POST .../recommend` + `section-outline`; MCP `thread_graph` / `bibtex_export` / `related_work` / `section_outline`
-- Plan: [`docs/OPTIMIZATION_PLAN_v5.md`](docs/OPTIMIZATION_PLAN_v5.md)
+- Plan: install · confidence · PDF ingest · query auto · writing recommend (v5)
 
 ---
 
@@ -26,7 +39,7 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 - **P1 BibTeX**: `bibtex-export`, `GET /api/wiki/bibtex`, Page/Thread export buttons; [`docs/MCP_PUBLISH.md`](docs/MCP_PUBLISH.md)
 - **P2 Related Work outline**: `related-work` → `drafts/related_work_outline.md` + API/UI
 - **P3**: Skill default 1-round iterative when single active thread (`no-iterative` to skip)
-- Plan: [`docs/OPTIMIZATION_PLAN_v4.md`](docs/OPTIMIZATION_PLAN_v4.md)
+- Plan: cognitive map · PDF-lite · BibTeX · Related Work outline (v4)
 
 ---
 
@@ -55,7 +68,7 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 - **Claim–Evidence Map**: `evidences.jsonl`, CLI `thread-evidence-*`, API evidences / evidence-map / gate; Wiki PageView「挂到主线」+ ThreadDetail evidence panel
 - **MCP UX**: zero-`PYTHONPATH` bootstrap via `PAPER_REC_ROOT`; tools `thread_add_evidence`, `thread_query_hint`, `wiki_list_papers`, `exp_list`, `exp_get_metrics`
-- Docs: Phase E in [`THREAD_DESIGN.md`](docs/THREAD_DESIGN.md); status in [`OPTIMIZATION_PLAN.md`](docs/OPTIMIZATION_PLAN.md); refreshed [`MCP.md`](docs/MCP.md)
+- Docs: Phase E in [`THREAD_DESIGN.md`](docs/THREAD_DESIGN.md); refreshed [`MCP.md`](docs/MCP.md)
 
 ---
 

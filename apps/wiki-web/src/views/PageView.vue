@@ -24,6 +24,9 @@
         <button @click="openRecommend" :disabled="!selection.trim() || !threadIds.length">
           推荐证据
         </button>
+        <button @click="runCitationExpand" :disabled="citeBusy">
+          {{ citeBusy ? '引用扩展…' : '引用扩展' }}
+        </button>
         <button @click="copyBibtex">导出 BibTeX</button>
         <label class="file-btn">
           上传 PDF/TXT
@@ -36,9 +39,29 @@
 
     <p class="muted" style="margin:0 0 0.75rem;font-size:0.88rem">
       选中正文 →「挂到主线」或「推荐证据」。上传 PDF 会写入 fulltext.md 并可选生成 suggested claims。
+      「引用扩展」拉取 1-hop 参考文献（S2/Crossref），不自动 ingest。
       <span v-if="selection">已选 {{ selection.length }} 字</span>
       <span v-if="ingestMsg"> · {{ ingestMsg }}</span>
+      <span v-if="citeMsg"> · {{ citeMsg }}</span>
     </p>
+
+    <div v-if="citeRefs.length" class="card attach-panel">
+      <h2 style="margin-top:0;font-size:1.1rem">1-hop 引用扩展</h2>
+      <p class="muted" style="font-size:0.88rem;margin-top:0">
+        provider={{ citeProvider || '—' }} · 可手动对候选做 pdf-ingest
+      </p>
+      <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
+        <li v-for="(r, i) in citeRefs" :key="i" style="margin-bottom:0.45rem">
+          <strong>{{ r.title }}</strong>
+          <span class="muted" v-if="r.year"> · {{ r.year }}</span>
+          <span class="muted" v-if="r.citationCount != null"> · cites {{ r.citationCount }}</span>
+          <span v-if="r.doi"> · DOI {{ r.doi }}</span>
+          <span v-if="r.arxiv"> · arXiv {{ r.arxiv }}</span>
+          <a v-if="r.url" :href="r.url" target="_blank" rel="noopener">链接</a>
+        </li>
+      </ul>
+      <button style="margin-top:0.75rem" @click="citeRefs = []">关闭</button>
+    </div>
 
     <article ref="articleEl" class="card prose" v-html="html" @mouseup="captureSelection"></article>
 
@@ -119,6 +142,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import {
+  citationExpand,
   createThreadEvidence,
   exportBibtex,
   getPage,
@@ -140,6 +164,10 @@ const showRecommend = ref(false)
 const busy = ref(false)
 const attachMsg = ref('')
 const ingestMsg = ref('')
+const citeBusy = ref(false)
+const citeMsg = ref('')
+const citeRefs = ref([])
+const citeProvider = ref('')
 const recClaims = ref([])
 const recEvs = ref([])
 const articleEl = ref(null)
@@ -271,6 +299,25 @@ async function onIngestFile(ev) {
     ingestMsg.value = `已写入 fulltext · 候选 ${n}（suggested）`
   } catch (e) {
     ingestMsg.value = e?.response?.data?.detail || e.message || String(e)
+  }
+}
+
+async function runCitationExpand() {
+  citeBusy.value = true
+  citeMsg.value = ''
+  try {
+    const out = await citationExpand(props.path, 5)
+    citeRefs.value = out.references || []
+    citeProvider.value = out.provider || ''
+    citeMsg.value =
+      `扩展 ${citeRefs.value.length} 条` +
+      (out.warnings?.length ? ` · ${out.warnings[0]}` : '') +
+      (out.path ? ` · 已存 ${out.path}` : '')
+  } catch (e) {
+    citeMsg.value = e?.response?.data?.detail || e.message || String(e)
+    citeRefs.value = []
+  } finally {
+    citeBusy.value = false
   }
 }
 

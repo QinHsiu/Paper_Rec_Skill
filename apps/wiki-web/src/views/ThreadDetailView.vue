@@ -22,10 +22,23 @@
         <button :disabled="deltaBusy" @click="runDelta('diff_brief')">Diff brief</button>
         <button :disabled="suggestBusy" @click="loadSuggestions">主张建议</button>
         <button :disabled="rwBusy" @click="makeRelatedWork">Related Work 提纲</button>
+        <button :disabled="draftBusy" @click="makePaperDraft">多章草稿包</button>
         <button @click="exportThreadBib">导出 BibTeX</button>
       </div>
       <p v-if="actionMsg" class="muted" style="margin:0.5rem 0 0">{{ actionMsg }}</p>
     </header>
+
+    <section class="card" v-if="coverage">
+      <h2 style="margin-top:0;font-size:1.15rem">证据覆盖提示</h2>
+      <p style="margin:0;line-height:1.55">{{ coverage.advice }}</p>
+      <ul style="margin:0.5rem 0 0;padding-left:1.1rem;font-size:0.9rem" v-if="(coverage.claims || []).length">
+        <li v-for="c in coverage.claims" :key="c.claim_id" style="margin-bottom:0.35rem">
+          <code>{{ c.claim_id }}</code>
+          · 高置信 {{ c.high_confidence }} · 低置信 {{ c.low_confidence }}
+          — {{ c.advice }}
+        </li>
+      </ul>
+    </section>
 
     <section class="card" v-if="deltaResult">
       <h2 style="margin-top:0;font-size:1.15rem">最近 Delta · {{ deltaResult.mode }}</h2>
@@ -104,14 +117,40 @@
       <p class="muted" style="margin-top:0;font-size:0.88rem">
         claim → evidence → paper / experiment（在论文页选中文本可挂接）
       </p>
-      <div v-if="evidences.length">
-        <div v-for="e in evidences" :key="e.evidence_id" class="week-item">
+      <div class="ctrl-row">
+        <label class="run-chip">
+          gate
+          <select v-model="evGateFilter">
+            <option value="">全部</option>
+            <option value="accepted">accepted</option>
+            <option value="suggested">suggested</option>
+          </select>
+        </label>
+        <label class="run-chip">
+          conf
+          <select v-model="evConfFilter">
+            <option value="all">全部</option>
+            <option value="high">≥0.8 高置信</option>
+            <option value="low">&lt;0.8 低置信</option>
+          </select>
+        </label>
+      </div>
+      <div v-if="filteredEvidences.length">
+        <div
+          v-for="e in filteredEvidences"
+          :key="e.evidence_id"
+          class="week-item"
+          :class="evidenceClass(e)"
+        >
           <div class="meta-line">
             <span class="badge">{{ e.evidence_id }}</span>
+            <span v-if="isHighConf(e)" title="高置信">✅</span>
             <span>claim {{ e.claim_id }}</span>
             <span>{{ e.stance }}</span>
             <span v-if="e.support_status">status={{ e.support_status }}</span>
-            <span v-if="e.confidence != null">conf={{ e.confidence }}</span>
+            <span v-if="e.confidence != null" :class="isHighConf(e) ? 'conf-high' : 'conf-low'">
+              conf={{ e.confidence }}
+            </span>
             <span>gate={{ e.gate }}</span>
             <span>{{ e.kind }}</span>
           </div>
@@ -135,8 +174,21 @@
         </div>
       </div>
       <p v-else class="muted" style="margin:0">
-        尚无证据。打开关联论文，选中段落后点「挂到主线」。
+        尚无证据（或被筛选过滤）。打开关联论文，选中段落后点「挂到主线」。
       </p>
+    </section>
+
+    <section class="card" v-if="draftPreview">
+      <h2 style="margin-top:0;font-size:1.15rem">多章草稿包</h2>
+      <p class="muted" style="margin-top:0">
+        <code>{{ draftPreview.dir }}</code>
+        · Markdown 可溯源框架（非 LaTeX 成稿）
+      </p>
+      <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
+        <li v-for="(p, name) in draftPreview.paths" :key="name">
+          <code>{{ name }}</code> → {{ p }}
+        </li>
+      </ul>
     </section>
 
     <section class="card" v-if="rwPreview">
@@ -234,7 +286,9 @@ import { Chart, registerables } from 'chart.js'
 import {
   acceptThreadClaim,
   exportBibtex,
+  generatePaperDraft,
   generateRelatedWork,
+  getEvidenceCoverage,
   getThread,
   getThreadClaimSuggestions,
   getThreadGraph,
@@ -247,22 +301,52 @@ Chart.register(...registerables)
 const props = defineProps({ id: { type: String, required: true } })
 const thread = ref(null)
 const graph = ref(null)
+const coverage = ref(null)
 const deltaResult = ref(null)
 const suggestions = ref([])
 const deltaBusy = ref(false)
 const suggestBusy = ref(false)
 const rwBusy = ref(false)
+const draftBusy = ref(false)
 const actionMsg = ref('')
 const rwPreview = ref(null)
+const draftPreview = ref(null)
 const bibPreview = ref('')
 const graphCanvas = ref(null)
 const graphFocus = ref(null)
 const showTypes = ref(['thread', 'claim', 'evidence', 'paper', 'experiment'])
 const typeFilters = ['thread', 'claim', 'evidence', 'paper', 'experiment']
 const acceptedOnly = ref(false)
+const evGateFilter = ref('')
+const evConfFilter = ref('all')
 let graphChart
 
 const evidences = computed(() => thread.value?.evidences || [])
+
+function isHighConf(e) {
+  const c = e?.confidence
+  return c != null && Number(c) >= 0.8
+}
+
+function evidenceClass(e) {
+  if (isHighConf(e)) return 'ev-high'
+  if (e?.confidence != null && Number(e.confidence) < 0.8) return 'ev-low'
+  return ''
+}
+
+const filteredEvidences = computed(() => {
+  let rows = evidences.value
+  if (evGateFilter.value) {
+    rows = rows.filter((e) => e.gate === evGateFilter.value)
+  }
+  if (evConfFilter.value === 'high') {
+    rows = rows.filter((e) => isHighConf(e))
+  } else if (evConfFilter.value === 'low') {
+    rows = rows.filter((e) => e.confidence != null && Number(e.confidence) < 0.8)
+  }
+  return rows
+})
+
 const timelineDays = computed(() => graph.value?.timeline || [])
 
 const graphNodes = computed(() => {
@@ -371,6 +455,11 @@ function renderGraph() {
 async function load() {
   thread.value = await getThread(props.id)
   graph.value = await getThreadGraph(props.id)
+  try {
+    coverage.value = await getEvidenceCoverage(props.id)
+  } catch {
+    coverage.value = null
+  }
   await nextTick()
   renderGraph()
 }
@@ -443,6 +532,19 @@ async function makeRelatedWork() {
   }
 }
 
+async function makePaperDraft() {
+  draftBusy.value = true
+  try {
+    draftPreview.value = await generatePaperDraft(props.id, 'generic')
+    actionMsg.value = `已写入草稿包 ${draftPreview.value.dir}`
+    await load()
+  } catch (e) {
+    actionMsg.value = e?.response?.data?.detail || e.message || String(e)
+  } finally {
+    draftBusy.value = false
+  }
+}
+
 async function exportThreadBib() {
   const paths = thread.value?.paper_paths || []
   if (!paths.length) {
@@ -494,5 +596,21 @@ onBeforeUnmount(() => graphChart?.destroy())
   margin: 0;
   max-height: 28rem;
   overflow: auto;
+}
+.ev-high {
+  border-left: 3px solid #15803d;
+  padding-left: 0.65rem;
+}
+.ev-low {
+  opacity: 0.72;
+  border-left: 3px solid #94a3b8;
+  padding-left: 0.65rem;
+}
+.conf-high {
+  color: #15803d;
+  font-weight: 600;
+}
+.conf-low {
+  color: #64748b;
 }
 </style>

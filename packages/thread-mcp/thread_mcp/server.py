@@ -201,6 +201,48 @@ try:
         )
 
     @mcp.tool()
+    def paper_draft(thread_id: str, venue: str = "generic") -> str:
+        """Multi-chapter Markdown draft pack with [Claim:]/[Exp:] provenance (not LaTeX)."""
+        from wiki_bridge.paper_draft import build_paper_draft
+
+        out = build_paper_draft(_root(), thread_id, venue=venue)
+        slim = {k: v for k, v in out.items() if k != "chapters"}
+        slim["chapter_preview"] = {
+            name: (out["chapters"].get(name) or "")[:500] for name in ("abstract", "introduction")
+        }
+        return json.dumps(slim, ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def evidence_coverage(thread_id: str) -> str:
+        """Hypothesis/claim evidence confidence coverage advice."""
+        return json.dumps(
+            te.hypothesis_evidence_coverage(_root(), thread_id),
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    @mcp.tool()
+    def citation_expand(paper_path: str, top_k: int = 5) -> str:
+        """1-hop citation expand for a wiki paper (S2/Crossref; no auto ingest)."""
+        from wiki_bridge.citation_expand import expand_citations
+
+        return json.dumps(
+            expand_citations(_root(), paper_path, top_k=top_k),
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    @mcp.tool()
+    def prerank_papers(query: str, papers_json: str, top_k: int = 30) -> str:
+        """BM25+recency pre-rank before LLM fine-rank. papers_json = JSON list."""
+        from wiki_bridge.prerank import prerank
+
+        papers = json.loads(papers_json)
+        if not isinstance(papers, list):
+            raise ValueError("papers_json must be a JSON list")
+        return json.dumps(prerank(query, papers, top_k=top_k), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
     def thread_delta(thread_id: str, mode: str = "auto") -> str:
         """Run Watch/Delta brief (diff_brief|gap_focus|new_digest|exp_bridge|auto)."""
         result = run_delta(_root(), thread_id, mode=mode, persist=True)

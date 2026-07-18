@@ -11,7 +11,7 @@ Thanks for helping. This repo is a **research OS** (literature skill + Wiki + Co
 | Compose with [article-mcp](https://github.com/fangfuzha/article-mcp) for search | Duplicate generic multi-source search MCP tools |
 | Prefer small, reviewable PRs | Bundle unrelated skill + UI + docs rewrites |
 
-Design contracts: [`docs/THREAD_DESIGN.md`](docs/THREAD_DESIGN.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/OPTIMIZATION_PLAN.md`](docs/OPTIMIZATION_PLAN.md).
+Design contracts: [`docs/THREAD_DESIGN.md`](docs/THREAD_DESIGN.md) · [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Dev environment
 

@@ -280,6 +280,24 @@ def related_work(thread_id: str) -> dict[str, Any]:
     return build_related_work_outline(wiki_root(), thread_id)
 
 
+def paper_draft(thread_id: str, venue: str = "generic") -> dict[str, Any]:
+    from wiki_bridge.paper_draft import build_paper_draft
+
+    return build_paper_draft(wiki_root(), thread_id, venue=venue)
+
+
+def evidence_coverage(thread_id: str) -> dict[str, Any]:
+    from wiki_bridge.thread_evidence import hypothesis_evidence_coverage
+
+    return hypothesis_evidence_coverage(wiki_root(), thread_id)
+
+
+def citation_expand(paper_path: str, top_k: int = 5) -> dict[str, Any]:
+    from wiki_bridge.citation_expand import expand_citations
+
+    return expand_citations(wiki_root(), paper_path, top_k=top_k)
+
+
 def bibtex_for_paths(paths: list[str]) -> dict[str, Any]:
     from wiki_bridge.bibtex_export import export_bibtex
 

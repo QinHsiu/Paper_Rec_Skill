@@ -14,6 +14,7 @@ dependencies = [
 
 [project.scripts]
 paper-rec-threads = "thread_mcp.server:main"
+paper-rec-configure = "thread_mcp.configure:main"
 
 [tool.setuptools.packages.find]
 include = ["thread_mcp*"]

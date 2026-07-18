@@ -11,6 +11,14 @@ pip install -e .
 pip install -e ../wiki-bridge
 ```
 
+## One-shot configure
+
+```bash
+paper-rec-configure              # dry-run
+paper-rec-configure --apply      # write docs/mcp.example.json + .cursor/mcp.json
+# scripts/configure-mcp.ps1 | configure-mcp.sh
+```
+
 ## Run
 
 ```bash
@@ -50,13 +58,16 @@ pip install "mcp>=1.0"
 |------|---------|
 | `thread_list` / `thread_get` | List / full state + evidences |
 | `thread_search_context` / `thread_query_hint` | Context + query hints for external search |
-| `thread_score_papers` | Score candidates vs thread |
+| `thread_score_papers` / `prerank_papers` | Score vs thread / BM25+recency pre-rank |
 | `thread_link_paper` / `thread_link_exp` | Membership |
-| `thread_add_evidence` | Claim–Evidence Map (+ confidence / support_status) |
+| `thread_add_evidence` / `evidence_coverage` | Claim–Evidence Map + confidence UX |
 | `thread_graph` | Cognitive map JSON |
-| `bibtex_export` / `related_work` / `section_outline` | Export & writing frames |
+| `bibtex_export` / `related_work` / `section_outline` / `paper_draft` | Export & writing frames |
+| `citation_expand` | 1-hop refs (S2/Crossref) |
 | `thread_delta` / `thread_claim_*` | Watch + claim gates |
 | `wiki_list_papers` / `exp_list` / `exp_get_metrics` | Local wiki/exp read |
+
+**Configure**: `paper-rec-configure` (dry-run) · `--apply` · see `docs/MCP.md`.
 
 Compose retrieval with [article-mcp](https://github.com/fangfuzha/article-mcp); this server owns **memory**.
 

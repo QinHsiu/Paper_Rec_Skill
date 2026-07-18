@@ -295,6 +295,72 @@ def evidences_by_claim(wiki_root: Path, thread_id: str) -> dict[str, list[dict[s
     return out
 
 
+def hypothesis_evidence_coverage(
+    wiki_root: Path,
+    thread_id: str,
+    *,
+    high_threshold: float = 0.8,
+) -> dict[str, Any]:
+    """UX helper: per-claim high/low confidence counts + advice for the hypothesis."""
+    data = ts.load_thread(wiki_root, thread_id)
+    evs = list_evidences(wiki_root, thread_id)
+    by_claim = evidences_by_claim(wiki_root, thread_id)
+    claim_rows = []
+    total_high = total_low = 0
+    for c in data.get("claims") or []:
+        cid = str(c.get("id") or "")
+        rows = by_claim.get(cid) or []
+        high = low = 0
+        for e in rows:
+            try:
+                conf = float(e.get("confidence") if e.get("confidence") is not None else 0.6)
+            except (TypeError, ValueError):
+                conf = 0.6
+            if conf >= high_threshold:
+                high += 1
+            else:
+                low += 1
+        total_high += high
+        total_low += low
+        advice = ""
+        if high == 0 and low == 0:
+            advice = "尚无证据，建议挂接论文片段或实验指标。"
+        elif high == 0:
+            advice = f"仅有 {low} 条低置信证据，建议补充高置信引用或实验。"
+        elif low > high:
+            advice = f"有 {high} 条高置信、{low} 条低置信证据，可优先核实低置信项。"
+        else:
+            advice = f"有 {high} 条高置信证据支持，{low} 条低置信可作补充。"
+        claim_rows.append(
+            {
+                "claim_id": cid,
+                "text": c.get("text"),
+                "status": c.get("status"),
+                "high_confidence": high,
+                "low_confidence": low,
+                "advice": advice,
+            }
+        )
+    hyp_advice = (
+        f"此假设关联 {len(claim_rows)} 条主张：高置信证据 {total_high} 条，"
+        f"低置信 {total_low} 条。"
+    )
+    if total_high == 0:
+        hyp_advice += " 建议补充实验或高置信文献证据。"
+    elif total_low > total_high:
+        hyp_advice += " 低置信偏多，建议筛选或补强。"
+    return {
+        "thread_id": thread_id,
+        "hypothesis": data.get("hypothesis"),
+        "high_threshold": high_threshold,
+        "high_confidence_total": total_high,
+        "low_confidence_total": total_low,
+        "advice": hyp_advice,
+        "claims": claim_rows,
+        "evidence_count": len(evs),
+    }
+
+
 def evidence_map_summary(wiki_root: Path, thread_id: str) -> dict[str, Any]:
     """Compact graph for UI: claims ↔ evidences ↔ papers/exps."""
     data = ts.load_thread(wiki_root, thread_id)

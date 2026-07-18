@@ -397,6 +397,84 @@ def cmd_section_outline(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_paper_draft(args: argparse.Namespace) -> int:
+    from .paper_draft import build_paper_draft
+
+    out = build_paper_draft(Path(args.wiki_root), args.thread, venue=args.venue)
+    print(
+        json.dumps(
+            {
+                "dir": out["dir"],
+                "venue": out["venue"],
+                "paths": out["paths"],
+                "bibtex_count": out["bibtex_count"],
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
+def cmd_prerank(args: argparse.Namespace) -> int:
+    from .prerank import prerank_from_json
+
+    payload = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    out = prerank_from_json(
+        payload,
+        query=args.query,
+        top_k=args.top_k,
+        use_citations=not args.no_citations,
+    )
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(
+        json.dumps(
+            {
+                "prerank": out["prerank"],
+                "input_n": out["input_n"],
+                "kept_n": out["kept_n"],
+                "top_k": out["top_k"],
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
+def cmd_citation_expand(args: argparse.Namespace) -> int:
+    from .citation_expand import expand_citations
+
+    out = expand_citations(
+        Path(args.wiki_root),
+        args.path,
+        top_k=args.top_k,
+        persist=not args.no_persist,
+    )
+    print(
+        json.dumps(
+            {
+                "provider": out.get("provider"),
+                "fetched_n": out.get("fetched_n"),
+                "top_k": out.get("top_k"),
+                "path": out.get("path"),
+                "references": out.get("references"),
+                "warnings": out.get("warnings"),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0
+
+
+def cmd_evidence_coverage(args: argparse.Namespace) -> int:
+    from .thread_evidence import hypothesis_evidence_coverage
+
+    out = hypothesis_evidence_coverage(Path(args.wiki_root), args.thread)
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="wiki_bridge", description="Paper_Rec ↔ Wiki Markdown bridge")
     sub = p.add_subparsers(dest="command", required=True)
@@ -576,6 +654,32 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--section", default="method", help="method|experiments|related_work")
     s.add_argument("--print-md", action="store_true")
     s.set_defaults(func=cmd_section_outline)
+
+    s = sub.add_parser("paper-draft", help="Multi-chapter Markdown draft pack (traceable, not LaTeX)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--venue", default="generic", help="cvpr|icml|neurips|acl|generic")
+    s.set_defaults(func=cmd_paper_draft)
+
+    s = sub.add_parser("prerank", help="BM25+recency pre-rank candidates before LLM fine-rank")
+    s.add_argument("--json", required=True, help="JSON list or {papers/candidates, query}")
+    s.add_argument("--query", default="")
+    s.add_argument("--top-k", type=int, default=30)
+    s.add_argument("--no-citations", action="store_true")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_prerank)
+
+    s = sub.add_parser("citation-expand", help="1-hop citation expand (S2/Crossref)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--path", required=True, help="wiki paper path")
+    s.add_argument("--top-k", type=int, default=5)
+    s.add_argument("--no-persist", action="store_true")
+    s.set_defaults(func=cmd_citation_expand)
+
+    s = sub.add_parser("evidence-coverage", help="Hypothesis/claim evidence confidence summary")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.set_defaults(func=cmd_evidence_coverage)
 
     return p
 

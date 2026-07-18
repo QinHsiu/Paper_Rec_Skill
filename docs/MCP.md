@@ -12,7 +12,28 @@ Recommended composition:
 2. `thread_query_hint` / `thread_search_context` / `thread_score_papers` → Thread-conditioned judgment  
 3. `thread_link_*` + `thread_add_evidence` after human/agent gate  
 
-## Quick config (2.9.0+)
+## Quick config (2.16+)
+
+**推荐**：安装后先 dry-run，再 `--apply` 写入。
+
+```powershell
+# Windows
+powershell -ExecutionPolicy Bypass -File scripts/configure-mcp.ps1
+powershell -ExecutionPolicy Bypass -File scripts/configure-mcp.ps1 -Apply
+```
+
+```bash
+# macOS / Linux
+chmod +x scripts/configure-mcp.sh
+./scripts/configure-mcp.sh
+./scripts/configure-mcp.sh --apply
+# after pip install -e packages/thread-mcp:
+paper-rec-configure --apply
+```
+
+- 默认目标：`docs/mcp.example.json` + 项目 `.cursor/mcp.json`
+- 全局 Cursor / Claude Desktop：`--target cursor-user` / `--target claude-desktop`（建议加 `--force`，会写 `.bak`）
+- VS Code Continue：见下方提示，手动合并同一 `mcpServers` 块
 
 **No PYTHONPATH required.** Set `PAPER_REC_ROOT` to the workspace root; the server auto-adds `packages/wiki-bridge`.
 
@@ -49,10 +70,11 @@ See [`packages/thread-mcp/README.md`](../packages/thread-mcp/README.md).
 |------|------|
 | `thread_list` / `thread_get` | List / full state + evidences |
 | `thread_search_context` / `thread_query_hint` | Context + query hints for external search |
-| `thread_score_papers` | Score candidates vs thread |
+| `thread_score_papers` / `prerank_papers` | Score vs thread / BM25 pre-rank |
 | `thread_link_paper` / `thread_link_exp` | Membership |
-| `thread_add_evidence` | Claim–Evidence Map (+ confidence) |
-| `thread_graph` / `bibtex_export` / `related_work` / `section_outline` | Graph + writing assist |
+| `thread_add_evidence` / `evidence_coverage` | Claim–Evidence Map + confidence UX |
+| `thread_graph` / `bibtex_export` / `related_work` / `section_outline` / `paper_draft` | Graph + writing frames |
+| `citation_expand` | 1-hop refs (S2/Crossref) |
 | `thread_delta` / `thread_claim_*` | Watch + claim gates |
 | `wiki_list_papers` | Local wiki cards |
 | `exp_list` / `exp_get_metrics` | Local experiment metrics |

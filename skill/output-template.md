@@ -104,7 +104,9 @@ Copy and fill for each paper. **Each field: ≤2 sentences.** Choose the templat
 | 0 | gap | ... | | |
 | 1 | refine | ... | | |
 
-`Latest-intent: on/off` · `Iterative: on/off` · `Thread: {id or —}`
+`Latest-intent: on/off` · `Iterative: on/off` · `Prerank: on/off` · `Thread: {id or —}`
+
+When prerank ran: `Prerank kept {kept}/{input} (top_k={k})`
 
 ---
 
