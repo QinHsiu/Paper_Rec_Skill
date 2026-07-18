@@ -27,10 +27,22 @@ Keep each subsection short unless the user asks for depth.
 1. …
 2. …
 
-## Solution Plans (multi)
-| Plan | Hypothesis | Actions (data/label) | Expected gain | Cost/Risk | Rank |
-|------|------------|----------------------|---------------|-----------|------|
-| P1 | | | | | 1 |
+## Solution Plans (multi) — 摘要表
+| Plan | Hypothesis | 数据侧要点 | 模型侧要点 | 训练侧要点 | Gain | Rank |
+|------|------------|------------|------------|------------|------|------|
+| P1 | | | | | | 1 |
+
+完整正文必须按三侧模板展开，见 [`reference/plan_template.md`](reference/plan_template.md) → `plans/P*.md`：
+
+```text
+0 诊断摘要（evidence + figures）
+1 数据侧: 现象 → 可视化 → 结论 → 调整方案表 → mini-verify
+2 模型侧: 是否选型 → 榜单对比 / 家族下钻 → mini-verify（或 N/A）
+3 训练侧: 配方 diff → 曲线出图 → mini-verify
+4 收益与风险 · 5 执行顺序
+```
+
+示例（不均衡）: 画类分布 bar → 结论「训练集比例需调整」→ D1 过采样/平衡采样规则 → T1 focal/加权 CE。
 
 ## Recommended Next Step
 - chosen for mini-validation:

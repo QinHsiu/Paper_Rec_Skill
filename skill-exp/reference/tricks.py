@@ -196,9 +196,10 @@ _KEYWORD_MAP: list[tuple[str, tuple[str, ...]]] = [
     ("data_first", ("熟悉数据", "data_first", "pipeline", "新任务", "dataloader", "未摸清")),
     ("overfitting", ("overfit", "过拟合", "train>>val", "train ≫ val", "memorize")),
     ("long_tail", ("long_tail", "long-tail", "长尾", "imbalance", "不平衡", "rare class", "focal")),
-    ("hard_subset", ("handwrit", "手写", "hard_subset", "domain", "拼音", "style", "难例")),
+    # label_noise before hard_subset (avoid 'handwrit' matching inside 'label_noise_handwrite')
+    ("label_noise", ("label_noise", "noisy label", "标噪", "错标", "mislabel", "cleanlab", "relabel")),
+    ("hard_subset", ("handwriting", "手写", "hard_subset", "domain gap", "拼音", "style gap", "难例子集")),
     ("underfit", ("underfit", "欠拟合", "high loss", "not converge", "不收敛", "warmup")),
-    ("label_noise", ("label_noise", "noisy label", "标噪", "错标", "mislabel", "cleanlab")),
     ("train_unstable", ("nan", "不稳定", "spike", "explode", "dead relu", "死神经元")),
     ("oom", ("oom", "out of memory", "显存", "cuda memory", "fp16")),
     ("eval_boost", ("tta", "test-time", "ensemble", "融合", "推理增强")),
@@ -251,36 +252,10 @@ def plans_from_symptom(
 
 
 def render_plan_md(plan: Plan) -> str:
-    src = plan.meta.get("source", "")
-    symptom = plan.meta.get("symptom", "")
-    lines = [
-        f"# {plan.plan_id}",
-        "",
-        f"- hypothesis: {plan.hypothesis}",
-        f"- symptom: `{symptom}`",
-        f"- source: `{src}`",
-        f"- expected_gain: {plan.expected_gain}",
-        f"- cost: {plan.cost}",
-        f"- risk: {plan.risk}",
-        "",
-        "## Actions",
-    ]
-    for a in plan.actions:
-        lines.append(f"- {a}")
-    if plan.special_questions:
-        lines.extend(["", "## Special questions"])
-        for q in plan.special_questions:
-            lines.append(f"- {q}")
-    lines.extend(
-        [
-            "",
-            "## Notes",
-            "- Analyze-first: filled from bundled tricks catalog after clustering.",
-            "- Mini-verify before full `/exp_training`.",
-            "",
-        ]
-    )
-    return "\n".join(lines)
+    """Full three-pillar template (data / model / train). See plan_template.md."""
+    from .plan_template import render_full_plan_md
+
+    return render_full_plan_md(plan)
 
 
 def enrich_cluster_plans(

@@ -1,14 +1,14 @@
 ---
 name: exp-sandbox
-version: 1.5.0
+version: 1.7.0
 description: >-
   Automated experiment sandbox: dataset analysis, training, evaluation, and a
   self-improving loop (analyze → multi-plan → mini-verify → train → eval →
   iterate). Activated by /exp_analysis, /exp_training, /exp_eval, or /exp_loop.
   Use for ML experiment orchestration, badcase clustering, data/label cleaning
   plans, training monitors, target_score chasing, 实验沙箱/训练分析/评估迭代.
-  Figures follow /draw (skill-draw/lib). Bundled symptom→action tricks in
-  reference/tricks_catalog.md. Reference stubs under skill-exp/reference/.
+  Plans use three-pillar template (data/model/train). Figures via /draw.
+  Bundled tricks + model leaderboards in reference/.
 ---
 
 # Experiment Sandbox Skill / 实验沙箱技能
@@ -117,11 +117,12 @@ If provided, use them. If **not** provided, fall back to lightweight ML / statis
 When tools are insufficient, enrich plans from:
 
 - **Bundled** symptom→action catalog: [`reference/tricks_catalog.md`](reference/tricks_catalog.md) / `reference/tricks.py` (no external path)
-- Papers With Code / Hugging Face open results & baselines
-- Paper notes in local Wiki (`content/wiki/pages/…` reading notes)
-- Paper_Rec recommendations (methods, datasets, metrics)
+- **Bundled** model boards: [`reference/model_leaderboards.md`](reference/model_leaderboards.md) / `reference/model_select.py`
+- Hugging Face Open LLM Leaderboard + model cards (open: train / distill)
+- Closed-model arenas for cleaning teachers (LMArena / Artificial Analysis / SuperCLUE)
+- Papers With Code / Wiki notes / Paper_Rec recommendations
 
-Document every borrowed method in the plan log (`source:` field).
+Document every borrowed method / board snapshot date in the plan log (`source:` field).
 
 ---
 
@@ -132,11 +133,16 @@ Document every borrowed method in the plan log (`source:` field).
 1. **badcase_sets**: Collect failures from eval (or high-loss train samples). Keep ids, inputs, preds, gold, scores.
 2. **gen_analysis_cluster**: Aggregate badcases into clusters; preserve **diversity** (do not collapse everything into one bucket). Prefer coverage of modalities/error types by frequency × severity.
 3. **special_question**: Name concrete sub-problems, e.g. *「OCR 对手写拼音识别效果差」*.
-4. **solution_plan** (**analyze first, then catalog**):
+4. **solution_plan** (**analyze first, then three-pillar plan**):
    - Map each priority cluster → a **symptom** (`overfitting` / `long_tail` / `hard_subset` / …).
-   - From the **bundled** catalog pick **2–3 verifiable actions** (not the whole cookbook).
-   - Write `content/exp/<id>/plans/P*.md` with `source: tricks:<symptom>#…` (see `reference/tricks.render_plan_md`).
-   - Prefer `reference.badcase.plans_from_clusters` / `tricks.enrich_cluster_plans`.
+   - From the **bundled** catalog pick **2–3 verifiable actions** (seed steps).
+   - Expand each plan with the **数据侧 / 模型侧 / 训练侧** template ([`reference/plan_template.md`](reference/plan_template.md)):
+     - **数据侧**: 现象 → `/draw` 可视化 → 结论 → **可执行调整**（如不均衡则给出训练集比例/采样方案）→ data mini-verify  
+     - **模型侧**: 是否换模；需要则榜单短名单 + 家族下钻对比；否则 `N/A`  
+     - **训练侧**: loss/sampler/LR/正则等配方 diff + 曲线出图 → train mini-verify  
+   - If actions need **model selection** → run [Model selection](#model-selection--模型选型必做) inside §2.
+   - Write `content/exp/<id>/plans/P*.md` via `reference.tricks.render_plan_md` / `plan_template.render_full_plan_md`.
+   - Prefer `reference.badcase.plans_from_clusters`.
    - Rank by expected gain vs cost; high-mass clusters first (keep one long-tail).
 
 ### Self-analysis
@@ -152,8 +158,29 @@ Choose next actions from:
 | **data_clean** | increase / remove / modify / insert / inspect samples |
 | **label_clean** | self-sampling review / multi-model consensus / relabel |
 | **train_recipe** | regularize / SWA / focal·weighted loss / diff_lr / warmup·cosine / fp16 (after analysis) |
+| **model_select** | clean_closed / clean_open / train_base / distill_teacher·student — board-backed shortlist + family drill-down |
 | **eval_recipe** | TTA / ensemble (optional, after train plans) |
 
+### Model selection / 模型选型（必做）
+
+Trigger when the plan mentions 基座 / backbone / 蒸馏 / 清洗用模型 / teacher·student / 选型.
+
+| Role | Use | Prefer | Boards (see `model_leaderboards.md`) |
+|------|-----|--------|--------------------------------------|
+| `clean_closed` | 数据/标签清洗、难例改写 | 闭源 API | LMArena, Artificial Analysis, SuperCLUE, LLMRank |
+| `clean_open` | 本地教师标注（隐私/成本） | 开源权重 | **HF Open LLM Leaderboard**, OpenCompass, LiveBench |
+| `train_base` | SFT / 继续预训练基座 | 可部署开源 | HF Open LLM LB, OpenCompass, 任务专项榜 |
+| `distill_teacher` | 蒸馏教师 | 强闭源或大开源 | AA / LMArena / SuperCLUE → 再筛可蒸馏开源教师 |
+| `distill_student` | 蒸馏学生 / 部署小模 | 开源中小尺寸 | HF 按 size/license 过滤 + 任务指标 |
+
+**Procedure**
+
+1. Pick role(s) from the plan actions (`reference.model_select.infer_roles_from_actions`).
+2. Consult **≥2 boards** for that role; record `retrieved: YYYY-MM-DD`. **Do not invent scores.**
+3. Shortlist **Top-3–5** with open/closed, size, license, scores, VRAM/cost vs `tool/function.notes`.
+4. **Family drill-down**: if user or plan picks a family (e.g. Qwen), search HF for that family’s best **open** instruct checkpoints (≥3 variants), compare on boards + card evals + deploy fit, then choose primary/backup.
+5. Embed the comparison table in `plans/P*.md` via `reference.model_select.render_model_select_md` (required section `## Model selection`).
+6. Only then lock the model id into the executable plan steps.
 ---
 
 ## Module B — Plan Record & Mini Evaluation
@@ -328,6 +355,6 @@ Use [output-template.md](output-template.md). Keep fields concise (≤3 short bu
 - Paper retrieval skill: `../skill/` (`/query_*`)
 - **Plot skill**: [`../skill-draw/`](../skill-draw/) (`/draw`) — figures for analysis / train / eval
 - Wiki notes: `../content/wiki/`
-- **Reference code (agent stubs)**: [`reference/`](reference/) — Predict-then-Verify, preference, badcase, tricks catalog, orchestrator
+- **Reference code (agent stubs)**: [`reference/`](reference/) — Predict-then-Verify, preference, badcase, tricks, model_select, orchestrator
 - Examples: [examples.md](examples.md)
 - Attribution: [README.md](README.md#acknowledgement--借鉴说明)
