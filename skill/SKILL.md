@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.6.0
+version: 1.7.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -312,7 +312,9 @@ For the final report, deep-read the **top 10–15** papers; use metadata-only fo
 
 ### 2a Multi-path queries / 多路查询（Thread 或 iterative 时）
 
-**When**: Module 1.5 thread is active, **or** user says `iterative` / `迭代检索`.
+**When**: Module 1.5 thread is active, **or** user says `iterative` / `迭代检索`, **or** exactly one `status:active` thread exists (default **on** for that case).
+
+**Default**: When a single active thread is injected via 1.5, enable **1** refine wave automatically. User can say `no-iterative` / `不迭代` to skip. Do **not** iterate on plain `/query_*` with zero thread context.
 
 **Action** (before / during 2.2):
 1. Build **up to 4** query paths from rewritten + thread state:
@@ -325,7 +327,7 @@ For the final report, deep-read the **top 10–15** papers; use metadata-only fo
 
 ### 2b Iterative refine / 自动收窄·放宽（有上限）
 
-**When**: same as 2a. **Default max rounds = 1** refinement after the initial pass (total ≤ 2 search waves). Need `thread:<id>` or explicit `iterative` — do **not** iterate by default on plain `/query_*`.
+**When**: same as 2a. **Default max rounds = 1** refinement after the initial pass (total ≤ 2 search waves). Triggers: `thread:<id>`, explicit `iterative`, or single active thread (unless `no-iterative`).
 
 **Action**:
 1. After wave 0, if kept unique hits **&lt; 8** → widen (drop rare terms / add synonyms / sibling venues); if **&gt; 40** noisy → narrow (add claim/gap tokens, year filter).
@@ -457,6 +459,10 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki thread <id>` | Show hypothesis, claims, gaps, members, recent events |
 | `/wiki thread create <title>` | Create thread via bridge (ask hypothesis/keywords if missing) |
 | `/wiki thread delta [id]` | Run Watch/Delta (`auto`/`diff_brief`/`gap_focus`/`exp_bridge`) |
+| `/wiki thread related-work [id]` | Write Related Work outline under `drafts/` |
+| `/wiki pdf <path> --pdf file` | Ingest PDF/txt → `fulltext.md` beside paper |
+| `/wiki claim-suggest <path> --thread id` | Suggested claims/evidences from fulltext |
+| `/wiki bibtex [--thread id]` | Export BibTeX for paths / thread members |
 
 ### Thread ops (do this yourself)
 
@@ -467,6 +473,11 @@ python -m wiki_bridge.cli thread-list --wiki-root ../..
 python -m wiki_bridge.cli thread-show --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli thread-create --wiki-root ../.. --title "..." --hypothesis "..." --keywords "a,b"
 python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id <thread_id> --mode auto --print-md
+python -m wiki_bridge.cli thread-graph --wiki-root ../.. --id <thread_id>
+python -m wiki_bridge.cli related-work --wiki-root ../.. --thread <thread_id> --print-md
+python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path llm/2025/foo
+python -m wiki_bridge.cli claim-suggest --wiki-root ../.. --path llm/2025/foo --thread <id> --apply
+python -m wiki_bridge.cli bibtex-export --wiki-root ../.. --thread <id> --out refs.bib
 python -m wiki_bridge.cli thread-claim --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli thread-claim --wiki-root ../.. --id <thread_id> --claim-id C1 --status supported --accept
 ```

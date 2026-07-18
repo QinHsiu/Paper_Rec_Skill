@@ -7,8 +7,8 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.10.1-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
-[![paper-rec](https://img.shields.io/badge/paper--rec-v1.6.0-1A2332?style=for-the-badge)](skill/VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.12.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![paper-rec](https://img.shields.io/badge/paper--rec-v1.7.0-1A2332?style=for-the-badge)](skill/VERSION)
 [![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.8.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
 [![MCP](https://img.shields.io/badge/MCP-Thread%20Memory-0F766E?style=for-the-badge&labelColor=1A2332)](docs/MCP.md)
@@ -300,6 +300,8 @@ Paper_Rec_Skill/
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 模块边界与数据约定 |
 | [docs/THREAD_DESIGN.md](docs/THREAD_DESIGN.md) | Cognitive Thread v2 契约 |
 | [docs/MCP.md](docs/MCP.md) | Thread Memory MCP |
+| [docs/OPTIMIZATION_PLAN_v4.md](docs/OPTIMIZATION_PLAN_v4.md) | 下一轮优化（v4 已落地说明） |
+| [docs/MCP_PUBLISH.md](docs/MCP_PUBLISH.md) | MCP 目录提交清单 |
 | [docs/tutorials/thread-research-memory.md](docs/tutorials/thread-research-memory.md) | 用 Thread 管研究方向（案例） |
 | [docs/GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md) | 新手可领任务 |
 | [docs/MIGRATION.md](docs/MIGRATION.md) | 路径迁移 |

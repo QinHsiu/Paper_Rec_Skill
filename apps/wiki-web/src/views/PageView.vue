@@ -21,6 +21,7 @@
         <button class="primary" @click="openAttach" :disabled="!selection.trim()">
           挂到主线
         </button>
+        <button @click="copyBibtex">导出 BibTeX</button>
         <RouterLink :to="`/edit/${path}`"><button>编辑笔记</button></RouterLink>
         <RouterLink to="/pages"><button>返回列表</button></RouterLink>
       </div>
@@ -80,6 +81,7 @@ import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import {
   createThreadEvidence,
+  exportBibtex,
   getPage,
   getThread,
   listThreads,
@@ -169,6 +171,21 @@ async function submitEvidence() {
     attachMsg.value = e?.response?.data?.detail || e.message || String(e)
   } finally {
     busy.value = false
+  }
+}
+
+async function copyBibtex() {
+  try {
+    const data = await exportBibtex([props.path])
+    const text = data.bibtex || ''
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      attachMsg.value = `BibTeX 已复制` + (data.warnings?.length ? `（警告 ${data.warnings.length}）` : '')
+    } else {
+      attachMsg.value = text.slice(0, 200)
+    }
+  } catch (e) {
+    attachMsg.value = e?.response?.data?.detail || e.message || String(e)
   }
 }
 

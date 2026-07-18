@@ -32,6 +32,7 @@ content/threads/<thread_id>/
 | **D** | Wiki exp Chart.js viz + `/draw` venue styles | done |
 | **E** | Claim–Evidence Map + MCP zero-PYTHONPATH / wiki·exp tools | done (2.9.0) |
 | **F** | Iterative retrieval (`query_iter`) + multi-run exp board | done (2.10.0) |
+| **G** | Cognitive map graph + timeline; PDF-lite; BibTeX; Related Work outline | done (2.12.0) |
 
 ## Watch / Delta (Phase B)
 
@@ -63,6 +64,21 @@ Skill Modules **2a/2b**: multi-path queries + ≤1 refine wave when `thread:` or
 ## Multi-run curves (Phase F / 2.10.0)
 
 `metrics/curves.json` + `metrics/curves_<run>.json` → API `curve_runs[]`. Wiki ExpDetail: run overlay, compare exp, primary-only, 5s poll.
+
+## Related Work outline (Phase G)
+
+CLI: `related-work --thread` → `content/threads/<id>/drafts/related_work_outline.md`  
+API: `POST /api/threads/{id}/related-work`  
+Skill: `/wiki thread related-work`
+
+## PDF-lite + BibTeX (Phase G)
+
+- `pdf-ingest` → `fulltext.md`; `claim-suggest --apply` → suggested claims/evidences  
+- `bibtex-export`; API `GET /api/wiki/bibtex?paths=`
+
+## Cognitive graph (Phase G)
+
+CLI: `thread-graph` · API: `GET /api/threads/{id}/graph` (nodes/edges + day-grouped timeline)
 
 ## MCP (Phase C + E)
 

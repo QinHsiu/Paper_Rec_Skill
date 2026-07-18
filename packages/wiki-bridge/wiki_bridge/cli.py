@@ -315,6 +315,76 @@ def cmd_query_trace(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_thread_graph(args: argparse.Namespace) -> int:
+    from .thread_graph import build_thread_graph
+
+    print(json.dumps(build_thread_graph(Path(args.wiki_root), args.id), ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_pdf_ingest(args: argparse.Namespace) -> int:
+    from .pdf_ingest import ingest_pdf
+
+    out = ingest_pdf(
+        Path(args.wiki_root),
+        Path(args.pdf),
+        args.path,
+        title=args.title or "",
+    )
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_claim_suggest(args: argparse.Namespace) -> int:
+    from .pdf_ingest import apply_claim_suggestions, suggest_claims_from_fulltext
+
+    root = Path(args.wiki_root)
+    if args.apply and args.thread:
+        out = apply_claim_suggestions(
+            root,
+            args.thread,
+            args.path,
+            max_claims=args.max,
+            also_evidence=not args.no_evidence,
+        )
+    else:
+        out = {"candidates": suggest_claims_from_fulltext(root, args.path, max_claims=args.max)}
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_bibtex_export(args: argparse.Namespace) -> int:
+    from .bibtex_export import export_bibtex
+
+    paths = _split_csv(args.paths) if args.paths else []
+    if args.thread:
+        data = thread_store.load_thread(Path(args.wiki_root), args.thread)
+        paths = list(dict.fromkeys(paths + list(data.get("paper_paths") or [])))
+    out = export_bibtex(Path(args.wiki_root), paths)
+    if args.out:
+        Path(args.out).write_text(out["bibtex"], encoding="utf-8")
+        print(f"Wrote {args.out} ({out['count']} entries)")
+        for w in out["warnings"]:
+            print(f"  ! {w}")
+    else:
+        print(out["bibtex"])
+        if out["warnings"]:
+            print("% warnings:", file=sys.stderr)
+            for w in out["warnings"]:
+                print(f"% {w}", file=sys.stderr)
+    return 0
+
+
+def cmd_related_work(args: argparse.Namespace) -> int:
+    from .related_work import build_related_work_outline
+
+    out = build_related_work_outline(Path(args.wiki_root), args.thread)
+    print(json.dumps({"path": out["path"], "chars": len(out["markdown"])}, ensure_ascii=False))
+    if args.print_md:
+        print(out["markdown"])
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="wiki_bridge", description="Paper_Rec ↔ Wiki Markdown bridge")
     sub = p.add_subparsers(dest="command", required=True)
@@ -447,6 +517,40 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--kept", type=int, default=None)
     s.add_argument("--notes", default="")
     s.set_defaults(func=cmd_query_trace)
+
+    s = sub.add_parser("thread-graph", help="Claim–Evidence cognitive graph JSON")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--id", required=True)
+    s.set_defaults(func=cmd_thread_graph)
+
+    s = sub.add_parser("pdf-ingest", help="PDF/txt → wiki paper fulltext.md")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--pdf", required=True, help="PDF or .txt/.md extraction")
+    s.add_argument("--path", required=True, help="wiki paper path")
+    s.add_argument("--title", default="")
+    s.set_defaults(func=cmd_pdf_ingest)
+
+    s = sub.add_parser("claim-suggest", help="Suggest claims from fulltext.md")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--path", required=True)
+    s.add_argument("--thread", default="")
+    s.add_argument("--max", type=int, default=5)
+    s.add_argument("--apply", action="store_true", help="write suggested claims to thread")
+    s.add_argument("--no-evidence", action="store_true")
+    s.set_defaults(func=cmd_claim_suggest)
+
+    s = sub.add_parser("bibtex-export", help="Export BibTeX from wiki paper paths")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--paths", default="", help="comma-separated wiki paths")
+    s.add_argument("--thread", default="", help="also include thread member papers")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_bibtex_export)
+
+    s = sub.add_parser("related-work", help="Write Related Work outline from thread")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--print-md", action="store_true")
+    s.set_defaults(func=cmd_related_work)
 
     return p
 

@@ -4,6 +4,15 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.7.0] — 2026-07-18
+
+### Added
+
+- Modules 2a/2b: default 1 refine wave when single active thread; `no-iterative` opt-out
+- `/wiki` pdf / claim-suggest / related-work / bibtex / thread-graph ops
+
+---
+
 ## [1.6.0] — 2026-07-18
 
 ### Added

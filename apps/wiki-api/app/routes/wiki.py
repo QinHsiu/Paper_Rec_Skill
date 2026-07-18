@@ -163,6 +163,17 @@ def wiki_graph():
     return graph.build_graph()
 
 
+@router.get("/bibtex")
+def wiki_bibtex(paths: str = ""):
+    """Export BibTeX for comma-separated wiki paper paths."""
+    from app.services import thread_store as ts
+
+    plist = [p.strip() for p in paths.split(",") if p.strip()]
+    if not plist:
+        raise HTTPException(400, "paths query required")
+    return ts.bibtex_for_paths(plist)
+
+
 @router.get("/entities/{kind}/{name:path}")
 def entity_detail(kind: str, name: str):
     allowed = {"keyword", "tag", "team", "company", "venue", "pack"}

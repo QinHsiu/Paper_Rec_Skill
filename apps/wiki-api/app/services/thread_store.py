@@ -184,3 +184,38 @@ def evidence_map(thread_id: str):
 
 def append_query_trace(thread_id: str, rounds: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return _ts.append_query_trace(wiki_root(), thread_id, rounds, by="api")
+
+
+def thread_graph(thread_id: str) -> dict[str, Any]:
+    from wiki_bridge.thread_graph import build_thread_graph, group_timeline
+
+    g = build_thread_graph(wiki_root(), thread_id)
+    events = _ts.list_events(wiki_root(), thread_id, limit=200)
+    g["timeline"] = group_timeline(events)
+    return g
+
+
+def related_work(thread_id: str) -> dict[str, Any]:
+    from wiki_bridge.related_work import build_related_work_outline
+
+    return build_related_work_outline(wiki_root(), thread_id)
+
+
+def bibtex_for_paths(paths: list[str]) -> dict[str, Any]:
+    from wiki_bridge.bibtex_export import export_bibtex
+
+    return export_bibtex(wiki_root(), paths)
+
+
+def pdf_ingest(pdf: str, paper_path: str, title: str = "") -> dict[str, Any]:
+    from wiki_bridge.pdf_ingest import ingest_pdf
+
+    return ingest_pdf(wiki_root(), Path(pdf), paper_path, title=title)
+
+
+def claim_suggest(paper_path: str, thread_id: str = "", apply: bool = False, max_claims: int = 5):
+    from wiki_bridge.pdf_ingest import apply_claim_suggestions, suggest_claims_from_fulltext
+
+    if apply and thread_id:
+        return apply_claim_suggestions(wiki_root(), thread_id, paper_path, max_claims=max_claims)
+    return {"candidates": suggest_claims_from_fulltext(wiki_root(), paper_path, max_claims=max_claims)}

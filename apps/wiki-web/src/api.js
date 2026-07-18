@@ -159,6 +159,21 @@ export async function getThreadEvidenceMap(id) {
   return data
 }
 
+export async function getThreadGraph(id) {
+  const { data } = await api.get(`/threads/${id}/graph`)
+  return data
+}
+
+export async function generateRelatedWork(id) {
+  const { data } = await api.post(`/threads/${id}/related-work`)
+  return data
+}
+
+export async function exportBibtex(paths) {
+  const { data } = await api.get('/wiki/bibtex', { params: { paths: paths.join(',') } })
+  return data
+}
+
 export async function login(username) {
   const { data } = await api.post('/auth/login', { username })
   return data

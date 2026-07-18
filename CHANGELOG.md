@@ -6,6 +6,19 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.12.0] — 2026-07-18
+
+### Added
+
+- **P0 Cognitive map**: `thread-graph` / `GET /api/threads/{id}/graph`; ThreadDetail interactive Claim–Evidence chart + day-grouped timeline
+- **P1 PDF-lite**: `pdf-ingest`, `claim-suggest` (suggested only); sample extract under getting-started
+- **P1 BibTeX**: `bibtex-export`, `GET /api/wiki/bibtex`, Page/Thread export buttons; [`docs/MCP_PUBLISH.md`](docs/MCP_PUBLISH.md)
+- **P2 Related Work outline**: `related-work` → `drafts/related_work_outline.md` + API/UI
+- **P3**: Skill default 1-round iterative when single active thread (`no-iterative` to skip)
+- Plan: [`docs/OPTIMIZATION_PLAN_v4.md`](docs/OPTIMIZATION_PLAN_v4.md)
+
+---
+
 ## [2.10.1] — 2026-07-18
 
 ### Added

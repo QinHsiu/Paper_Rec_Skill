@@ -256,3 +256,19 @@ def query_trace(thread_id: str, body: QueryTraceBody):
     except FileNotFoundError:
         raise HTTPException(404, f"thread not found: {thread_id}") from None
     return {"thread_id": thread_id, "events": events, "count": len(events)}
+
+
+@router.get("/{thread_id}/graph")
+def thread_graph(thread_id: str):
+    try:
+        return thread_store.thread_graph(thread_id)
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
+
+
+@router.post("/{thread_id}/related-work")
+def related_work(thread_id: str):
+    try:
+        return thread_store.related_work(thread_id)
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
