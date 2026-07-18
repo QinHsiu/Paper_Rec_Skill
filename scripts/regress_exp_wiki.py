@@ -74,6 +74,11 @@ def main() -> int:
     check("exp detail has curves", bool(detail.get("curves", {}).get("train_loss")))
     check("exp detail has metrics F1", float(detail.get("metrics", {}).get("primary", {}).get("F1", 0)) >= 0.9)
     check("exp detail wiki_path set", detail.get("wiki_path") == "_exp/demo-ocr-handwriting-v1")
+    figs = detail.get("figures") or []
+    check("exp detail lists figures when png present", True)  # optional asset
+    if any((ROOT / "content/exp/demo-ocr-handwriting-v1/figures").glob("*.png")):
+        check("exp detail figures non-empty", len(figs) >= 1)
+        check("figure url shape", figs[0].get("url", "").startswith("/api/exp/"))
 
     # 5) FastAPI routes smoke (TestClient)
     try:
@@ -89,6 +94,14 @@ def main() -> int:
         ))
         r = client.get("/api/exp/demo-ocr-handwriting-v1")
         check("GET /api/exp/{id}", r.status_code == 200 and "train_loss" in (r.json().get("curves") or {}))
+        pngs = list((ROOT / "content/exp/demo-ocr-handwriting-v1/figures").glob("*.png"))
+        if pngs:
+            rel = f"figures/{pngs[0].name}"
+            r = client.get(f"/api/exp/demo-ocr-handwriting-v1/asset/{rel}")
+            check(
+                "GET /api/exp/{id}/asset figure png",
+                r.status_code == 200 and r.headers.get("content-type", "").startswith("image/"),
+            )
         r = client.get("/api/skills")
         skills = {s["id"] for s in r.json().get("skills", [])}
         check("skills include paper-rec + exp-sandbox", skills >= {"paper-rec", "exp-sandbox"})

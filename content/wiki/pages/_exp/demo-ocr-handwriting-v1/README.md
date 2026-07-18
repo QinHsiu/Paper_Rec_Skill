@@ -23,6 +23,15 @@ target_met: true
 | target_met | ✅ |
 
 
+## 图表（/draw）
+### curves
+
+![curves](/api/exp/demo-ocr-handwriting-v1/asset/figures/curves.png)
+
+### curves_smoke
+
+![curves_smoke](/api/exp/demo-ocr-handwriting-v1/asset/figures/curves_smoke.png)
+
 ## 训练曲线（loss / metrics）
 ### train_loss
 

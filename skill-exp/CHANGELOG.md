@@ -1,5 +1,27 @@
 # Changelog — exp-sandbox
 
+## [1.5.0] — 2026-07-18
+
+### Added
+
+- Enriched bundled catalog from curated link digests: `data_first`, SWA, focal/multi-loss, diff_lr, domain_pt, TTA, fp16, etc.
+- Still **self-contained** (no runtime path to Awesome-Tricks / WeChat)
+
+## [1.4.0] — 2026-07-18
+
+### Added
+
+- Bundled symptom→action catalog: `reference/tricks_catalog.md` + `reference/tricks.py` (no external path)
+- `plans_from_clusters` fills 2–3 verifiable actions with `source: tricks:…` for `plans/P*.md`
+- Decision family `train_recipe` (after analysis; data/label still primary)
+
+## [1.3.0] — 2026-07-18
+
+### Added
+
+- Figure pipeline via `/draw` (`skill-draw/lib`) for `/exp_analysis` · `/exp_training` · `/exp_eval`
+- Default figure dir: `content/exp/<id>/figures/`
+
 ## [1.2.0] — 2026-07-17
 
 ### Added

@@ -30,6 +30,18 @@
       <p v-else class="muted">无 metrics/summary.json</p>
     </section>
 
+    <section class="card" v-if="figures.length">
+      <h2 style="margin-top:0;font-size:1.15rem">图表</h2>
+      <div class="fig-grid">
+        <figure v-for="f in figures" :key="f.path" class="fig-item">
+          <img :src="f.url" :alt="f.name" loading="lazy" />
+          <figcaption>
+            <code>{{ f.path }}</code>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
     <section class="card" v-if="curveBlocks.length">
       <h2 style="margin-top:0;font-size:1.15rem">训练曲线</h2>
       <div v-for="c in curveBlocks" :key="c.name" style="margin-bottom:1rem">
@@ -83,6 +95,8 @@ const primaryRows = computed(() => {
   return Object.entries(m).filter(([k]) => k !== 'summary' && k !== 'target_met' && k !== 'run_id')
 })
 
+const figures = computed(() => exp.value?.figures || [])
+
 const curveBlocks = computed(() => {
   const curves = exp.value?.curves || {}
   return Object.entries(curves).map(([name, series]) => {
@@ -125,5 +139,25 @@ onMounted(async () => {
   font-size: 0.92rem;
   line-height: 1.55;
   margin: 0;
+}
+.fig-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+.fig-item {
+  margin: 0;
+}
+.fig-item img {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+.fig-item figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted, #666);
 }
 </style>

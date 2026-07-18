@@ -61,6 +61,9 @@ def _card_from_dir(d: Path) -> dict[str, Any] | None:
     return meta
 
 
+_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+
+
 def get_experiment(exp_id: str) -> dict[str, Any]:
     d = content_root.exp_dir() / exp_id
     if not d.is_dir():
@@ -72,6 +75,7 @@ def get_experiment(exp_id: str) -> dict[str, Any]:
             rel = p.relative_to(d).as_posix()
             files.append({"path": rel, "size": p.stat().st_size})
     card["files"] = files
+    card["figures"] = list_figures(exp_id)
     card["metrics"] = _load_metrics(d)
     card["curves"] = _load_curves(d)
     readme = d / "README.md"
@@ -83,13 +87,40 @@ def get_experiment(exp_id: str) -> dict[str, Any]:
     return card
 
 
-def get_experiment_file(exp_id: str, rel: str) -> dict[str, Any]:
+def list_figures(exp_id: str) -> list[dict[str, Any]]:
+    """PNG/JPG under figures/ (and nested), for Wiki experiment UI."""
+    d = content_root.exp_dir() / exp_id
+    fig_root = d / "figures"
+    out: list[dict[str, Any]] = []
+    if not fig_root.is_dir():
+        return out
+    for p in sorted(fig_root.rglob("*")):
+        if not p.is_file() or p.suffix.lower() not in _IMAGE_SUFFIXES:
+            continue
+        rel = p.relative_to(d).as_posix()
+        out.append(
+            {
+                "path": rel,
+                "name": p.stem,
+                "size": p.stat().st_size,
+                "url": f"/api/exp/{exp_id}/asset/{rel}",
+            }
+        )
+    return out
+
+
+def resolve_experiment_asset(exp_id: str, rel: str) -> Path:
     d = content_root.exp_dir() / exp_id
     path = (d / rel).resolve()
     if not str(path).startswith(str(d.resolve())):
         raise PermissionError("path escape")
     if not path.is_file():
         raise FileNotFoundError(rel)
+    return path
+
+
+def get_experiment_file(exp_id: str, rel: str) -> dict[str, Any]:
+    path = resolve_experiment_asset(exp_id, rel)
     text = path.read_text(encoding="utf-8")
     return {"id": exp_id, "path": rel, "markdown": text}
 

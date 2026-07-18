@@ -2,7 +2,18 @@
 
 All notable changes to the **Paper_Rec Workspace** follow [Semantic Versioning](https://semver.org/).
 
-Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/CHANGELOG.md`](skill-exp/CHANGELOG.md).
+Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/CHANGELOG.md`](skill-exp/CHANGELOG.md), [`skill-draw/CHANGELOG.md`](skill-draw/CHANGELOG.md).
+
+---
+
+## [2.6.0] — 2026-07-18
+
+### Added
+
+- Plot skill [`skill-draw/`](skill-draw/) (`plot-draw` v1.1.0) — `/draw` with self-contained [`lib/`](skill-draw/lib) (no external plot_demo)
+- Exp sandbox (`exp-sandbox` v1.5.0): bundled symptom→action tricks; figures via `/draw`
+- Wiki experiments: serve `figures/*.png` (`/api/exp/.../asset`), ExpDetailView chart section, sync-exp embeds images
+- `/exp_analysis` · `/exp_training` · `/exp_eval` figure standard → `content/exp/<id>/figures/`
 
 ---
 

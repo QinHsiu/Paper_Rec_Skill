@@ -5,11 +5,11 @@
 **Automated Experiment Sandbox · Agent Skill**  
 **自动化实验沙箱 · Agent 技能（跨平台）**
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](VERSION)
 [![Agents](https://img.shields.io/badge/Agents-Claude%20·%20Codex%20·%20OpenClaw%20·%20more-3D5A80?style=flat)](SKILL.md)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-green.svg)](https://semver.org/)
 
-*Analysis · Multi-plan · Mini-verify · Train · Eval · Loop*
+*Analysis · Multi-plan · Mini-verify · Train · Eval · Loop · `/draw` figures*
 
 [English](README.en.md) · [中文](README.zh-CN.md) · [Changelog](CHANGELOG.md)
 
@@ -73,6 +73,7 @@ Workspace hub: [../README.md](../README.md)
 | Pairwise preference + confidence gate *c*=0.7 | `reference/preference.py` · `tournament.py` |
 | High-volume gen *m*=10 → Top-*k*=1 verify | `reference/tournament.py` |
 | Profile→Verify→Verbalize data report | `reference/data_report.py` + `prompts/` |
+| Symptom→2–3 verifiable actions (bundled) | `reference/tricks_catalog.md` · `tricks.py` |
 | Decouple exploration from expensive execution | 分析与方案探索优先于长时训练 |
 
 默认超参：`m_candidates=10`, `confidence_gate=0.7`, `top_k_verify=1`。

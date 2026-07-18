@@ -59,7 +59,8 @@ def run_exp_loop(
         rows = get_eval_rows()
         bad = collect_badcases(rows)
         clusters = cluster_badcases(bad, ask)
-        seed_plans = plans_from_clusters(clusters, ask)
+        # Analyze → clusters → symptom → 2–3 catalog actions (bundled tricks)
+        seed_plans = plans_from_clusters(clusters, ask, plans_per_problem=3)
 
         def generate(_tn, _td, _dr, m: int) -> list[Plan]:
             # Prefer analysis-derived plans; pad/truncate to m
@@ -72,6 +73,7 @@ def run_exp_loop(
                         actions=["data_clean|label_clean"],
                         expected_gain=0.01,
                         cost=0.5,
+                        meta={"source": "llm:pad"},
                     )
                 )
             return plans[:m]

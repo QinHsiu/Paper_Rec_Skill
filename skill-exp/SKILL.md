@@ -1,13 +1,14 @@
 ---
 name: exp-sandbox
-version: 1.2.0
+version: 1.5.0
 description: >-
   Automated experiment sandbox: dataset analysis, training, evaluation, and a
   self-improving loop (analyze → multi-plan → mini-verify → train → eval →
   iterate). Activated by /exp_analysis, /exp_training, /exp_eval, or /exp_loop.
   Use for ML experiment orchestration, badcase clustering, data/label cleaning
   plans, training monitors, target_score chasing, 实验沙箱/训练分析/评估迭代.
-  Reference stubs live under skill-exp/reference/ (Predict-then-Verify style).
+  Figures follow /draw (skill-draw/lib). Bundled symptom→action tricks in
+  reference/tricks_catalog.md. Reference stubs under skill-exp/reference/.
 ---
 
 # Experiment Sandbox Skill / 实验沙箱技能
@@ -115,11 +116,12 @@ If provided, use them. If **not** provided, fall back to lightweight ML / statis
 
 When tools are insufficient, enrich plans from:
 
+- **Bundled** symptom→action catalog: [`reference/tricks_catalog.md`](reference/tricks_catalog.md) / `reference/tricks.py` (no external path)
 - Papers With Code / Hugging Face open results & baselines
 - Paper notes in local Wiki (`content/wiki/pages/…` reading notes)
 - Paper_Rec recommendations (methods, datasets, metrics)
 
-Document every external method borrowed into the plan log.
+Document every borrowed method in the plan log (`source:` field).
 
 ---
 
@@ -130,7 +132,12 @@ Document every external method borrowed into the plan log.
 1. **badcase_sets**: Collect failures from eval (or high-loss train samples). Keep ids, inputs, preds, gold, scores.
 2. **gen_analysis_cluster**: Aggregate badcases into clusters; preserve **diversity** (do not collapse everything into one bucket). Prefer coverage of modalities/error types by frequency × severity.
 3. **special_question**: Name concrete sub-problems, e.g. *「OCR 对手写拼音识别效果差」*.
-4. **solution_plan**: For each priority problem, propose **multiple** candidate plans ranked by expected gain vs cost. Emphasize high-mass clusters first (distribution-aware).
+4. **solution_plan** (**analyze first, then catalog**):
+   - Map each priority cluster → a **symptom** (`overfitting` / `long_tail` / `hard_subset` / …).
+   - From the **bundled** catalog pick **2–3 verifiable actions** (not the whole cookbook).
+   - Write `content/exp/<id>/plans/P*.md` with `source: tricks:<symptom>#…` (see `reference/tricks.render_plan_md`).
+   - Prefer `reference.badcase.plans_from_clusters` / `tricks.enrich_cluster_plans`.
+   - Rank by expected gain vs cost; high-mass clusters first (keep one long-tail).
 
 ### Self-analysis
 
@@ -142,8 +149,10 @@ Choose next actions from:
 
 | Family | Actions |
 |--------|---------|
-| **data_clean** | increase / remove / modify / insert samples |
-| **label_clean** | self-sampling review / use_other_model relabel / consensus |
+| **data_clean** | increase / remove / modify / insert / inspect samples |
+| **label_clean** | self-sampling review / multi-model consensus / relabel |
+| **train_recipe** | regularize / SWA / focal·weighted loss / diff_lr / warmup·cosine / fp16 (after analysis) |
+| **eval_recipe** | TTA / ensemble (optional, after train plans) |
 
 ---
 
@@ -151,9 +160,9 @@ Choose next actions from:
 
 `data_processing & mini_evaluation [cycle verify current method of plan]`
 
-1. **Record the plan** (id, hypothesis, steps, expected metric delta, risks).
-2. Apply data/label changes on a **small slice** (or held-out probe set).
-3. Mini-eval: does the change move the needle as predicted?
+1. **Record the plan** (id, hypothesis, steps, expected metric delta, risks, **source**).
+2. Apply data/label (or train_recipe) changes on a **small slice** (or held-out probe set).
+3. Mini-eval: does the change move the needle as predicted? (use each action’s `mini_verify`.)
 4. If **not**, adjust plan and re-mini-eval before full training.
 5. Prefer **Predict-then-Verify**: rank multi-plans first; only fully execute **Top-1** (or Top-k if user asks) after mini-check.
 
@@ -167,7 +176,7 @@ When launching/monitoring training:
 
 - Require clear launch path from `tool/function.train_infra`.
 - Track and report: **train loss**, **val metrics**, LR, epoch/step, early-stop signals.
-- Prefer **multiple visualization curves** (loss, primary metric, secondary metrics). Use user tools if given; else ASCII/table sparklines + saved plot paths.
+- **Figures**: apply [`../skill-draw/SKILL.md`](../skill-draw/SKILL.md) (`/draw` → `lib.draw`) — auto chart (usually `line`), academic palette in `skill-draw/lib`; save `content/exp/<id>/figures/*.{pdf,png}`. ASCII sparklines are optional previews only.
 - Sign / checkpoint: record run_id, config hash, artifact paths, seed.
 
 Do not claim training finished without evidence from logs/metrics the user or tools provide.
@@ -227,18 +236,20 @@ Notation from product spec:
 ### `/exp_analysis` (+ train | eval)
 
 **train**: distribution, label quality, leakage risk, hard subsets, augmentation gaps.  
-**eval**: metric baseline, badcase clusters, special questions, multi-plans (no full train unless asked).
+**eval**: metric baseline, badcase clusters, special questions, multi-plans (no full train unless asked).  
+**Charts** (via `/draw` + `skill-draw/lib`): label/`bar`·`violin`, cluster `multi_bar`, confusion `heatmap` → `content/exp/<id>/figures/`.
 
-Output: Analysis Report (template).
+Output: Analysis Report (template) + figure paths.
 
 ### `/exp_training`
 
 Confirm config → launch via provided infra → monitor curves → checkpoint summary.  
-If analysis gaps block training, run a short analysis first or ask.
+Curves via `/draw` (`line` / `broken_line`). If analysis gaps block training, run a short analysis first or ask.
 
 ### `/exp_eval`
 
-Metrics vs `target_score` + short badcase digest + next-step hints.
+Metrics vs `target_score` + short badcase digest + next-step hints.  
+Compare methods with `/draw multi_bar` or `bar_line` when multiple runs exist.
 
 ### `/exp_loop`
 
@@ -315,7 +326,8 @@ Use [output-template.md](output-template.md). Keep fields concise (≤3 short bu
 ## Related / 相关
 
 - Paper retrieval skill: `../skill/` (`/query_*`)
+- **Plot skill**: [`../skill-draw/`](../skill-draw/) (`/draw`) — figures for analysis / train / eval
 - Wiki notes: `../content/wiki/`
-- **Reference code (agent stubs)**: [`reference/`](reference/) — Predict-then-Verify, preference, badcase, orchestrator
+- **Reference code (agent stubs)**: [`reference/`](reference/) — Predict-then-Verify, preference, badcase, tricks catalog, orchestrator
 - Examples: [examples.md](examples.md)
 - Attribution: [README.md](README.md#acknowledgement--借鉴说明)

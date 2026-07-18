@@ -70,23 +70,44 @@ def write_exp_artifacts(workspace: Path, payload: dict[str, Any]) -> Path:
     return root
 
 
-def write_wiki_exp_page(wiki_root: Path, payload: dict[str, Any], curves: dict[str, Any] | None = None) -> Path:
+def write_wiki_exp_page(
+    wiki_root: Path,
+    payload: dict[str, Any],
+    curves: dict[str, Any] | None = None,
+    *,
+    figure_paths: list[str] | None = None,
+) -> Path:
     pages = resolve_content_root(wiki_root)
     exp_id = str(payload.get("experiment_id") or payload.get("id") or "unnamed-exp")
     out = pages / "_exp" / exp_id / "README.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     curves = curves if curves is not None else (payload.get("curves") or {})
-    out.write_text(render_wiki_exp_page(payload, curves), encoding="utf-8")
+    out.write_text(render_wiki_exp_page(payload, curves, figure_paths=figure_paths), encoding="utf-8")
     # index
     index = pages / "_exp" / "README.md"
     _update_exp_index(index, exp_id, payload)
     return out
 
 
+def list_exp_figure_rels(exp_dir: Path) -> list[str]:
+    """Relative paths under figures/ suitable for Wiki <img> (prefer PNG)."""
+    fig = exp_dir / "figures"
+    if not fig.is_dir():
+        return []
+    rels: list[str] = []
+    for p in sorted(fig.rglob("*")):
+        if p.is_file() and p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp", ".gif"}:
+            rels.append(p.relative_to(exp_dir).as_posix())
+    return rels
+
+
 def sync_experiment(wiki_root: Path, payload: dict[str, Any]) -> dict[str, Path]:
     workspace = workspace_from_wiki_root(Path(wiki_root))
     exp_dir = write_exp_artifacts(workspace, payload)
-    wiki_page = write_wiki_exp_page(wiki_root, payload, payload.get("curves") or {})
+    figures = list_exp_figure_rels(exp_dir)
+    wiki_page = write_wiki_exp_page(
+        wiki_root, payload, payload.get("curves") or {}, figure_paths=figures
+    )
     return {"exp_dir": exp_dir, "wiki_page": wiki_page}
 
 
@@ -137,7 +158,12 @@ def render_final_report(payload: dict[str, Any], curves: dict[str, Any]) -> str:
     )
 
 
-def render_wiki_exp_page(payload: dict[str, Any], curves: dict[str, Any]) -> str:
+def render_wiki_exp_page(
+    payload: dict[str, Any],
+    curves: dict[str, Any],
+    *,
+    figure_paths: list[str] | None = None,
+) -> str:
     """Wiki experiment module page (under pages/_exp/<id>/)."""
     exp_id = payload.get("experiment_id") or payload.get("id")
     title = payload.get("title") or exp_id
@@ -160,6 +186,7 @@ def render_wiki_exp_page(payload: dict[str, Any], curves: dict[str, Any]) -> str
         f"## 关联论文（人工阅读标记后可挂接）\n{paper_block}\n\n"
         f"## 目标与结果\n"
         f"{_target_md(payload)}\n\n"
+        f"## 图表（/draw）\n{_figures_md(exp_id, figure_paths or [])}\n"
         f"## 训练曲线（loss / metrics）\n{_curves_md(curves)}\n"
         f"## 指标表\n{_metrics_md(payload.get('metrics') or {})}\n"
         f"## 分析摘要\n{summary or '—'}\n\n"
@@ -170,6 +197,17 @@ def render_wiki_exp_page(payload: dict[str, Any], curves: dict[str, Any]) -> str
         )
         + "\n"
     )
+
+
+def _figures_md(exp_id: str, figure_paths: list[str]) -> str:
+    if not figure_paths:
+        return "_（暂无 `figures/*.png`；可用 `/draw` 生成后重新 sync-exp）_\n"
+    parts: list[str] = []
+    for rel in figure_paths:
+        name = Path(rel).stem
+        url = f"/api/exp/{exp_id}/asset/{rel}"
+        parts.append(f"### {name}\n\n![{name}]({url})\n")
+    return "\n".join(parts)
 
 
 def _target_md(payload: dict[str, Any]) -> str:

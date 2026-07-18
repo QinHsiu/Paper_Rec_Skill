@@ -43,6 +43,12 @@ def list_skills():
                 ],
                 "docs": _md_docs("skill-exp"),
             },
+            {
+                "id": "plot-draw",
+                "name": "plot-draw",
+                "commands": ["/draw"],
+                "docs": _md_docs("skill-draw"),
+            },
         ]
     }
 
@@ -61,5 +67,14 @@ def exp_skill_readme():
     path = content_root.workspace_root() / "skill-exp" / "README.zh-CN.md"
     if not path.is_file():
         path = content_root.workspace_root() / "skill-exp" / "README.md"
+    text = path.read_text(encoding="utf-8") if path.is_file() else ""
+    return {"markdown": text}
+
+
+@router.get("/plot-draw/readme")
+def draw_skill_readme():
+    path = content_root.workspace_root() / "skill-draw" / "README.zh-CN.md"
+    if not path.is_file():
+        path = content_root.workspace_root() / "skill-draw" / "README.md"
     text = path.read_text(encoding="utf-8") if path.is_file() else ""
     return {"markdown": text}

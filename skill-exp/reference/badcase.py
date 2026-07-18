@@ -70,39 +70,18 @@ def plans_from_clusters(
     clusters: list[Cluster],
     ask: AskLLM,
     *,
-    plans_per_problem: int = 2,
+    plans_per_problem: int = 3,
 ) -> list[Plan]:
     """
-    For each priority cluster (by share), propose multiple plans:
-      data_clean: increase/remove/modify/insert
-      label_clean: self_sampling / use_other_model
+    After clusters exist: map symptom → 2–3 verifiable actions from bundled
+    `tricks.py` / `tricks_catalog.md` (data_clean / label_clean / train_recipe).
     Rank later via preference.pairwise / tournament.
     """
-    plans: list[Plan] = []
-    # Priority: high share first, but keep at least one long-tail cluster
-    ordered = sorted(clusters, key=lambda c: c.share, reverse=True)
-    if len(ordered) >= 2:
-        ordered = ordered[:-1] + [min(clusters, key=lambda c: c.share)]  # diversity inject
+    from .tricks import enrich_cluster_plans, render_plan_md
 
-    pid = 0
-    for c in ordered:
-        for j in range(plans_per_problem):
-            pid += 1
-            plans.append(
-                Plan(
-                    plan_id=f"P{pid}",
-                    hypothesis=f"Fix cluster {c.label} via strategy#{j+1}",
-                    actions=[
-                        f"focus_cluster={c.cluster_id}",
-                        "data_clean|label_clean (choose concrete ops)",
-                    ],
-                    expected_gain=round(0.02 + c.share * 0.1 - j * 0.005, 4),
-                    cost=0.3 + 0.1 * j,
-                    risk="distribution shift / label noise",
-                    special_questions=[c.special_question],
-                    meta={"cluster_id": c.cluster_id, "share": c.share},
-                )
-            )
-    # Agent should refine hypotheses via ask(LLM) before tournament
-    _ = ask
+    _ = ask  # refine wording via LLM before tournament if needed
+    plans = enrich_cluster_plans(clusters, actions_per_cluster=plans_per_problem)
+    # Attach rendered markdown for agent to write content/exp/.../plans/P*.md
+    for p in plans:
+        p.meta["plan_md"] = render_plan_md(p)
     return plans

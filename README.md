@@ -7,9 +7,10 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.5.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.6.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
 [![paper-rec](https://img.shields.io/badge/paper--rec-v1.3.0-1A2332?style=for-the-badge)](skill/VERSION)
-[![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.2.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
+[![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.3.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
+[![plot-draw](https://img.shields.io/badge/plot--draw-v1.0.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
 [![License](https://img.shields.io/badge/license-MIT-5C6B7A?style=for-the-badge&labelColor=1A2332)](#)
 
 <br/>
@@ -46,7 +47,9 @@ flowchart LR
   A["/query_*<br/>多源检索"] --> B["sync-report<br/>入库 Wiki"]
   B --> C["人工阅读<br/>标记 / 笔记"]
   C --> D["/exp_*<br/>分析 · 方案 · 训练"]
+  D --> G["/draw<br/>论文级图表"]
   D --> E["sync-exp<br/>指标 · 曲线回写"]
+  G --> E
   E --> F["Wiki 实验模块<br/>可追溯产物"]
 ```
 
@@ -78,15 +81,14 @@ flowchart LR
 </td>
 <td width="33%" valign="top">
 
-### Experiment Skill
-**exp-sandbox**
+### Experiment + Draw
+**exp-sandbox** · **plot-draw**
 
-- `/exp_analysis` · `/exp_training` · `/exp_eval` · `/exp_loop`
-- Predict-then-Verify 多方案筛选
-- 训练监控 · 指标对照 `target_score`
-- 参考伪代码 [`skill-exp/reference/`](skill-exp/reference/)
+- `/exp_*` 沙箱闭环 · `/draw` 论文级出图
+- 自动选图（自包含 [`skill-draw/lib`](skill-draw/lib)）
+- 学术配色 · PDF/PNG · `figures/`
 
-[skill-exp/README.md](skill-exp/README.md)
+[skill-exp](skill-exp/README.md) · [skill-draw](skill-draw/README.md)
 
 </td>
 <td width="33%" valign="top">
@@ -95,9 +97,8 @@ flowchart LR
 **Self-hosted Wiki**
 
 - FastAPI + Vue3 · Git Markdown
-- 论文库 · 图谱 · 一周推荐
-- **实验**模块：曲线 / 指标 / 关联论文
-- 删除黑名单，同步可跳过
+- 论文库 · 图谱 · 一周推荐 · **实验**
+- 指标 / 曲线 / 关联论文
 
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
@@ -122,10 +123,16 @@ flowchart LR
 
 | Command | Role |
 |:--------|:-----|
-| `/exp_analysis` [`train`\|`eval`] | 训练/测试集与 badcase 分析 |
-| `/exp_training` | 启动训练并监控 loss / 验证曲线 |
-| `/exp_eval` | 输出指标并对照 `target_score` |
+| `/exp_analysis` [`train`\|`eval`] | 训练/测试集与 badcase 分析（含 `/draw` 出图） |
+| `/exp_training` | 训练监控；曲线按 `/draw` 规范导出 |
+| `/exp_eval` | 指标对照 `target_score` + 对比图 |
 | `/exp_loop` | 分析 → 方案 → 清洗验证 → 训练 → 评估 → 迭代 |
+
+### plot-draw
+
+| Command | Role |
+|:--------|:-----|
+| `/draw` [`chart_id?`] | 数据路径 + 描述 → 自动/指定图表（PDF+PNG） |
 
 ---
 
@@ -136,15 +143,17 @@ flowchart LR
 将指令包挂到所用 Agent 的 skills / prompts 目录：
 
 ```bash
-mkdir -p .agents/skills/paper-rec .agents/skills/exp-sandbox
+mkdir -p .agents/skills/paper-rec .agents/skills/exp-sandbox .agents/skills/plot-draw
 cp -r skill/* .agents/skills/paper-rec/
 cp -r skill-exp/* .agents/skills/exp-sandbox/
+cp -r skill-draw/* .agents/skills/plot-draw/
 ```
 
 ```text
 /query_chinese 多模态大模型对齐的最新进展
-/exp_loop
-target_score: OCR F1 >= 0.92 on test_handwriting_v2
+/draw
+data: content/exp/demo-ocr-handwriting-v1/metrics/curves.json
+desc: train_loss 与 val_F1 曲线
 ```
 
 ### ② 启动 Wiki
@@ -189,6 +198,7 @@ python scripts/regress_exp_wiki.py
 Paper_Rec_Skill/
 ├── skill/                      # paper-rec · 文献检索 Skill
 ├── skill-exp/                  # exp-sandbox · 实验沙箱 + reference/
+├── skill-draw/                 # plot-draw · /draw 图表（自包含 lib/）
 ├── apps/
 │   ├── wiki-api/               # FastAPI  :8787
 │   ├── wiki-web/               # Vue3 SPA :5173
@@ -236,6 +246,7 @@ Paper_Rec_Skill/
 |:----|:---------|
 | [skill/README.md](skill/README.md) | 文献 Skill 中英入口 |
 | [skill-exp/README.md](skill-exp/README.md) | 实验 Skill · 借鉴说明 |
+| [skill-draw/README.md](skill-draw/README.md) | `/draw` 出图 · `lib/` 自包含 |
 | [skill-exp/reference/](skill-exp/reference/) | Agent 可执行的参考伪代码 |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 模块边界与数据约定 |
 | [docs/MIGRATION.md](docs/MIGRATION.md) | 路径迁移 |
