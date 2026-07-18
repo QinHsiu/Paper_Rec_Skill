@@ -321,6 +321,16 @@ For the final report, deep-read the **top 10–15** papers; use metadata-only fo
 
 Default gate remains `suggested` (cognitive ledger), matching `docs/THREAD_DESIGN.md`.
 
+When association maps to a **claim_id**, offer to create a **suggested evidence** stub (quote from abstract / core idea) via:
+
+```bash
+python -m wiki_bridge.cli thread-evidence-add \
+  --wiki-root . --thread <id> --claim-id C1 \
+  --path <paper_path> --quote "..." --stance supports --suggested
+```
+
+Or Wiki: open paper → select text →「挂到主线」.
+
 ---
 
 ## Module 3: Output / 输出模块

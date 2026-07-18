@@ -18,6 +18,7 @@ content/threads/<thread_id>/
   thread.json      # canonical structured state
   README.md        # human notes + mirror of title/status/hypothesis
   events.jsonl     # cognitive ledger (append-only)
+  evidences.jsonl  # Claim–Evidence Map (quote/metric/figure/note)
   deltas/          # Watch/Delta markdown briefs (Phase B)
 ```
 
@@ -29,6 +30,7 @@ content/threads/<thread_id>/
 | **B** | Watch/Delta, graph thread/exp nodes, claim gate updates | done |
 | **C** | `thread_*` MCP (memory first) | done |
 | **D** | Wiki exp Chart.js viz + `/draw` venue styles | done |
+| **E** | Claim–Evidence Map + MCP zero-PYTHONPATH / wiki·exp tools | done (2.9.0) |
 
 ## Watch / Delta (Phase B)
 
@@ -38,9 +40,22 @@ Skill: `/wiki thread delta`
 
 Claim proposals stay `gate:suggested` until `thread-claim --accept` or API `/claims/accept`.
 
-## MCP (Phase C)
+## Claim–Evidence Map (Phase E / 2.9.0)
 
-Package: `packages/thread-mcp` — tools `thread_list|get|search_context|score_papers|link_*|delta|claim_*`.
+Evidence binds a **claim_id** to a paper quote, exp metric, figure, or note (`evidences.jsonl`). Gates: `suggested` → `accepted`.
+
+- CLI: `thread-evidence-add|list|gate`
+- API: `/api/threads/{id}/evidences`, `/evidence-map`, gate endpoint; `GET` thread includes `evidences` + `evidence_map`
+- Wiki: PageView select text →「挂到主线」; ThreadDetail evidence panel
+- MCP: `thread_add_evidence`
+
+Does **not** auto-extract claims from full PDFs (human highlight + agent suggest only).
+
+## MCP (Phase C + E)
+
+Package: `packages/thread-mcp` — set `PAPER_REC_ROOT` only (auto-locates wiki-bridge).
+
+Tools: `thread_list|get|search_context|query_hint|score_papers|link_*|add_evidence|delta|claim_*` · `wiki_list_papers` · `exp_list|exp_get_metrics`.
 
 ## Venue styles (Phase D)
 
@@ -51,6 +66,7 @@ Package: `packages/thread-mcp` — tools `thread_list|get|search_context|score_p
 ```text
 thread-create | thread-list | thread-show
 thread-link-paper | thread-link-exp
+thread-evidence-add | thread-evidence-list | thread-evidence-gate
 thread-delta | thread-claim
 sync-report --thread <id> [--auto-link]
 sync-exp --thread <id>
@@ -58,4 +74,4 @@ sync-exp --thread <id>
 
 ## API
 
-`/api/threads` — CRUD + link + timeline + delta + context + score + claims + by-paper / by-exp.
+`/api/threads` — CRUD + link + timeline + delta + context + score + claims + evidences + evidence-map + by-paper / by-exp.

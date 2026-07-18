@@ -232,6 +232,54 @@ def cmd_thread_claim(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_thread_evidence_add(args: argparse.Namespace) -> int:
+    from .thread_evidence import add_evidence
+
+    rec = add_evidence(
+        Path(args.wiki_root),
+        args.thread,
+        claim_id=args.claim_id,
+        kind=args.kind or "quote",
+        paper_path=args.path or "",
+        quote=args.quote or "",
+        exp_id=args.exp_id or None,
+        metric_key=args.metric_key or None,
+        metric_value=args.metric_value or None,
+        stance=args.stance or "supports",
+        gate="suggested" if args.suggested else "accepted",
+        by="user",
+    )
+    print(json.dumps(rec, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_thread_evidence_list(args: argparse.Namespace) -> int:
+    from .thread_evidence import list_evidences
+
+    rows = list_evidences(
+        Path(args.wiki_root),
+        args.thread,
+        claim_id=args.claim_id or "",
+        gate=args.gate or "",
+    )
+    print(json.dumps(rows, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_thread_evidence_gate(args: argparse.Namespace) -> int:
+    from .thread_evidence import set_evidence_gate
+
+    rec = set_evidence_gate(
+        Path(args.wiki_root),
+        args.thread,
+        args.evidence_id,
+        args.gate,
+        by="user",
+    )
+    print(json.dumps(rec, ensure_ascii=False, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="wiki_bridge", description="Paper_Rec ↔ Wiki Markdown bridge")
     sub = p.add_subparsers(dest="command", required=True)
@@ -324,6 +372,34 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--accept", action="store_true", help="accept gate (write claim status)")
     s.add_argument("--reason", default="")
     s.set_defaults(func=cmd_thread_claim)
+
+    s = sub.add_parser("thread-evidence-add", help="Add claim evidence (quote/metric)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--claim-id", required=True)
+    s.add_argument("--kind", default="quote", choices=["quote", "metric", "figure", "note"])
+    s.add_argument("--path", default="", help="wiki paper path")
+    s.add_argument("--quote", default="")
+    s.add_argument("--exp-id", default="")
+    s.add_argument("--metric-key", default="")
+    s.add_argument("--metric-value", default="")
+    s.add_argument("--stance", default="supports", choices=["supports", "refutes", "related"])
+    s.add_argument("--suggested", action="store_true", help="gate=suggested (default accepted)")
+    s.set_defaults(func=cmd_thread_evidence_add)
+
+    s = sub.add_parser("thread-evidence-list", help="List evidences for a thread")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--claim-id", default="")
+    s.add_argument("--gate", default="")
+    s.set_defaults(func=cmd_thread_evidence_list)
+
+    s = sub.add_parser("thread-evidence-gate", help="Accept/suggest evidence gate")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--evidence-id", required=True)
+    s.add_argument("--gate", required=True, choices=["suggested", "accepted"])
+    s.set_defaults(func=cmd_thread_evidence_gate)
 
     return p
 

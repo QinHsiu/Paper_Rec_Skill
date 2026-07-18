@@ -1,0 +1,1 @@
+{"evidence_id": "E1", "claim_id": "C1", "kind": "quote", "paper_path": "llm/2025/getting-started", "quote": "Preference data quality is critical for multimodal alignment.", "quote_loc": {}, "exp_id": null, "metric_key": null, "metric_value": null, "stance": "supports", "gate": "accepted", "created_at": "2026-07-18T09:14:02Z", "by": "verify"}

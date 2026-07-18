@@ -4,6 +4,14 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.5.1] — 2026-07-18
+
+### Added
+
+- Module 2.5: suggest Claim–Evidence stubs (`thread-evidence-add` / Wiki「挂到主线」) when candidates map to `claim_id`
+
+---
+
 ## [1.5.0] — 2026-07-18
 
 ### Added

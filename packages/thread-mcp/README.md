@@ -19,7 +19,9 @@ paper-rec-threads
 # or: python -m thread_mcp.server
 ```
 
-## Cursor / Claude Desktop
+## Cursor / Claude Desktop（复制即用）
+
+只需设置 `PAPER_REC_ROOT`；**不必再配 PYTHONPATH**（server 会自动找到 `wiki-bridge`）。
 
 ```json
 {
@@ -28,24 +30,32 @@ paper-rec-threads
       "command": "python",
       "args": ["-m", "thread_mcp.server"],
       "env": {
-        "PAPER_REC_ROOT": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill",
-        "PYTHONPATH": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill/packages/wiki-bridge;D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill/packages/thread-mcp"
+        "PAPER_REC_ROOT": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill"
       }
     }
   }
 }
 ```
 
+Install once:
+
+```bash
+pip install -e packages/wiki-bridge -e packages/thread-mcp
+pip install "mcp>=1.0"
+```
+
 ## Tools
 
 | Tool | Purpose |
 |------|---------|
-| `thread_list` | List threads |
-| `thread_get` | Full state + events |
-| `thread_search_context` | Hypothesis/claims/gaps/seeds for query rewrite |
-| `thread_score_papers` | Score candidate papers (JSON list) |
-| `thread_link_paper` / `thread_link_exp` | Accept membership |
-| `thread_delta` | Watch/Delta brief |
-| `thread_claim_suggest` / `thread_claim_accept` | Claim gate |
+| `thread_list` / `thread_get` | List / full state + evidences |
+| `thread_search_context` / `thread_query_hint` | Context + query hints for external search |
+| `thread_score_papers` | Score candidates vs thread |
+| `thread_link_paper` / `thread_link_exp` | Membership |
+| `thread_add_evidence` | Claim–Evidence Map |
+| `thread_delta` / `thread_claim_*` | Watch + claim gates |
+| `wiki_list_papers` / `exp_list` / `exp_get_metrics` | Local wiki/exp read |
+
+Compose retrieval with [article-mcp](https://github.com/fangfuzha/article-mcp); this server owns **memory**.
 
 See `docs/MCP.md` and `docs/THREAD_DESIGN.md`.

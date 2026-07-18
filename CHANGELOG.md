@@ -6,6 +6,16 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.9.0] — 2026-07-18
+
+### Added
+
+- **Claim–Evidence Map**: `evidences.jsonl`, CLI `thread-evidence-*`, API evidences / evidence-map / gate; Wiki PageView「挂到主线」+ ThreadDetail evidence panel
+- **MCP UX**: zero-`PYTHONPATH` bootstrap via `PAPER_REC_ROOT`; tools `thread_add_evidence`, `thread_query_hint`, `wiki_list_papers`, `exp_list`, `exp_get_metrics`
+- Docs: Phase E in [`THREAD_DESIGN.md`](docs/THREAD_DESIGN.md); status in [`OPTIMIZATION_PLAN.md`](docs/OPTIMIZATION_PLAN.md); refreshed [`MCP.md`](docs/MCP.md)
+
+---
+
 ## [2.8.0] — 2026-07-18
 
 ### Added

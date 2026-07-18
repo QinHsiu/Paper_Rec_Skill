@@ -23,6 +23,8 @@ def list_threads() -> list[dict[str, Any]]:
 
 
 def get_thread(thread_id: str) -> dict[str, Any]:
+    from wiki_bridge import thread_evidence as _ev
+
     data = _ts.load_thread(wiki_root(), thread_id)
     events = _ts.list_events(wiki_root(), thread_id, limit=100)
     readme = _ts.thread_dir(wiki_root(), thread_id) / "README.md"
@@ -31,7 +33,15 @@ def get_thread(thread_id: str) -> dict[str, Any]:
         text = readme.read_text(encoding="utf-8")
         if "## Notes" in text:
             notes = text.split("## Notes", 1)[1].strip()
-    return {**data, "events": events, "notes": notes}
+    evidences = _ev.list_evidences(wiki_root(), thread_id)
+    emap = _ev.evidence_map_summary(wiki_root(), thread_id)
+    return {
+        **data,
+        "events": events,
+        "notes": notes,
+        "evidences": evidences,
+        "evidence_map": emap,
+    }
 
 
 def create_thread(payload: dict[str, Any]) -> dict[str, Any]:
@@ -130,4 +140,43 @@ def search_context(thread_id: str) -> dict[str, Any]:
         "keywords": data.get("keywords") or [],
         "paper_paths": (data.get("paper_paths") or [])[:20],
         "experiment_ids": data.get("experiment_ids") or [],
+        "evidences": (data.get("evidences") or [])[:30],
     }
+
+
+def list_evidences(thread_id: str, claim_id: str = "", gate: str = ""):
+    from wiki_bridge import thread_evidence as _ev
+
+    return _ev.list_evidences(wiki_root(), thread_id, claim_id=claim_id, gate=gate)
+
+
+def add_evidence(thread_id: str, payload: dict[str, Any]):
+    from wiki_bridge import thread_evidence as _ev
+
+    return _ev.add_evidence(
+        wiki_root(),
+        thread_id,
+        claim_id=str(payload.get("claim_id") or ""),
+        kind=str(payload.get("kind") or "quote"),
+        paper_path=str(payload.get("paper_path") or ""),
+        quote=str(payload.get("quote") or ""),
+        quote_loc=payload.get("quote_loc") if isinstance(payload.get("quote_loc"), dict) else {},
+        exp_id=payload.get("exp_id"),
+        metric_key=payload.get("metric_key"),
+        metric_value=payload.get("metric_value"),
+        stance=str(payload.get("stance") or "supports"),
+        gate=str(payload.get("gate") or "accepted"),
+        by=str(payload.get("by") or "user"),
+    )
+
+
+def set_evidence_gate(thread_id: str, evidence_id: str, gate: str):
+    from wiki_bridge import thread_evidence as _ev
+
+    return _ev.set_evidence_gate(wiki_root(), thread_id, evidence_id, gate, by="user")
+
+
+def evidence_map(thread_id: str):
+    from wiki_bridge import thread_evidence as _ev
+
+    return _ev.evidence_map_summary(wiki_root(), thread_id)

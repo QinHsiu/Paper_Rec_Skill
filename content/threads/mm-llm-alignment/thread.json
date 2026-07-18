@@ -8,7 +8,10 @@
     {
       "id": "C1",
       "text": "preference data quality dominates algorithm choice for multimodal alignment",
-      "status": "supported"
+      "status": "supported",
+      "evidence_ids": [
+        "E1"
+      ]
     }
   ],
   "open_questions": [
@@ -53,5 +56,5 @@
     "last_delta_at": "2026-07-18T08:55:31Z"
   },
   "created_at": "2026-07-18T08:42:53Z",
-  "updated_at": "2026-07-18T08:55:31Z"
+  "updated_at": "2026-07-18T09:14:02Z"
 }

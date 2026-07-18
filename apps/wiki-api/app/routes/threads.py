@@ -64,6 +64,23 @@ class ScorePapersBody(BaseModel):
     papers: list[dict[str, Any]] = Field(default_factory=list)
 
 
+class EvidenceCreate(BaseModel):
+    claim_id: str
+    kind: str = "quote"
+    paper_path: str = ""
+    quote: str = ""
+    quote_loc: dict[str, Any] = Field(default_factory=dict)
+    exp_id: str | None = None
+    metric_key: str | None = None
+    metric_value: Any = None
+    stance: str = "supports"
+    gate: str = "accepted"
+
+
+class EvidenceGateBody(BaseModel):
+    gate: str
+
+
 @router.get("")
 def list_threads():
     return {"threads": thread_store.list_threads()}
@@ -183,3 +200,42 @@ def claim_accept(thread_id: str, body: ClaimAccept):
         raise HTTPException(404, f"thread not found: {thread_id}") from None
     except KeyError:
         raise HTTPException(404, f"claim not found: {body.claim_id}") from None
+
+
+@router.get("/{thread_id}/evidences")
+def list_evidences(thread_id: str, claim_id: str = "", gate: str = ""):
+    try:
+        rows = thread_store.list_evidences(thread_id, claim_id=claim_id, gate=gate)
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
+    return {"thread_id": thread_id, "evidences": rows}
+
+
+@router.post("/{thread_id}/evidences")
+def create_evidence(thread_id: str, body: EvidenceCreate):
+    try:
+        return thread_store.add_evidence(thread_id, body.model_dump())
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
+    except KeyError as e:
+        raise HTTPException(404, str(e)) from e
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+
+
+@router.post("/{thread_id}/evidences/{evidence_id}/gate")
+def evidence_gate(thread_id: str, evidence_id: str, body: EvidenceGateBody):
+    try:
+        return thread_store.set_evidence_gate(thread_id, evidence_id, body.gate)
+    except FileNotFoundError:
+        raise HTTPException(404, f"not found: {thread_id}/{evidence_id}") from None
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+
+
+@router.get("/{thread_id}/evidence-map")
+def evidence_map(thread_id: str):
+    try:
+        return thread_store.evidence_map(thread_id)
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None

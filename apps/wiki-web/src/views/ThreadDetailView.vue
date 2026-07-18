@@ -63,8 +63,57 @@
           <code>{{ c.id }}</code>
           <span class="badge" style="margin-left:0.35rem">{{ c.status }}</span>
           {{ c.text }}
+          <span class="muted" v-if="(c.evidence_ids || []).length">
+            · evidences {{ (c.evidence_ids || []).length }}
+          </span>
         </li>
       </ul>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-top:0;font-size:1.15rem">论断–证据地图</h2>
+      <p class="muted" style="margin-top:0;font-size:0.88rem">
+        claim → evidence → paper / experiment（在论文页选中文本可挂接）
+      </p>
+      <div v-if="evidences.length">
+        <div v-for="e in evidences" :key="e.evidence_id" class="week-item">
+          <div class="meta-line">
+            <span class="badge">{{ e.evidence_id }}</span>
+            <span>claim {{ e.claim_id }}</span>
+            <span>{{ e.stance }}</span>
+            <span>gate={{ e.gate }}</span>
+            <span>{{ e.kind }}</span>
+          </div>
+          <p style="margin:0.35rem 0 0;font-size:0.9rem;line-height:1.5;white-space:pre-wrap">
+            {{ e.quote || (e.metric_key ? `${e.metric_key}=${e.metric_value}` : '—') }}
+          </p>
+          <div class="meta-line" style="margin-top:0.35rem">
+            <RouterLink v-if="e.paper_path" :to="`/page/${e.paper_path}`" class="path-chip">
+              {{ e.paper_path }}
+            </RouterLink>
+            <RouterLink v-if="e.exp_id" :to="`/experiments/${e.exp_id}`" class="path-chip">
+              exp {{ e.exp_id }}
+            </RouterLink>
+            <button
+              v-if="e.gate === 'suggested'"
+              class="primary"
+              style="margin-left:auto"
+              @click="acceptEvidence(e)"
+            >接受证据</button>
+          </div>
+        </div>
+      </div>
+      <p v-else class="muted" style="margin:0">
+        尚无证据。打开关联论文，选中段落后点「挂到主线」。
+      </p>
+      <div v-if="mapEdges.length" style="margin-top:1rem">
+        <p class="muted" style="font-size:0.85rem;margin:0 0 0.35rem">关系边（摘要）</p>
+        <ul style="margin:0;padding-left:1.1rem;font-size:0.88rem">
+          <li v-for="(ed, i) in mapEdges.slice(0, 24)" :key="i">
+            {{ ed.source }} —{{ ed.kind }}→ {{ ed.target }}
+          </li>
+        </ul>
+      </div>
     </section>
 
     <section class="card" v-if="(thread.open_questions || []).length">
@@ -144,6 +193,7 @@ import {
   getThread,
   getThreadClaimSuggestions,
   runThreadDelta,
+  setThreadEvidenceGate,
 } from '../api'
 
 const props = defineProps({ id: { type: String, required: true } })
@@ -155,6 +205,8 @@ const suggestBusy = ref(false)
 const actionMsg = ref('')
 
 const events = computed(() => thread.value?.events || [])
+const evidences = computed(() => thread.value?.evidences || [])
+const mapEdges = computed(() => thread.value?.evidence_map?.edges || [])
 
 function summarize(ev) {
   try {
@@ -166,6 +218,16 @@ function summarize(ev) {
 
 async function load() {
   thread.value = await getThread(props.id)
+}
+
+async function acceptEvidence(e) {
+  try {
+    await setThreadEvidenceGate(props.id, e.evidence_id, 'accepted')
+    actionMsg.value = `已接受证据 ${e.evidence_id}`
+    await load()
+  } catch (err) {
+    actionMsg.value = err?.response?.data?.detail || err.message || String(err)
+  }
 }
 
 async function runDelta(mode) {

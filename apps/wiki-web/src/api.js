@@ -139,6 +139,26 @@ export async function getThreadContext(id) {
   return data
 }
 
+export async function listThreadEvidences(id, params = {}) {
+  const { data } = await api.get(`/threads/${id}/evidences`, { params })
+  return data.evidences
+}
+
+export async function createThreadEvidence(id, payload) {
+  const { data } = await api.post(`/threads/${id}/evidences`, payload)
+  return data
+}
+
+export async function setThreadEvidenceGate(id, evidenceId, gate) {
+  const { data } = await api.post(`/threads/${id}/evidences/${evidenceId}/gate`, { gate })
+  return data
+}
+
+export async function getThreadEvidenceMap(id) {
+  const { data } = await api.get(`/threads/${id}/evidence-map`)
+  return data
+}
+
 export async function login(username) {
   const { data } = await api.post('/auth/login', { username })
   return data
