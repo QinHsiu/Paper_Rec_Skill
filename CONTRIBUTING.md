@@ -36,7 +36,7 @@ cd apps/wiki-web && npm install && cd ../..
 
 ```bash
 # terminal 1 — API (from repo root; PAPER_REC_ROOT optional if cwd is workspace)
-cd apps/wiki-api && uvicorn app.main:app --reload --port 8787
+cd apps/wiki-api && uvicorn app:app --reload --port 8787
 
 # terminal 2 — SPA
 cd apps/wiki-web && npm run dev
