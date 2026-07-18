@@ -89,3 +89,8 @@ Paper_Rec MCP = **memory**. For multi-source search / OA PDF download chains, al
 Then: search MCP → candidates → `rrf_fuse` / `prerank_papers` / `thread_score_papers` → `thread_link_*` / `pdf_fetch` / `thread_add_evidence`.
 
 Local OA fetch (no Sci-Hub): Wiki「获取全文」or `wiki_bridge pdf-fetch`.
+
+## Related
+
+- Chat bots (Feishu / Telegram / WeCom / QQ): [BOTS.md](BOTS.md)
+- One-way Delta push: [WEBHOOK.md](WEBHOOK.md)

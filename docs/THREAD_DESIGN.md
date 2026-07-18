@@ -95,6 +95,29 @@ Tools: `thread_list|get|search_context|query_hint|score_papers|link_*|add_eviden
 
 `skill-draw/lib/venues.py` + `draw(..., venue="cvpr")` / CLI `--venue`.
 
+## Template marketplace (Phase L / 2.21.0)
+
+Reusable **research-line packs** (hypothesis / claims / gaps / seeds), not manuscript templates.
+
+```text
+content/thread-templates/<template_id>/
+  template.json   # catalog meta (title, tags, claims_n, builtin?)
+  thread.json     # sanitized snapshot (no local paper_paths)
+  README.md
+  drafts/         # optional
+```
+
+- CLI: `thread-template-list [--seed]` · `thread-template-export` · `thread-template-import`
+- API: `GET /api/threads/templates` · `POST /api/threads/templates/import` · `POST /api/threads/{id}/export-template`
+- Wiki: Threads 页「主线模板市场」；详情「导出为模板」
+- Builtins (seed): `multimodal-alignment` · `rag-evaluation` · `code-agents`
+
+## Multi-channel Bot (Phase L / 2.21.0)
+
+Package `packages/thread-bot` — unified command router over Feishu / Telegram / WeCom / QQ(OneBot). See [BOTS.md](BOTS.md).
+
+One-way Delta push (no command loop): [WEBHOOK.md](WEBHOOK.md).
+
 ## Bridge CLI
 
 ```text
@@ -102,6 +125,7 @@ thread-create | thread-list | thread-show
 thread-link-paper | thread-link-exp
 thread-evidence-add | thread-evidence-list | thread-evidence-gate
 thread-delta | thread-claim
+thread-template-list | thread-template-export | thread-template-import
 query-trace
 sync-report --thread <id> [--auto-link]
 sync-exp --thread <id>
@@ -109,5 +133,5 @@ sync-exp --thread <id>
 
 ## API
 
-`/api/threads` — CRUD + link + timeline + delta + context + score + claims + evidences + evidence-map + query-trace + by-paper / by-exp.
+`/api/threads` — CRUD + link + timeline + delta + context + score + claims + evidences + evidence-map + query-trace + **templates** + by-paper / by-exp.
 `/api/exp/{id}` — includes `curves` + `curve_runs`.

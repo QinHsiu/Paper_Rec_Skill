@@ -1,6 +1,8 @@
 # Optional webhook Bot (Delta push)
 
-Lightweight notifier — **not** a full Feishu/Telegram bot suite.
+Lightweight **one-way** notifier after Watch/Delta.
+
+For interactive chat commands (`/threads` `/delta` `/templates` …) on Feishu / Telegram / WeCom / QQ, use the multi-channel gateway instead: **[BOTS.md](BOTS.md)**.
 
 ## Setup
 
@@ -27,5 +29,5 @@ Payload includes Feishu-style `msg_type/content.text`, Slack-style `text`, and a
 
 ## Non-goals
 
-- No chat command loop / multi-tenant bot
-- No WeChat / QQ adapters in-tree
+- No chat command loop (see [BOTS.md](BOTS.md))
+- No multi-tenant SaaS bot hosting

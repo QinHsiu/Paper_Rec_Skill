@@ -33,6 +33,20 @@ Evidence map: `content/threads/mm-llm-alignment/evidences.jsonl`
 
 ## 2. Create your own thread (optional)
 
+**From template (recommended)**
+
+```bash
+python -m wiki_bridge.cli thread-template-list --wiki-root . --seed
+python -m wiki_bridge.cli thread-template-import \
+  --wiki-root . \
+  --template multimodal-alignment \
+  --id my-mm-align
+```
+
+Or in Wiki UI: open **研究主线** →「主线模板市场」→ 导入.
+
+**From scratch**
+
 ```bash
 python -m wiki_bridge.cli thread-create \
   --wiki-root . \
@@ -156,6 +170,7 @@ flowchart LR
 ## Next reading
 
 - [THREAD_DESIGN.md](../THREAD_DESIGN.md)
+- [BOTS.md](../BOTS.md) — Feishu / Telegram / WeCom / QQ
 - [MCP.md](../MCP.md)
 - [GOOD_FIRST_ISSUES.md](../GOOD_FIRST_ISSUES.md)
 - [CONTRIBUTING.md](../CONTRIBUTING.md)

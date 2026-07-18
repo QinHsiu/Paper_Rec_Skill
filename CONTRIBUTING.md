@@ -32,8 +32,9 @@ powershell -ExecutionPolicy Bypass -File scripts/start-wiki.ps1
 git clone https://github.com/QinHsiu/Paper_Rec_Skill.git
 cd Paper_Rec_Skill
 
-# Bridge + MCP
+# Bridge + MCP (+ optional Bot)
 pip install -e packages/wiki-bridge -e packages/thread-mcp
+pip install -e packages/thread-bot   # Feishu / Telegram / WeCom / QQ gateway
 pip install "mcp>=1.0"   # only if you run Thread Memory MCP
 
 # Wiki API
@@ -58,7 +59,10 @@ cd apps/wiki-web && npm run dev
 ```bash
 python -m wiki_bridge.cli thread-list --wiki-root .
 python -m wiki_bridge.cli thread-show --wiki-root . --id mm-llm-alignment
+python -m wiki_bridge.cli thread-template-list --wiki-root . --seed
 ```
+
+Optional Bot REPL: `python -m thread_bot repl` (see [`docs/BOTS.md`](docs/BOTS.md)).
 
 MCP config: [`docs/MCP.md`](docs/MCP.md) (set `PAPER_REC_ROOT` only; no `PYTHONPATH`).
 
@@ -70,7 +74,9 @@ MCP config: [`docs/MCP.md`](docs/MCP.md) (set `PAPER_REC_ROOT` only; no `PYTHONP
 | Experiment orchestration | `skill-exp/` (+ `reference/`) |
 | Plot styles / venues | `skill-draw/lib/` |
 | Thread / evidence / sync | `packages/wiki-bridge/wiki_bridge/` |
+| Thread templates | `packages/wiki-bridge/wiki_bridge/thread_templates.py` · `content/thread-templates/` |
 | Thread Memory MCP | `packages/thread-mcp/` |
+| Multi-channel Bot | `packages/thread-bot/` · [`docs/BOTS.md`](docs/BOTS.md) |
 | REST API | `apps/wiki-api/` |
 | SPA | `apps/wiki-web/src/` |
 | Sample content | `content/threads/`, `content/exp/demo-*` (do **not** commit private exps) |

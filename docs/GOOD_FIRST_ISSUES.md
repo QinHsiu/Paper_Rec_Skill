@@ -67,9 +67,34 @@ Suggested GitHub labels: `good first issue` · `docs` · `skill` · `wiki-ui`.
 
 ---
 
+## 6. Template marketplace copy (`docs` / `wiki-ui`)
+
+**Why:** Threads 页「主线模板市场」is new (2.21); empty-state and import errors can be clearer.
+
+**Do:**
+- Polish muted hints in `ThreadsView.vue` (builtin vs user-exported).
+- Optional one paragraph in the tutorial linking CLI `--seed` to the UI.
+
+**Done when:** A newcomer can import `rag-evaluation` without reading source.
+
+---
+
+## 7. Bot `/help` localization sample (`docs`)
+
+**Why:** [`docs/BOTS.md`](BOTS.md) is the deploy guide; a short CN/EN command cheat sheet helps ops.
+
+**Do:**
+- Add a compact command table to `BOTS.md` or `packages/thread-bot/README.md`.
+- Do not change router behavior unless documented.
+
+**Done when:** Ops can paste the table into a Feishu app description.
+
+---
+
 ## Out of scope for “first issue”
 
 - Full PDF claim extraction
 - New literature-search MCP competing with article-mcp
 - TensorBoard-parity live event streams
 - Committing private / large experiment trees under `content/exp/`
+- Native personal-WeChat puppets (use WeCom / `/bot/chat`)

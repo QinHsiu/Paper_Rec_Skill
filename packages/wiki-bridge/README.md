@@ -36,6 +36,11 @@ python -m wiki_bridge.cli thread-link-exp --wiki-root ../.. --thread mm-llm-alig
 python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id mm-llm-alignment --mode auto
 python -m wiki_bridge.cli thread-claim --wiki-root ../.. --id mm-llm-alignment
 
+# Thread template marketplace
+python -m wiki_bridge.cli thread-template-list --wiki-root ../.. --seed
+python -m wiki_bridge.cli thread-template-import --wiki-root ../.. --template rag-evaluation
+python -m wiki_bridge.cli thread-template-export --wiki-root ../.. --thread mm-llm-alignment
+
 python -m wiki_bridge.cli rebuild-index --wiki-root ../..
 ```
 
@@ -48,5 +53,7 @@ python -m wiki_bridge.cli rebuild-index --wiki-root ../..
 - Papers: `content/wiki/pages/<keyword>/<year>/<slug>/README.md`
 - Experiments: `content/exp/<id>/` + `pages/_exp/<id>/`
 - Threads: `content/threads/<id>/thread.json` + `events.jsonl`
+- Templates: `content/thread-templates/<id>/` (`template.json` + `thread.json`)
 
-Contract: [`docs/THREAD_DESIGN.md`](../../docs/THREAD_DESIGN.md).
+Contract: [`docs/THREAD_DESIGN.md`](../../docs/THREAD_DESIGN.md).  
+Bots (Feishu / Telegram / WeCom / QQ): [`docs/BOTS.md`](../../docs/BOTS.md).

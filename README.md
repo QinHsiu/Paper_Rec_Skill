@@ -244,6 +244,10 @@ python -m wiki_bridge.cli sync-exp \
 
 # Watch / Delta
 python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id mm-llm-alignment --mode auto
+
+# 主线模板市场
+python -m wiki_bridge.cli thread-template-list --wiki-root ../.. --seed
+python -m wiki_bridge.cli thread-template-import --wiki-root ../.. --template rag-evaluation
 ```
 
 ### ④ Thread Memory MCP（可选）
@@ -255,7 +259,18 @@ paper-rec-configure --apply
 # 或见 docs/MCP.md · packages/thread-mcp/README.md
 ```
 
-### ⑤ 回归自检
+### ⑤ 多渠道路 Bot（可选）
+
+```powershell
+pip install -e packages/thread-bot
+$env:PAPER_REC_ROOT = (Resolve-Path .).Path
+python -m thread_bot repl    # 本地对话
+python -m thread_bot serve   # :8790 飞书/Telegram/企微/QQ
+```
+
+详见 [`docs/BOTS.md`](docs/BOTS.md)。
+
+### ⑥ 回归自检
 
 ```bash
 python scripts/regress_exp_wiki.py
@@ -337,6 +352,7 @@ Paper_Rec_Skill/
 | [docs/MCP.md](docs/MCP.md) | Thread Memory MCP |
 | [docs/WEBHOOK.md](docs/WEBHOOK.md) | 可选 Delta webhook 推送 |
 | [docs/BOTS.md](docs/BOTS.md) | 飞书 / Telegram / 企微 / QQ 对话 Bot |
+| [packages/thread-bot/README.md](packages/thread-bot/README.md) | Bot 包安装与端点速查 |
 | [benchmarks/thread-bench/README.md](benchmarks/thread-bench/README.md) | Thread-Bench（主线条件排序评测） |
 | [docs/MCP_PUBLISH.md](docs/MCP_PUBLISH.md) | MCP 目录提交清单 |
 | [docs/tutorials/thread-research-memory.md](docs/tutorials/thread-research-memory.md) | 用 Thread 管研究方向（案例） |

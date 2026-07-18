@@ -26,7 +26,19 @@ python -m thread_bot serve
 
 ## 命令
 
-见对话 `/help`：`/threads` `/use` `/delta` `/templates` `/import` `/feedback` `/query`
+| 命令 | 作用 |
+|------|------|
+| `/help` | 帮助 |
+| `/threads` | 列出研究主线 |
+| `/thread <id>` | 主线摘要 |
+| `/use <id>` | 设置当前主线 |
+| `/delta [mode]` | Watch/Delta（默认 `auto`） |
+| `/templates` | 模板市场 |
+| `/import <template_id> [new_id]` | 从模板创建主线 |
+| `/feedback <accept\|skip\|pin\|read> <path>` | 弱反馈 |
+| `/query <问题>` | 检索提示（配合 Skill / 外接 MCP） |
+
+也可直接发「帮助」「主线」等自然语言快捷语。
 
 ## 渠道配置
 
