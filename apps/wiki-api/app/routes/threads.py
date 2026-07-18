@@ -74,11 +74,19 @@ class EvidenceCreate(BaseModel):
     metric_key: str | None = None
     metric_value: Any = None
     stance: str = "supports"
+    support_status: str = ""
+    confidence: float | None = None
     gate: str = "accepted"
 
 
 class EvidenceGateBody(BaseModel):
     gate: str
+
+
+class EvidencePatchBody(BaseModel):
+    support_status: str | None = None
+    confidence: float | None = None
+    stance: str | None = None
 
 
 class QueryTraceBody(BaseModel):
@@ -238,6 +246,26 @@ def evidence_gate(thread_id: str, evidence_id: str, body: EvidenceGateBody):
         raise HTTPException(400, str(e)) from e
 
 
+@router.patch("/{thread_id}/evidences/{evidence_id}")
+def patch_evidence(thread_id: str, evidence_id: str, body: EvidencePatchBody):
+    try:
+        return thread_store.patch_evidence(thread_id, evidence_id, body.model_dump(exclude_none=True))
+    except FileNotFoundError:
+        raise HTTPException(404, f"not found: {thread_id}/{evidence_id}") from None
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+
+
+@router.post("/{thread_id}/recommend")
+def recommend(thread_id: str, body: dict[str, Any]):
+    text = str((body or {}).get("text") or "")
+    limit = int((body or {}).get("limit") or 8)
+    try:
+        return thread_store.recommend_evidence(thread_id, text, limit=limit)
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
+
+
 @router.get("/{thread_id}/evidence-map")
 def evidence_map(thread_id: str):
     try:
@@ -270,5 +298,16 @@ def thread_graph(thread_id: str):
 def related_work(thread_id: str):
     try:
         return thread_store.related_work(thread_id)
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
+
+
+@router.post("/{thread_id}/section-outline")
+def section_outline(thread_id: str, body: dict[str, Any] | None = None):
+    from wiki_bridge.writing_assist import build_section_outline
+
+    section = str((body or {}).get("section") or "method")
+    try:
+        return build_section_outline(thread_store.wiki_root(), thread_id, section=section)
     except FileNotFoundError:
         raise HTTPException(404, f"thread not found: {thread_id}") from None

@@ -7,8 +7,8 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.12.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
-[![paper-rec](https://img.shields.io/badge/paper--rec-v1.7.0-1A2332?style=for-the-badge)](skill/VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.14.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![paper-rec](https://img.shields.io/badge/paper--rec-v1.8.0-1A2332?style=for-the-badge)](skill/VERSION)
 [![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.8.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
 [![MCP](https://img.shields.io/badge/MCP-Thread%20Memory-0F766E?style=for-the-badge&labelColor=1A2332)](docs/MCP.md)
@@ -160,7 +160,24 @@ Query 可加前缀：`thread:<id> ...`
 
 ## 快速开始
 
-### ① 安装 Skills（跨平台）
+### ① 一键安装（推荐）
+
+```powershell
+# Windows
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+powershell -ExecutionPolicy Bypass -File scripts/start-wiki.ps1
+```
+
+```bash
+# macOS / Linux / Git Bash
+chmod +x install.sh scripts/start-wiki.sh
+./install.sh
+./scripts/start-wiki.sh
+```
+
+可选：`pip install pymupdf`（PDF 上传解析）。MCP：`PAPER_REC_ROOT` 指向仓库根目录（见 `docs/MCP.md`）。
+
+### ② 安装 Skills（跨平台）
 
 ```bash
 mkdir -p .agents/skills/paper-rec .agents/skills/exp-sandbox .agents/skills/plot-draw
@@ -178,10 +195,10 @@ desc: train_loss 与 val_F1 曲线
 venue: cvpr
 ```
 
-### ② 启动 Wiki
+### ③ 启动 Wiki
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File apps/start-wiki.ps1
+powershell -ExecutionPolicy Bypass -File scripts/start-wiki.ps1
 ```
 
 | Service | Endpoint |
@@ -300,7 +317,8 @@ Paper_Rec_Skill/
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 模块边界与数据约定 |
 | [docs/THREAD_DESIGN.md](docs/THREAD_DESIGN.md) | Cognitive Thread v2 契约 |
 | [docs/MCP.md](docs/MCP.md) | Thread Memory MCP |
-| [docs/OPTIMIZATION_PLAN_v4.md](docs/OPTIMIZATION_PLAN_v4.md) | 下一轮优化（v4 已落地说明） |
+| [docs/OPTIMIZATION_PLAN_v5.md](docs/OPTIMIZATION_PLAN_v5.md) | 最新优化计划（门槛 · 证据置信度 · PDF 流水线） |
+| [docs/OPTIMIZATION_PLAN_v4.md](docs/OPTIMIZATION_PLAN_v4.md) | v4 已落地说明 |
 | [docs/MCP_PUBLISH.md](docs/MCP_PUBLISH.md) | MCP 目录提交清单 |
 | [docs/tutorials/thread-research-memory.md](docs/tutorials/thread-research-memory.md) | 用 Thread 管研究方向（案例） |
 | [docs/GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md) | 新手可领任务 |

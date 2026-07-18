@@ -6,6 +6,17 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.14.0] — 2026-07-18
+
+### Added
+
+- **P0**: `install.sh` / `scripts/install.ps1` + `scripts/start-wiki.*`; Evidence `confidence` + `support_status` (CLI/API/UI/MCP)
+- **P1**: Wiki PDF/TXT upload → `POST .../ingest` + claim-suggest pipeline; `/query_* auto`; S2/OpenAlex/Crossref/PubMed routing notes
+- **P2**: Writing assist `POST .../recommend` + `section-outline`; MCP `thread_graph` / `bibtex_export` / `related_work` / `section_outline`
+- Plan: [`docs/OPTIMIZATION_PLAN_v5.md`](docs/OPTIMIZATION_PLAN_v5.md)
+
+---
+
 ## [2.12.0] — 2026-07-18
 
 ### Added

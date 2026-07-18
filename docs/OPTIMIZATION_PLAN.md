@@ -3,7 +3,7 @@
 依据 `projects/same.txt`（2026-07-18 测评）与当时 workspace **2.8.0** 校准后的落地计划。
 
 **状态（2026-07-18）**：**2.9.0–2.10.1** 已覆盖 v3 的 P0–P4。  
-**下一轮计划**：[`OPTIMIZATION_PLAN_v4.md`](OPTIMIZATION_PLAN_v4.md)（**2.12.0 已落地 P0–P3**）。
+**下一轮计划**：[`OPTIMIZATION_PLAN_v5.md`](OPTIMIZATION_PLAN_v5.md)（**2.14.0 已落地 P0–P2**）。
 
 ## 0. 测评口径校准（避免重复造已有能力）
 

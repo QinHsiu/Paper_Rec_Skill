@@ -17,6 +17,17 @@ Design contracts: [`docs/THREAD_DESIGN.md`](docs/THREAD_DESIGN.md) · [`docs/ARC
 
 **Requirements:** Python 3.10+, Node 18+ (Wiki UI), Git.
 
+**One-shot**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install.ps1
+powershell -ExecutionPolicy Bypass -File scripts/start-wiki.ps1
+```
+
+```bash
+./install.sh && ./scripts/start-wiki.sh
+```
+
 ```bash
 git clone https://github.com/QinHsiu/Paper_Rec_Skill.git
 cd Paper_Rec_Skill

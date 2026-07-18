@@ -110,6 +110,8 @@
             <span class="badge">{{ e.evidence_id }}</span>
             <span>claim {{ e.claim_id }}</span>
             <span>{{ e.stance }}</span>
+            <span v-if="e.support_status">status={{ e.support_status }}</span>
+            <span v-if="e.confidence != null">conf={{ e.confidence }}</span>
             <span>gate={{ e.gate }}</span>
             <span>{{ e.kind }}</span>
           </div>

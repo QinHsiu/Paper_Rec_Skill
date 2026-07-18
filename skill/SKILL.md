@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.7.0
+version: 1.8.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -310,11 +310,13 @@ When Module 1 detects **latest intent** (最新 / latest / 近期 / 刚刚发布
 
 For the final report, deep-read the **top 10–15** papers; use metadata-only for ranks 11–50 unless user requests full coverage.
 
-### 2a Multi-path queries / 多路查询（Thread 或 iterative 时）
+### 2a Multi-path queries / 多路查询（Thread 或 iterative / auto 时）
 
-**When**: Module 1.5 thread is active, **or** user says `iterative` / `迭代检索`, **or** exactly one `status:active` thread exists (default **on** for that case).
+**When**: Module 1.5 thread is active, **or** user says `iterative` / `迭代检索`, **or** `/query_* auto` / 「全自动检索」, **or** exactly one `status:active` thread exists (default **on** for that case).
 
 **Default**: When a single active thread is injected via 1.5, enable **1** refine wave automatically. User can say `no-iterative` / `不迭代` to skip. Do **not** iterate on plain `/query_*` with zero thread context.
+
+**`/query_* auto`**: Force Module 1.5 (ask/pick thread if needed) → 2a all paths → 2b one refine → 2.5 R → write Retrieval Trace / `query-trace`. One-shot end-to-end under Thread; **no** citation-network crawl.
 
 **Action** (before / during 2.2):
 1. Build **up to 4** query paths from rewritten + thread state:

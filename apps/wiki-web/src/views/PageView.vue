@@ -17,19 +17,27 @@
           >主线 · {{ tid }}</RouterLink>
         </div>
       </div>
-      <div class="row">
+      <div class="row" style="flex-wrap:wrap;gap:0.4rem">
         <button class="primary" @click="openAttach" :disabled="!selection.trim()">
           挂到主线
         </button>
+        <button @click="openRecommend" :disabled="!selection.trim() || !threadIds.length">
+          推荐证据
+        </button>
         <button @click="copyBibtex">导出 BibTeX</button>
+        <label class="file-btn">
+          上传 PDF/TXT
+          <input type="file" accept=".pdf,.txt,.md" hidden @change="onIngestFile" />
+        </label>
         <RouterLink :to="`/edit/${path}`"><button>编辑笔记</button></RouterLink>
         <RouterLink to="/pages"><button>返回列表</button></RouterLink>
       </div>
     </header>
 
     <p class="muted" style="margin:0 0 0.75rem;font-size:0.88rem">
-      选中正文片段后点击「挂到主线」，绑定 Claim–Evidence（论断–证据）。
+      选中正文 →「挂到主线」或「推荐证据」。上传 PDF 会写入 fulltext.md 并可选生成 suggested claims。
       <span v-if="selection">已选 {{ selection.length }} 字</span>
+      <span v-if="ingestMsg"> · {{ ingestMsg }}</span>
     </p>
 
     <article ref="articleEl" class="card prose" v-html="html" @mouseup="captureSelection"></article>
@@ -57,12 +65,17 @@
           </select>
         </label>
         <label>
-          <span class="muted" style="font-size:0.8rem">立场</span>
-          <select v-model="form.stance">
+          <span class="muted" style="font-size:0.8rem">support_status</span>
+          <select v-model="form.supportStatus">
             <option value="supports">supports</option>
             <option value="refutes">refutes</option>
             <option value="related">related</option>
+            <option value="insufficient">insufficient</option>
           </select>
+        </label>
+        <label>
+          <span class="muted" style="font-size:0.8rem">confidence</span>
+          <input type="number" min="0" max="1" step="0.1" v-model.number="form.confidence" style="width:4rem" />
         </label>
         <button class="primary" :disabled="!canSubmit || busy" @click="submitEvidence">
           {{ busy ? '提交中…' : '创建证据' }}
@@ -70,6 +83,32 @@
         <button @click="showAttach = false">取消</button>
       </div>
       <p v-if="attachMsg" class="muted" style="margin:0.5rem 0 0">{{ attachMsg }}</p>
+    </div>
+
+    <div v-if="showRecommend" class="card attach-panel">
+      <h2 style="margin-top:0;font-size:1.1rem">证据反哺推荐</h2>
+      <p class="muted" style="font-size:0.88rem">基于选中段落与关联主线（只读推荐，不自动写入）。</p>
+      <div v-if="recClaims.length">
+        <p style="margin:0.5rem 0 0.25rem;font-weight:600">Claims</p>
+        <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
+          <li v-for="c in recClaims" :key="c.id">
+            <code>{{ c.id }}</code> ({{ c.recommend_score }}) {{ c.text }}
+          </li>
+        </ul>
+      </div>
+      <div v-if="recEvs.length">
+        <p style="margin:0.75rem 0 0.25rem;font-weight:600">Evidences</p>
+        <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
+          <li v-for="e in recEvs" :key="e.evidence_id">
+            <code>{{ e.evidence_id }}</code>
+            · {{ e.support_status || e.stance }}
+            · conf {{ e.confidence ?? '—' }}
+            · score {{ e.recommend_score }}
+            — {{ (e.quote || '').slice(0, 120) }}
+          </li>
+        </ul>
+      </div>
+      <button style="margin-top:0.75rem" @click="showRecommend = false">关闭</button>
     </div>
   </div>
   <p v-else class="muted">加载中…</p>
@@ -84,7 +123,9 @@ import {
   exportBibtex,
   getPage,
   getThread,
+  ingestPaperFile,
   listThreads,
+  recommendForThread,
   threadsForPaper,
 } from '../api'
 
@@ -95,10 +136,19 @@ const threads = ref([])
 const claims = ref([])
 const selection = ref('')
 const showAttach = ref(false)
+const showRecommend = ref(false)
 const busy = ref(false)
 const attachMsg = ref('')
+const ingestMsg = ref('')
+const recClaims = ref([])
+const recEvs = ref([])
 const articleEl = ref(null)
-const form = reactive({ threadId: '', claimId: '', stance: 'supports' })
+const form = reactive({
+  threadId: '',
+  claimId: '',
+  supportStatus: 'supports',
+  confidence: 0.7,
+})
 
 const html = computed(() => {
   if (!page.value) return ''
@@ -142,6 +192,24 @@ async function openAttach() {
   await onThreadChange()
 }
 
+async function openRecommend() {
+  captureSelection()
+  if (!selection.value.trim()) return
+  const tid = threadIds.value[0]
+  if (!tid) {
+    attachMsg.value = '请先关联研究主线'
+    return
+  }
+  try {
+    const data = await recommendForThread(tid, selection.value)
+    recClaims.value = data.claims || []
+    recEvs.value = data.evidences || []
+    showRecommend.value = true
+  } catch (e) {
+    attachMsg.value = e?.response?.data?.detail || e.message || String(e)
+  }
+}
+
 async function onThreadChange() {
   claims.value = []
   form.claimId = ''
@@ -160,10 +228,12 @@ async function submitEvidence() {
       kind: 'quote',
       paper_path: props.path,
       quote: selection.value.trim(),
-      stance: form.stance,
+      stance: form.supportStatus === 'insufficient' ? 'related' : form.supportStatus,
+      support_status: form.supportStatus,
+      confidence: form.confidence,
       gate: 'accepted',
     })
-    attachMsg.value = `已创建 ${rec.evidence_id} → ${form.threadId}/${form.claimId}`
+    attachMsg.value = `已创建 ${rec.evidence_id} (conf=${rec.confidence}) → ${form.threadId}/${form.claimId}`
     if (!threadIds.value.includes(form.threadId)) {
       threadIds.value = [...threadIds.value, form.threadId]
     }
@@ -189,6 +259,21 @@ async function copyBibtex() {
   }
 }
 
+async function onIngestFile(ev) {
+  const file = ev.target.files?.[0]
+  ev.target.value = ''
+  if (!file) return
+  ingestMsg.value = '解析中…'
+  try {
+    const tid = threadIds.value[0] || ''
+    const out = await ingestPaperFile(props.path, file, { threadId: tid, applySuggest: Boolean(tid) })
+    const n = out.suggest?.claims?.length || out.suggest?.candidates?.length || 0
+    ingestMsg.value = `已写入 fulltext · 候选 ${n}（suggested）`
+  } catch (e) {
+    ingestMsg.value = e?.response?.data?.detail || e.message || String(e)
+  }
+}
+
 onMounted(load)
 watch(() => props.path, load)
 </script>
@@ -201,5 +286,14 @@ watch(() => props.path, load)
   display: block;
   min-width: 12rem;
   margin-top: 0.25rem;
+}
+.file-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 </style>

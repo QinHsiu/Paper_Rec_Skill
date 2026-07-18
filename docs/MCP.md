@@ -51,7 +51,8 @@ See [`packages/thread-mcp/README.md`](../packages/thread-mcp/README.md).
 | `thread_search_context` / `thread_query_hint` | Context + query hints for external search |
 | `thread_score_papers` | Score candidates vs thread |
 | `thread_link_paper` / `thread_link_exp` | Membership |
-| `thread_add_evidence` | Claim–Evidence Map |
+| `thread_add_evidence` | Claim–Evidence Map (+ confidence) |
+| `thread_graph` / `bibtex_export` / `related_work` / `section_outline` | Graph + writing assist |
 | `thread_delta` / `thread_claim_*` | Watch + claim gates |
 | `wiki_list_papers` | Local wiki cards |
 | `exp_list` / `exp_get_metrics` | Local experiment metrics |

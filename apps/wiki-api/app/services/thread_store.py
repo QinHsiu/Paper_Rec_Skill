@@ -1,6 +1,7 @@
 """Thread store for wiki-api — delegates to wiki_bridge.thread_store."""
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -165,8 +166,24 @@ def add_evidence(thread_id: str, payload: dict[str, Any]):
         metric_key=payload.get("metric_key"),
         metric_value=payload.get("metric_value"),
         stance=str(payload.get("stance") or "supports"),
+        support_status=str(payload.get("support_status") or ""),
+        confidence=payload.get("confidence"),
         gate=str(payload.get("gate") or "accepted"),
         by=str(payload.get("by") or "user"),
+    )
+
+
+def patch_evidence(thread_id: str, evidence_id: str, payload: dict[str, Any]):
+    from wiki_bridge import thread_evidence as _ev
+
+    return _ev.patch_evidence(
+        wiki_root(),
+        thread_id,
+        evidence_id,
+        support_status=payload.get("support_status"),
+        confidence=payload.get("confidence"),
+        stance=payload.get("stance"),
+        by="user",
     )
 
 
@@ -174,6 +191,68 @@ def set_evidence_gate(thread_id: str, evidence_id: str, gate: str):
     from wiki_bridge import thread_evidence as _ev
 
     return _ev.set_evidence_gate(wiki_root(), thread_id, evidence_id, gate, by="user")
+
+
+def recommend_evidence(thread_id: str, text: str, limit: int = 8) -> dict[str, Any]:
+    """Rank thread evidences/claims for a writing selection (P2 writing assist)."""
+    from wiki_bridge import thread_evidence as _ev
+
+    text_l = (text or "").lower()
+    tokens = {t for t in re.findall(r"[a-zA-Z\u4e00-\u9fff]{2,}", text_l)}
+    data = _ts.load_thread(wiki_root(), thread_id)
+    evs = _ev.list_evidences(wiki_root(), thread_id)
+    scored = []
+    for e in evs:
+        blob = " ".join(
+            [
+                str(e.get("quote") or ""),
+                str(e.get("claim_id") or ""),
+                str(e.get("paper_path") or ""),
+                str(e.get("stance") or ""),
+            ]
+        ).lower()
+        hits = sum(1 for t in tokens if t in blob)
+        score = hits / max(len(tokens), 1)
+        if e.get("gate") == "accepted":
+            score += 0.15
+        conf = float(e.get("confidence") or 0.5)
+        score += 0.1 * conf
+        scored.append({**e, "recommend_score": round(score, 4)})
+    scored.sort(key=lambda x: x["recommend_score"], reverse=True)
+    claims = []
+    for c in data.get("claims") or []:
+        blob = str(c.get("text") or "").lower()
+        hits = sum(1 for t in tokens if t in blob)
+        claims.append(
+            {
+                "id": c.get("id"),
+                "text": c.get("text"),
+                "status": c.get("status"),
+                "recommend_score": round(hits / max(len(tokens), 1), 4),
+            }
+        )
+    claims.sort(key=lambda x: x["recommend_score"], reverse=True)
+    return {
+        "thread_id": thread_id,
+        "evidences": scored[:limit],
+        "claims": claims[:limit],
+    }
+
+
+def ingest_paper_file(paper_path: str, file_path: Path, thread_id: str = "", apply_suggest: bool = True):
+    from wiki_bridge.pdf_ingest import apply_claim_suggestions, ingest_pdf
+
+    out = ingest_pdf(wiki_root(), file_path, paper_path)
+    suggest = None
+    if apply_suggest and thread_id:
+        suggest = apply_claim_suggestions(
+            wiki_root(), thread_id, paper_path, max_claims=3, also_evidence=True
+        )
+    elif apply_suggest:
+        from wiki_bridge.pdf_ingest import suggest_claims_from_fulltext
+
+        suggest = {"candidates": suggest_claims_from_fulltext(wiki_root(), paper_path, max_claims=3)}
+    return {"ingest": out, "suggest": suggest}
 
 
 def evidence_map(thread_id: str):

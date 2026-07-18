@@ -144,6 +144,8 @@ try:
         quote: str,
         paper_path: str = "",
         stance: str = "supports",
+        support_status: str = "",
+        confidence: float = 0.6,
         gate: str = "accepted",
     ) -> str:
         """Add quote evidence bound to a claim (Claim–Evidence Map)."""
@@ -155,10 +157,48 @@ try:
             paper_path=paper_path,
             quote=quote,
             stance=stance,
+            support_status=support_status,
+            confidence=confidence,
             gate=gate,
             by="mcp",
         )
         return json.dumps(rec, ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def thread_graph(thread_id: str) -> str:
+        """Claim–Evidence cognitive graph JSON for a thread."""
+        from wiki_bridge.thread_graph import build_thread_graph
+
+        return json.dumps(build_thread_graph(_root(), thread_id), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def bibtex_export(paths: str = "", thread_id: str = "") -> str:
+        """Export BibTeX. paths=comma-separated wiki paths; or pass thread_id for members."""
+        from wiki_bridge.bibtex_export import export_bibtex
+
+        plist = [p.strip() for p in paths.split(",") if p.strip()]
+        if thread_id:
+            data = ts.load_thread(_root(), thread_id)
+            plist = list(dict.fromkeys(plist + list(data.get("paper_paths") or [])))
+        return json.dumps(export_bibtex(_root(), plist), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def related_work(thread_id: str) -> str:
+        """Generate Related Work outline markdown under thread drafts/."""
+        from wiki_bridge.related_work import build_related_work_outline
+
+        return json.dumps(build_related_work_outline(_root(), thread_id), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def section_outline(thread_id: str, section: str = "method") -> str:
+        """Generate method/experiments outline (not LaTeX)."""
+        from wiki_bridge.writing_assist import build_section_outline
+
+        return json.dumps(
+            build_section_outline(_root(), thread_id, section=section),
+            ensure_ascii=False,
+            indent=2,
+        )
 
     @mcp.tool()
     def thread_delta(thread_id: str, mode: str = "auto") -> str:

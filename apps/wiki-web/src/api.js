@@ -154,6 +154,25 @@ export async function setThreadEvidenceGate(id, evidenceId, gate) {
   return data
 }
 
+export async function patchThreadEvidence(id, evidenceId, payload) {
+  const { data } = await api.patch(`/threads/${id}/evidences/${evidenceId}`, payload)
+  return data
+}
+
+export async function recommendForThread(id, text, limit = 8) {
+  const { data } = await api.post(`/threads/${id}/recommend`, { text, limit })
+  return data
+}
+
+export async function ingestPaperFile(path, file, { threadId = '', applySuggest = true } = {}) {
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await api.post(`/wiki/pages/${path}/ingest`, form, {
+    params: { thread_id: threadId || undefined, apply_suggest: applySuggest },
+  })
+  return data
+}
+
 export async function getThreadEvidenceMap(id) {
   const { data } = await api.get(`/threads/${id}/evidence-map`)
   return data

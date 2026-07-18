@@ -9,8 +9,24 @@ from typing import Any
 from . import thread_store as ts
 
 STANCES = ("supports", "refutes", "related")
+SUPPORT_STATUSES = ("supports", "refutes", "related", "insufficient")
 KINDS = ("quote", "metric", "figure", "note")
 GATES = ("suggested", "accepted")
+
+
+def _normalize_confidence(value: Any, default: float = 0.6) -> float:
+    try:
+        c = float(value)
+    except (TypeError, ValueError):
+        return default
+    return max(0.0, min(1.0, c))
+
+
+def _normalize_support_status(value: str, stance: str) -> str:
+    v = (value or "").strip().lower()
+    if v in SUPPORT_STATUSES:
+        return v
+    return stance if stance in SUPPORT_STATUSES else "related"
 
 
 def evidences_path(wiki_root: Path, thread_id: str) -> Path:
@@ -82,6 +98,8 @@ def add_evidence(
     metric_key: str | None = None,
     metric_value: Any = None,
     stance: str = "supports",
+    support_status: str = "",
+    confidence: float | None = None,
     gate: str = "accepted",
     by: str = "user",
     evidence_id: str = "",
@@ -95,6 +113,8 @@ def add_evidence(
         raise KeyError(f"claim not found: {claim_id}")
     kind = kind if kind in KINDS else "quote"
     stance = stance if stance in STANCES else "supports"
+    support_status = _normalize_support_status(support_status, stance)
+    conf = _normalize_confidence(0.6 if confidence is None else confidence)
     gate = gate if gate in GATES else "accepted"
     rows = list_evidences(wiki_root, thread_id)
     eid = evidence_id.strip() or _next_evidence_id(rows)
@@ -112,6 +132,8 @@ def add_evidence(
         "metric_key": metric_key or None,
         "metric_value": metric_value,
         "stance": stance,
+        "support_status": support_status,
+        "confidence": conf,
         "gate": gate,
         "created_at": ts.utc_now_iso(),
         "by": by,
@@ -161,6 +183,8 @@ def add_evidence(
             "evidence_id": eid,
             "claim_id": claim_id,
             "stance": stance,
+            "support_status": support_status,
+            "confidence": conf,
             "gate": gate,
             "paper_path": paper_path,
             "by": by,
@@ -169,8 +193,50 @@ def add_evidence(
     return rec
 
 
-def set_evidence_gate(
+def patch_evidence(
     wiki_root: Path,
+    thread_id: str,
+    evidence_id: str,
+    *,
+    support_status: str | None = None,
+    confidence: float | None = None,
+    stance: str | None = None,
+    by: str = "user",
+) -> dict[str, Any]:
+    rows = list_evidences(wiki_root, thread_id)
+    found = None
+    for r in rows:
+        if str(r.get("evidence_id")) == evidence_id:
+            if stance is not None:
+                r["stance"] = stance if stance in STANCES else r.get("stance")
+            if support_status is not None:
+                r["support_status"] = _normalize_support_status(
+                    support_status, str(r.get("stance") or "supports")
+                )
+            elif "support_status" not in r:
+                r["support_status"] = _normalize_support_status("", str(r.get("stance") or "supports"))
+            if confidence is not None:
+                r["confidence"] = _normalize_confidence(confidence)
+            found = r
+            break
+    if not found:
+        raise FileNotFoundError(evidence_id)
+    _rewrite_evidences(wiki_root, thread_id, rows)
+    ts.append_event(
+        wiki_root,
+        thread_id,
+        {
+            "kind": "evidence_patch",
+            "evidence_id": evidence_id,
+            "support_status": found.get("support_status"),
+            "confidence": found.get("confidence"),
+            "by": by,
+        },
+    )
+    return found
+
+
+def set_evidence_gate(    wiki_root: Path,
     thread_id: str,
     evidence_id: str,
     gate: str,

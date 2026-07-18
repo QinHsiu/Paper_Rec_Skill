@@ -4,6 +4,15 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.8.0] — 2026-07-18
+
+### Added
+
+- `/query_* auto` end-to-end Thread retrieval; scholarly API routing table (S2/OpenAlex/Crossref/PubMed)
+- Writing assist hooks; evidence confidence guidance
+
+---
+
 ## [1.7.0] — 2026-07-18
 
 ### Added

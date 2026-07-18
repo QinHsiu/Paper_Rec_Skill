@@ -256,6 +256,8 @@ def cmd_thread_evidence_add(args: argparse.Namespace) -> int:
         metric_key=args.metric_key or None,
         metric_value=args.metric_value or None,
         stance=args.stance or "supports",
+        support_status=getattr(args, "support_status", "") or "",
+        confidence=getattr(args, "confidence", None),
         gate="suggested" if args.suggested else "accepted",
         by="user",
     )
@@ -385,6 +387,16 @@ def cmd_related_work(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_section_outline(args: argparse.Namespace) -> int:
+    from .writing_assist import build_section_outline
+
+    out = build_section_outline(Path(args.wiki_root), args.thread, section=args.section)
+    print(json.dumps({"path": out["path"], "section": out.get("section")}, ensure_ascii=False))
+    if args.print_md:
+        print(out["markdown"])
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="wiki_bridge", description="Paper_Rec ↔ Wiki Markdown bridge")
     sub = p.add_subparsers(dest="command", required=True)
@@ -489,6 +501,12 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--metric-key", default="")
     s.add_argument("--metric-value", default="")
     s.add_argument("--stance", default="supports", choices=["supports", "refutes", "related"])
+    s.add_argument(
+        "--support-status",
+        default="",
+        choices=["", "supports", "refutes", "related", "insufficient"],
+    )
+    s.add_argument("--confidence", type=float, default=None)
     s.add_argument("--suggested", action="store_true", help="gate=suggested (default accepted)")
     s.set_defaults(func=cmd_thread_evidence_add)
 
@@ -551,6 +569,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--thread", required=True)
     s.add_argument("--print-md", action="store_true")
     s.set_defaults(func=cmd_related_work)
+
+    s = sub.add_parser("section-outline", help="Method/experiments outline (writing assist)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--section", default="method", help="method|experiments|related_work")
+    s.add_argument("--print-md", action="store_true")
+    s.set_defaults(func=cmd_section_outline)
 
     return p
 

@@ -52,7 +52,9 @@ pip install "mcp>=1.0"
 | `thread_search_context` / `thread_query_hint` | Context + query hints for external search |
 | `thread_score_papers` | Score candidates vs thread |
 | `thread_link_paper` / `thread_link_exp` | Membership |
-| `thread_add_evidence` | Claim–Evidence Map |
+| `thread_add_evidence` | Claim–Evidence Map (+ confidence / support_status) |
+| `thread_graph` | Cognitive map JSON |
+| `bibtex_export` / `related_work` / `section_outline` | Export & writing frames |
 | `thread_delta` / `thread_claim_*` | Watch + claim gates |
 | `wiki_list_papers` / `exp_list` / `exp_get_metrics` | Local wiki/exp read |
 

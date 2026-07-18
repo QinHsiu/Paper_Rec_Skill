@@ -37,6 +37,21 @@ After Module 1 query rewrite, **detect 1–2 primary domains**, then load the co
 6. **CN LLM labs (A-CN)**: if query mentions 国产/中文大模型/Qwen/DeepSeek/GLM/InternLM/混元/豆包/文心/星火 etc., activate **A-CN Tier-1 matching orgs (2–4)**; if query is a broad CN-LLM survey, also scan **A-CN Discovery**.
 7. Named-model force map: see [A-CN force triggers](#a-cn-force-triggers--强制触发).
 
+### Priority scholarly APIs (2.14 routing)
+
+When Pack **A** / **F** is active, prefer these hubs (web UI and/or API; compose article-mcp if configured):
+
+| Source | Use | How |
+|--------|-----|-----|
+| **Semantic Scholar** | AI/CS citation + metadata | https://www.semanticscholar.org/ · optional `S2_API_KEY` |
+| **OpenAlex** | Broad scholarly graph / open metadata | https://openalex.org/ · polite pool |
+| **Crossref** | DOI resolve → BibTeX enrich | https://api.crossref.org/ |
+| **PubMed / NCBI** | Biomed (`biomed` domain → Pack F) | https://pubmed.ncbi.nlm.nih.gov/ |
+| **OpenReview** | ICLR & drafts | https://openreview.net/ |
+| **DBLP** | CS venue metadata | https://dblp.org/ |
+
+Do **not** treat source count as a KPI; activate ≤3 packs unless user asks exhaustive.
+
 ---
 
 ## Pack A — AI / Computer Science Core（计算机 · AI 主库）
