@@ -194,6 +194,62 @@ def append_event(wiki_root: Path, thread_id: str, event: dict[str, Any]) -> None
         f.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
+def append_query_iter(
+    wiki_root: Path,
+    thread_id: str,
+    *,
+    round: int,
+    queries: list[Any] | None = None,
+    path_id: str = "",
+    raw_hits: int | None = None,
+    kept: int | None = None,
+    notes: str = "",
+    by: str = "agent",
+) -> dict[str, Any]:
+    """Append a retrieval-trajectory event (kind=query_iter)."""
+    event: dict[str, Any] = {
+        "kind": "query_iter",
+        "round": int(round),
+        "queries": list(queries or []),
+        "path_id": path_id,
+        "by": by,
+    }
+    if raw_hits is not None:
+        event["raw_hits"] = int(raw_hits)
+    if kept is not None:
+        event["kept"] = int(kept)
+    if notes:
+        event["notes"] = notes
+    append_event(wiki_root, thread_id, event)
+    return event
+
+
+def append_query_trace(
+    wiki_root: Path,
+    thread_id: str,
+    rounds: list[dict[str, Any]],
+    *,
+    by: str = "agent",
+) -> list[dict[str, Any]]:
+    """Persist a full retrieval_trace list as query_iter events."""
+    written: list[dict[str, Any]] = []
+    for row in rounds:
+        written.append(
+            append_query_iter(
+                wiki_root,
+                thread_id,
+                round=int(row.get("round") if row.get("round") is not None else 0),
+                queries=list(row.get("queries") or ([row.get("query")] if row.get("query") else [])),
+                path_id=str(row.get("path_id") or row.get("path") or ""),
+                raw_hits=row.get("raw_hits"),
+                kept=row.get("kept"),
+                notes=str(row.get("notes") or ""),
+                by=by,
+            )
+        )
+    return written
+
+
 def list_events(wiki_root: Path, thread_id: str, *, limit: int = 100) -> list[dict[str, Any]]:
     path = thread_dir(wiki_root, thread_id) / "events.jsonl"
     if not path.is_file():

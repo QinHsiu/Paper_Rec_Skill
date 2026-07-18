@@ -4,6 +4,15 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.6.0] — 2026-07-18
+
+### Added
+
+- Modules **2a/2b**: Thread-conditioned multi-path queries + capped iterative refine; retrieval trace in output template
+- Persist via `query-trace` / `retrieval_trace` → `query_iter` events
+
+---
+
 ## [1.5.1] — 2026-07-18
 
 ### Added

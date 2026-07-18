@@ -81,6 +81,11 @@ class EvidenceGateBody(BaseModel):
     gate: str
 
 
+class QueryTraceBody(BaseModel):
+    rounds: list[dict[str, Any]] = Field(default_factory=list)
+    retrieval_trace: list[dict[str, Any]] = Field(default_factory=list)
+
+
 @router.get("")
 def list_threads():
     return {"threads": thread_store.list_threads()}
@@ -239,3 +244,15 @@ def evidence_map(thread_id: str):
         return thread_store.evidence_map(thread_id)
     except FileNotFoundError:
         raise HTTPException(404, f"thread not found: {thread_id}") from None
+
+
+@router.post("/{thread_id}/query-trace")
+def query_trace(thread_id: str, body: QueryTraceBody):
+    rounds = body.rounds or body.retrieval_trace
+    if not rounds:
+        raise HTTPException(400, "rounds or retrieval_trace required")
+    try:
+        events = thread_store.append_query_trace(thread_id, rounds)
+    except FileNotFoundError:
+        raise HTTPException(404, f"thread not found: {thread_id}") from None
+    return {"thread_id": thread_id, "events": events, "count": len(events)}

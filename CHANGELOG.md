@@ -6,6 +6,16 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.10.0] — 2026-07-18
+
+### Added
+
+- **P2 Iterative retrieval**: Skill Modules 2a/2b; `query_iter` ledger; CLI `query-trace`; API `POST .../query-trace`; report `retrieval_trace` on sync-report
+- **P3 Multi-run board**: `curve_runs` from `metrics/curves*.json`; ExpDetail run overlay / compare / primary-only / 5s poll; `curve_runs` in sync-exp writer
+- Demo: `demo-ocr-handwriting-v1/metrics/curves_seed1.json`
+
+---
+
 ## [2.9.0] — 2026-07-18
 
 ### Added

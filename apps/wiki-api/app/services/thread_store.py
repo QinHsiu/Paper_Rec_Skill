@@ -180,3 +180,7 @@ def evidence_map(thread_id: str):
     from wiki_bridge import thread_evidence as _ev
 
     return _ev.evidence_map_summary(wiki_root(), thread_id)
+
+
+def append_query_trace(thread_id: str, rounds: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return _ts.append_query_trace(wiki_root(), thread_id, rounds, by="api")

@@ -96,6 +96,28 @@ Copy and fill for each paper. **Each field: ≤2 sentences.** Choose the templat
 
 ---
 
+## 4b. Retrieval Trace（iterative / thread 时）
+
+| Round | Path | Query | Raw hits | Kept |
+|-------|------|-------|----------|------|
+| 0 | broad | ... | | |
+| 0 | gap | ... | | |
+| 1 | refine | ... | | |
+
+`Latest-intent: on/off` · `Iterative: on/off` · `Thread: {id or —}`
+
+---
+
+## 4c. Thread relevance（主线激活时）
+
+| Band | Papers |
+|------|--------|
+| Strong (R≥0.75) | ... |
+| Weak (0.45–0.75) | ... |
+| Uncovered gaps | ... |
+
+---
+
 ## 5. Notes
 
 - {gaps, inaccessible papers, follow-up suggestions}
@@ -244,6 +266,18 @@ Use when `/query_other` detects a non-CN, non-EN language. Replace `{Lang}` with
 ## 4. Search Coverage
 
 {Same table as English template}
+
+---
+
+## 4b. Retrieval Trace / 检索轨迹（iterative / thread）
+
+{Same table as English template}
+
+---
+
+## 4c. Thread relevance / 主线关联
+
+{Same as English template}
 
 ---
 

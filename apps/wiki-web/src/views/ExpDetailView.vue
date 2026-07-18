@@ -27,25 +27,54 @@
 
     <section class="card">
       <h2 style="margin-top:0;font-size:1.15rem">指标</h2>
-      <div class="chart-wrap" v-if="primaryRows.length">
+      <label class="ctrl-row">
+        <input type="checkbox" v-model="primaryOnly" />
+        仅 primary 指标
+      </label>
+      <div class="chart-wrap" v-if="metricRows.length">
         <canvas ref="metricsCanvas" height="220"></canvas>
       </div>
-      <table class="exp-table" v-if="primaryRows.length">
+      <table class="exp-table" v-if="metricRows.length">
         <thead><tr><th>Metric</th><th>Value</th></tr></thead>
         <tbody>
-          <tr v-for="r in primaryRows" :key="r[0]"><td>{{ r[0] }}</td><td>{{ r[1] }}</td></tr>
+          <tr v-for="r in metricRows" :key="r[0]"><td>{{ r[0] }}</td><td>{{ r[1] }}</td></tr>
         </tbody>
       </table>
       <p v-else class="muted">无 metrics/summary.json</p>
     </section>
 
-    <section class="card" v-if="curveSeries.length">
-      <h2 style="margin-top:0;font-size:1.15rem">训练曲线（交互）</h2>
-      <div class="chart-wrap">
+    <section class="card" v-if="allCurveSeries.length || compareExp">
+      <h2 style="margin-top:0;font-size:1.15rem">训练曲线（多 run）</h2>
+      <div class="ctrl-row" v-if="runNames.length > 1">
+        <span class="muted" style="margin-right:0.5rem">Runs:</span>
+        <label v-for="n in runNames" :key="n" class="run-chip">
+          <input type="checkbox" :value="n" v-model="selectedRuns" />
+          {{ n }}
+        </label>
+      </div>
+      <div class="ctrl-row">
+        <label>
+          对比实验
+          <input
+            v-model="compareId"
+            class="compare-input"
+            placeholder="exp_id"
+            @keyup.enter="loadCompare"
+          />
+        </label>
+        <button type="button" class="btn-link" @click="loadCompare">加载</button>
+        <button type="button" class="btn-link" v-if="compareExp" @click="clearCompare">清除</button>
+        <label class="poll-label">
+          <input type="checkbox" v-model="pollEnabled" />
+          轮询刷新（5s）
+        </label>
+      </div>
+      <div class="chart-wrap" v-if="visibleCurveSeries.length">
         <canvas ref="curvesCanvas" height="280"></canvas>
       </div>
       <p class="muted" style="font-size:0.85rem;margin:0.5rem 0 0">
-        悬停查看数值；可点击图例隐藏系列。
+        多文件约定：<code>metrics/curves.json</code> + <code>curves_&lt;run&gt;.json</code>。
+        悬停查看数值；点击图例隐藏系列。
       </p>
     </section>
 
@@ -81,35 +110,84 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { Chart, registerables } from 'chart.js'
 import { getExperiment } from '../api'
 
 Chart.register(...registerables)
 
 const props = defineProps({ id: { type: String, required: true } })
+const route = useRoute()
 const exp = ref(null)
+const compareExp = ref(null)
+const compareId = ref('')
 const metricsCanvas = ref(null)
 const curvesCanvas = ref(null)
+const primaryOnly = ref(true)
+const selectedRuns = ref([])
+const pollEnabled = ref(false)
 let metricsChart
 let curvesChart
+let pollTimer
 
-const COLORS = ['#1a6b7c', '#c45c26', '#2d6a4f', '#6b4c9a', '#b56576', '#3d5a80']
+const COLORS = ['#1a6b7c', '#c45c26', '#2d6a4f', '#6b4c9a', '#b56576', '#3d5a80', '#8b5a2b', '#4a5568']
 
-const primaryRows = computed(() => {
-  const m = exp.value?.metrics?.primary || exp.value?.metrics || {}
-  return Object.entries(m).filter(([k, v]) => k !== 'summary' && k !== 'target_met' && k !== 'run_id' && typeof v !== 'object')
+function seriesFromCurves(curves, prefix = '') {
+  return Object.entries(curves || {}).map(([name, series]) => {
+    const values = (series.values || series.y || (Array.isArray(series) ? series : [])).map(Number)
+    const steps = series.steps || series.x || values.map((_, i) => i + 1)
+    const label = prefix ? `${prefix}/${name}` : name
+    return { name: label, seriesKey: name, values, steps }
+  }).filter((c) => c.values.length)
+}
+
+const runNames = computed(() => {
+  const runs = exp.value?.curve_runs || []
+  if (runs.length) return runs.map((r) => r.name)
+  if (exp.value?.curves && Object.keys(exp.value.curves).length) return ['default']
+  return []
+})
+
+const allCurveSeries = computed(() => {
+  const runs = exp.value?.curve_runs || []
+  if (runs.length) {
+    return runs.flatMap((r) => seriesFromCurves(r.curves, r.name))
+  }
+  return seriesFromCurves(exp.value?.curves || {})
+})
+
+const visibleCurveSeries = computed(() => {
+  const sel = new Set(selectedRuns.value.length ? selectedRuns.value : runNames.value)
+  let series = allCurveSeries.value.filter((c) => {
+    const run = c.name.includes('/') ? c.name.split('/')[0] : 'default'
+    return sel.has(run)
+  })
+  if (compareExp.value) {
+    const cruns = compareExp.value.curve_runs || []
+    const extra = cruns.length
+      ? cruns.flatMap((r) => seriesFromCurves(r.curves, `cmp:${compareExp.value.id}/${r.name}`))
+      : seriesFromCurves(compareExp.value.curves || {}, `cmp:${compareExp.value.id}`)
+    series = series.concat(extra)
+  }
+  if (primaryOnly.value) {
+    const primary = exp.value?.metrics?.primary || {}
+    const keys = new Set(Object.keys(primary).filter((k) => typeof primary[k] !== 'object'))
+    if (keys.size) {
+      series = series.filter((c) => keys.has(c.seriesKey) || c.seriesKey === 'train_loss' || c.seriesKey.startsWith('val_'))
+    }
+  }
+  return series
+})
+
+const metricRows = computed(() => {
+  const m = exp.value?.metrics || {}
+  const src = primaryOnly.value && m.primary ? m.primary : (m.primary || m)
+  return Object.entries(src).filter(
+    ([k, v]) => k !== 'summary' && k !== 'target_met' && k !== 'run_id' && typeof v !== 'object',
+  )
 })
 
 const figures = computed(() => exp.value?.figures || [])
-
-const curveSeries = computed(() => {
-  const curves = exp.value?.curves || {}
-  return Object.entries(curves).map(([name, series]) => {
-    const values = (series.values || series.y || (Array.isArray(series) ? series : [])).map(Number)
-    const steps = series.steps || series.x || values.map((_, i) => i + 1)
-    return { name, values, steps }
-  }).filter((c) => c.values.length)
-})
 
 function destroyCharts() {
   metricsChart?.destroy()
@@ -120,9 +198,9 @@ function destroyCharts() {
 
 function renderCharts() {
   destroyCharts()
-  if (metricsCanvas.value && primaryRows.value.length) {
-    const labels = primaryRows.value.map((r) => r[0])
-    const values = primaryRows.value.map((r) => Number(r[1]) || 0)
+  if (metricsCanvas.value && metricRows.value.length) {
+    const labels = metricRows.value.map((r) => r[0])
+    const values = metricRows.value.map((r) => Number(r[1]) || 0)
     metricsChart = new Chart(metricsCanvas.value, {
       type: 'bar',
       data: {
@@ -144,11 +222,11 @@ function renderCharts() {
       },
     })
   }
-  if (curvesCanvas.value && curveSeries.value.length) {
+  if (curvesCanvas.value && visibleCurveSeries.value.length) {
     curvesChart = new Chart(curvesCanvas.value, {
       type: 'line',
       data: {
-        datasets: curveSeries.value.map((c, i) => ({
+        datasets: visibleCurveSeries.value.map((c, i) => ({
           label: c.name,
           data: c.values.map((y, j) => ({ x: Number(c.steps[j] ?? j + 1), y })),
           borderColor: COLORS[i % COLORS.length],
@@ -172,13 +250,69 @@ function renderCharts() {
 
 async function load() {
   exp.value = await getExperiment(props.id)
+  if (!selectedRuns.value.length && runNames.value.length) {
+    selectedRuns.value = [...runNames.value]
+  }
+  const qCompare = route.query.compare
+  if (typeof qCompare === 'string' && qCompare && !compareId.value) {
+    compareId.value = qCompare
+    await loadCompare()
+  }
+  if (route.query.poll === '5' || route.query.poll === '5s') {
+    pollEnabled.value = true
+  }
   await nextTick()
   renderCharts()
 }
 
+async function loadCompare() {
+  const id = (compareId.value || '').trim()
+  if (!id) return
+  compareExp.value = await getExperiment(id)
+  await nextTick()
+  renderCharts()
+}
+
+function clearCompare() {
+  compareExp.value = null
+  compareId.value = ''
+  renderCharts()
+}
+
+function stopPoll() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+function startPoll() {
+  stopPoll()
+  if (!pollEnabled.value) return
+  pollTimer = setInterval(async () => {
+    exp.value = await getExperiment(props.id)
+    if (compareExp.value?.id) {
+      compareExp.value = await getExperiment(compareExp.value.id)
+    }
+    await nextTick()
+    renderCharts()
+  }, 5000)
+}
+
 onMounted(load)
 watch(() => props.id, load)
-onBeforeUnmount(destroyCharts)
+watch([primaryOnly, selectedRuns, visibleCurveSeries], async () => {
+  await nextTick()
+  renderCharts()
+})
+watch(pollEnabled, (on) => {
+  if (on) startPoll()
+  else stopPoll()
+})
+onBeforeUnmount(() => {
+  destroyCharts()
+  stopPoll()
+})
 </script>
 
 <style scoped>
@@ -198,6 +332,36 @@ onBeforeUnmount(destroyCharts)
   position: relative;
   width: 100%;
   max-width: 820px;
+}
+.ctrl-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+.run-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.compare-input {
+  margin-left: 0.35rem;
+  padding: 0.2rem 0.4rem;
+  min-width: 10rem;
+}
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent, #1a6b7c);
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font: inherit;
+}
+.poll-label {
+  margin-left: auto;
 }
 .exp-md {
   white-space: pre-wrap;

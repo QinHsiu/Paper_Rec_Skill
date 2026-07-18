@@ -84,6 +84,7 @@ def get_experiment(exp_id: str) -> dict[str, Any]:
     card["figures"] = list_figures(exp_id)
     card["metrics"] = _load_metrics(d)
     card["curves"] = _load_curves(d)
+    card["curve_runs"] = _load_curve_runs(d)
     readme = d / "README.md"
     final = d / "final_report.md"
     card["readme_md"] = readme.read_text(encoding="utf-8") if readme.is_file() else ""
@@ -150,6 +151,41 @@ def _load_curves(d: Path) -> dict[str, Any]:
         except json.JSONDecodeError:
             return {}
     return {}
+
+
+def _load_curve_runs(d: Path) -> list[dict[str, Any]]:
+    """Load metrics/curves*.json as named runs (default = curves.json)."""
+    metrics = d / "metrics"
+    if not metrics.is_dir():
+        return []
+    runs: list[dict[str, Any]] = []
+    for p in sorted(metrics.glob("curves*.json")):
+        try:
+            curves = json.loads(p.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(curves, dict):
+            continue
+        stem = p.stem
+        if stem == "curves":
+            name = "default"
+        elif stem.startswith("curves_"):
+            name = stem[len("curves_") :]
+        elif stem.startswith("curves-"):
+            name = stem[len("curves-") :]
+        else:
+            name = stem
+        runs.append(
+            {
+                "name": name,
+                "file": f"metrics/{p.name}",
+                "mtime": datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc).strftime(
+                    "%Y-%m-%dT%H:%M:%SZ"
+                ),
+                "curves": curves,
+            }
+        )
+    return runs
 
 
 def _mtime_iso(d: Path) -> str:

@@ -54,6 +54,18 @@ def write_exp_artifacts(workspace: Path, payload: dict[str, Any]) -> Path:
         (root / "metrics" / "curves.json").write_text(
             json.dumps(curves, ensure_ascii=False, indent=2), encoding="utf-8"
         )
+    # Optional multi-run: curve_runs: [{run_id, curves}]
+    for run in payload.get("curve_runs") or []:
+        if not isinstance(run, dict):
+            continue
+        rid = str(run.get("run_id") or run.get("name") or "run").strip()
+        rcurves = run.get("curves") or {}
+        if not rid or not isinstance(rcurves, dict) or not rcurves:
+            continue
+        safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in rid)
+        (root / "metrics" / f"curves_{safe}.json").write_text(
+            json.dumps(rcurves, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
     readme = render_exp_readme(payload, curves)
     (root / "README.md").write_text(readme, encoding="utf-8")

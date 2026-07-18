@@ -10,3 +10,5 @@
 {"kind": "delta", "mode": "diff_brief", "added_papers": [], "new_gaps": [], "path": "D:/PycharmProjects/pythonProject/projects/Paper_Rec_Skill/content/threads/mm-llm-alignment/deltas/2026-07-18-diff_brief.md", "ts": "2026-07-18T08:55:31Z"}
 {"kind": "paper_linked", "path": "llm/2025/getting-started", "source": "evidence", "relevance": null, "rationale": [], "gate": "accepted", "by": "verify", "ts": "2026-07-18T09:14:02Z"}
 {"kind": "evidence_added", "evidence_id": "E1", "claim_id": "C1", "stance": "supports", "gate": "accepted", "paper_path": "llm/2025/getting-started", "by": "verify", "ts": "2026-07-18T09:14:02Z"}
+{"kind": "query_iter", "round": 0, "queries": ["mm llm alignment"], "path_id": "broad", "by": "verify", "raw_hits": 40, "kept": 18, "ts": "2026-07-18T09:19:43Z"}
+{"kind": "query_iter", "round": 1, "queries": ["preference data quality multimodal"], "path_id": "refine", "by": "verify", "raw_hits": 25, "kept": 12, "ts": "2026-07-18T09:19:43Z"}

@@ -107,6 +107,16 @@ def cmd_sync_report(args: argparse.Namespace) -> int:
                     ],
                 },
             )
+        # Optional retrieval trajectory from report JSON wrapper
+        try:
+            raw_report = json.loads(Path(args.report).read_text(encoding="utf-8"))
+            if isinstance(raw_report, dict):
+                trace = list(raw_report.get("retrieval_trace") or [])
+                if trace:
+                    thread_store.append_query_trace(root, args.thread, trace, by="sync-report")
+                    print(f"  + query_iter x{len(trace)}")
+        except (json.JSONDecodeError, OSError):
+            pass
         print(f"Thread `{args.thread}` scored {len(scored)} paper(s); auto_link={bool(args.auto_link)}")
         for s in scored[:10]:
             print(f"  R={s['R']:.2f} gate={s['gate']} {s.get('path') or s.get('title')}")
@@ -280,6 +290,31 @@ def cmd_thread_evidence_gate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_query_trace(args: argparse.Namespace) -> int:
+    """Persist retrieval_trace rounds as query_iter ledger events."""
+    root = Path(args.wiki_root)
+    if args.json:
+        raw = json.loads(Path(args.json).read_text(encoding="utf-8"))
+        if isinstance(raw, dict):
+            rounds = list(raw.get("retrieval_trace") or raw.get("rounds") or [])
+        else:
+            rounds = list(raw)
+    else:
+        rounds = [
+            {
+                "round": args.round,
+                "path_id": args.path_id,
+                "queries": [q for q in (args.query or "").split("||") if q.strip()],
+                "raw_hits": args.raw_hits,
+                "kept": args.kept,
+                "notes": args.notes or "",
+            }
+        ]
+    written = thread_store.append_query_trace(root, args.thread, rounds, by="cli")
+    print(json.dumps({"thread": args.thread, "events": len(written)}, ensure_ascii=False))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="wiki_bridge", description="Paper_Rec ↔ Wiki Markdown bridge")
     sub = p.add_subparsers(dest="command", required=True)
@@ -400,6 +435,18 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--evidence-id", required=True)
     s.add_argument("--gate", required=True, choices=["suggested", "accepted"])
     s.set_defaults(func=cmd_thread_evidence_gate)
+
+    s = sub.add_parser("query-trace", help="Append query_iter events (retrieval trajectory)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--json", default="", help="JSON file: list or {retrieval_trace:[...]}")
+    s.add_argument("--round", type=int, default=0)
+    s.add_argument("--path-id", default="")
+    s.add_argument("--query", default="", help="queries separated by ||")
+    s.add_argument("--raw-hits", type=int, default=None)
+    s.add_argument("--kept", type=int, default=None)
+    s.add_argument("--notes", default="")
+    s.set_defaults(func=cmd_query_trace)
 
     return p
 

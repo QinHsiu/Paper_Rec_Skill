@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.5.0
+version: 1.6.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -23,6 +23,7 @@ Task Progress:
 - [ ] Module 1: Input — summarize, extract keywords, rewrite query
 - [ ] Module 1.5 (optional): Thread context inject — hypothesis / claims / gaps
 - [ ] Module 2: Retrieval — search, score, rank top 50
+- [ ] Module 2a/2b (optional): multi-path + iterative refine when thread/iterative
 - [ ] Module 2.5 (optional): Thread-aware rerank + rationale section
 - [ ] Module 3: Output — structured report (≤2 sentences per field)
 - [ ] Module 4 (optional): Persist selected papers to Wiki (`content/wiki/pages`)
@@ -308,6 +309,36 @@ When Module 1 detects **latest intent** (最新 / latest / 近期 / 刚刚发布
 ```
 
 For the final report, deep-read the **top 10–15** papers; use metadata-only for ranks 11–50 unless user requests full coverage.
+
+### 2a Multi-path queries / 多路查询（Thread 或 iterative 时）
+
+**When**: Module 1.5 thread is active, **or** user says `iterative` / `迭代检索`.
+
+**Action** (before / during 2.2):
+1. Build **up to 4** query paths from rewritten + thread state:
+   - **broad** — Module 1 Broad
+   - **specific** — Module 1 Specific / Keyword
+   - **gap** — one query per open `evidence_gaps` / open question (cap 2)
+   - **claim** — paraphrase of open claims that need evidence (cap 2)
+2. Search packs with these paths; tag each hit with `path_id`.
+3. Merge & dedupe across paths (same rules as 2.4).
+
+### 2b Iterative refine / 自动收窄·放宽（有上限）
+
+**When**: same as 2a. **Default max rounds = 1** refinement after the initial pass (total ≤ 2 search waves). Need `thread:<id>` or explicit `iterative` — do **not** iterate by default on plain `/query_*`.
+
+**Action**:
+1. After wave 0, if kept unique hits **&lt; 8** → widen (drop rare terms / add synonyms / sibling venues); if **&gt; 40** noisy → narrow (add claim/gap tokens, year filter).
+2. Run **at most one** refine wave; stop early if already in [8, 40].
+3. Record a **检索轨迹 / Retrieval trace** (round, queries, raw hits, kept). Prefer persist via:
+
+```bash
+python -m wiki_bridge.cli query-trace --wiki-root . --thread <id> --json trace.json
+```
+
+Or include `retrieval_trace: [...]` in the report JSON for Module 4 / sync-report.
+
+Then continue to 2.4 ranking → 2.5 (if thread).
 
 ### 2.5 Thread-aware rerank / 主线关联重排（可选）
 

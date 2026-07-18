@@ -172,7 +172,12 @@
             <span v-if="ev.mode">mode={{ ev.mode }}</span>
           </div>
           <p class="muted" style="margin:0.35rem 0 0;font-size:0.88rem">
-            <template v-if="ev.path">{{ ev.path }}</template>
+            <template v-if="ev.kind === 'query_iter'">
+              round {{ ev.round }} · {{ ev.path_id || 'path' }}
+              · hits {{ ev.raw_hits ?? '—' }} → kept {{ ev.kept ?? '—' }}
+              <span v-if="(ev.queries || []).length"> · {{ (ev.queries || []).slice(0, 2).join(' | ') }}</span>
+            </template>
+            <template v-else-if="ev.path">{{ ev.path }}</template>
             <template v-else-if="ev.experiment_id">exp {{ ev.experiment_id }}</template>
             <template v-else-if="ev.text">{{ ev.text }}</template>
             <template v-else-if="ev.rationale">{{ (ev.rationale || []).join(' · ') }}</template>

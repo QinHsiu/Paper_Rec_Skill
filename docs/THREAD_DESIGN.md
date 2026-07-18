@@ -31,6 +31,7 @@ content/threads/<thread_id>/
 | **C** | `thread_*` MCP (memory first) | done |
 | **D** | Wiki exp Chart.js viz + `/draw` venue styles | done |
 | **E** | Claim–Evidence Map + MCP zero-PYTHONPATH / wiki·exp tools | done (2.9.0) |
+| **F** | Iterative retrieval (`query_iter`) + multi-run exp board | done (2.10.0) |
 
 ## Watch / Delta (Phase B)
 
@@ -51,6 +52,18 @@ Evidence binds a **claim_id** to a paper quote, exp metric, figure, or note (`ev
 
 Does **not** auto-extract claims from full PDFs (human highlight + agent suggest only).
 
+## Iterative retrieval (Phase F / 2.10.0)
+
+Skill Modules **2a/2b**: multi-path queries + ≤1 refine wave when `thread:` or `iterative`. Ledger kind `query_iter`.
+
+- CLI: `query-trace --thread … --json trace.json`
+- API: `POST /api/threads/{id}/query-trace`
+- Report: `retrieval_trace` in JSON → auto-appended on `sync-report --thread`
+
+## Multi-run curves (Phase F / 2.10.0)
+
+`metrics/curves.json` + `metrics/curves_<run>.json` → API `curve_runs[]`. Wiki ExpDetail: run overlay, compare exp, primary-only, 5s poll.
+
 ## MCP (Phase C + E)
 
 Package: `packages/thread-mcp` — set `PAPER_REC_ROOT` only (auto-locates wiki-bridge).
@@ -68,10 +81,12 @@ thread-create | thread-list | thread-show
 thread-link-paper | thread-link-exp
 thread-evidence-add | thread-evidence-list | thread-evidence-gate
 thread-delta | thread-claim
+query-trace
 sync-report --thread <id> [--auto-link]
 sync-exp --thread <id>
 ```
 
 ## API
 
-`/api/threads` — CRUD + link + timeline + delta + context + score + claims + evidences + evidence-map + by-paper / by-exp.
+`/api/threads` — CRUD + link + timeline + delta + context + score + claims + evidences + evidence-map + query-trace + by-paper / by-exp.
+`/api/exp/{id}` — includes `curves` + `curve_runs`.
