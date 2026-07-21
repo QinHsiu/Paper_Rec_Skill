@@ -23,7 +23,25 @@ Expected: duration/sample-rate histograms, label/text length, noise proxies, qua
 请聚类 badcase，并给出至少 3 个可验证方案
 ```
 
-Expected: clusters such as “handwritten pinyin”, “low-res scan”, “rare characters”; ranked plans with mini-val suggestions.
+Expected: clusters such as “handwritten pinyin”, “low-res scan”, “rare characters”; ranked plans with **subset mini-val** (clear gain on the failing cluster before full train).
+
+---
+
+## 2b. Plan mini-verify on target subset (Qwen clean OCR)
+
+```text
+/exp_analysis eval
+方案候选 P3: 使用 Qwen（clean_open）清洗 handwritten_pinyin 簇的 OCR 标签噪声
+请做 mini-verify：在目标子集 handwritten_pinyin 上对比清洗前后 F1，
+要求明显收益后再决定是否全量训练
+```
+
+Expected mini-validation log:
+- plan = Qwen label clean（验证方案，不是整网重训）
+- target_subset = `handwritten_pinyin`
+- subset F1 before → after → Δ ≥ min_clear_gain
+- optional global F1 跌幅 ≤ global_max_drop
+- decision: promote_to_full_train | revise
 
 ---
 

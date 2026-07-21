@@ -1,5 +1,13 @@
 # Changelog — exp-sandbox
 
+## [1.8.2] — 2026-07-21
+
+### Clarified
+
+- **Mini-verify = plan validation on a target subset**: e.g. Qwen OCR label-clean must show clear metric gain on `handwritten_pinyin` (or the declared cluster) before full train
+- Module B / plan_template / output-template / examples document subset protocol + `min_clear_gain` / `global_max_drop`
+- `mini_eval.mini_validate_plan` enforces subset primary gain + optional global guardrail; records `target_subset` / `subset_gain`
+
 ## [1.8.1] — 2026-07-21
 
 ### Fixed

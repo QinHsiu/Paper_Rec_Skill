@@ -1,6 +1,6 @@
 ---
 name: exp-sandbox
-version: 1.8.1
+version: 1.8.2
 description: >-
   Automated experiment sandbox: dataset analysis, training, evaluation, and a
   self-improving loop (analyze → multi-plan → mini-verify → train → eval →
@@ -137,9 +137,9 @@ Document every borrowed method / board snapshot date in the plan log (`source:` 
    - Map each priority cluster → a **symptom** (`overfitting` / `long_tail` / `hard_subset` / …).
    - From the **bundled** catalog pick **2–3 verifiable actions** (seed steps).
    - Expand each plan with the **数据侧 / 模型侧 / 训练侧** template ([`reference/plan_template.md`](reference/plan_template.md)):
-     - **数据侧**: 现象 → `/draw` 可视化 → 结论 → **可执行调整**（如不均衡则给出训练集比例/采样方案）→ data mini-verify  
-     - **模型侧**: 是否换模；需要则榜单短名单 + 家族下钻对比；否则 `N/A`  
-     - **训练侧**: loss/sampler/LR/正则等配方 diff + 曲线出图 → train mini-verify  
+     - **数据侧**: 现象 → `/draw` 可视化 → 结论 → **可执行调整**（如不均衡则给出训练集比例/采样方案）→ **子集 mini-verify**（方案在目标子集上须有明显收益）  
+     - **模型侧**: 是否换模；需要则榜单短名单 + 家族下钻对比；否则 `N/A`；清洗教师（如 Qwen）须在对应难子集上做 mini-verify  
+     - **训练侧**: loss/sampler/LR/正则等配方 diff + 曲线出图 → train mini-verify（短训 + 目标子集指标）  
    - If actions need **model selection** → run [Model selection](#model-selection--模型选型必做) inside §2.
    - Write `content/exp/<id>/plans/P*.md` via `reference.tricks.render_plan_md` / `plan_template.render_full_plan_md`.
    - Prefer `reference.badcase.plans_from_clusters`.
@@ -187,11 +187,30 @@ Trigger when the plan mentions 基座 / backbone / 蒸馏 / 清洗用模型 / te
 
 `data_processing & mini_evaluation [cycle verify current method of plan]`
 
-1. **Record the plan** (id, hypothesis, steps, expected metric delta, risks, **source**).
-2. Apply data/label (or train_recipe) changes on a **small slice** (or held-out probe set).
-3. Mini-eval: does the change move the needle as predicted? (use each action’s `mini_verify`.)
-4. If **not**, adjust plan and re-mini-eval before full training.
-5. Prefer **Predict-then-Verify**: rank multi-plans first; only fully execute **Top-1** (or Top-k if user asks) after mini-check.
+**定位**：Mini-demo / mini-verify 验证的是**当前方案（solution plan）本身**，不是整条训练流水线。  
+在方案声称要改善的**目标子集（target subset）**上，主指标必须出现**明显收益**，才允许进入全量训练。
+
+### 典型例子
+
+| 方案 | 目标子集 | Mini-verify 做什么 | 通过标准（明显收益） |
+|------|----------|--------------------|----------------------|
+| 用 **Qwen** 清洗 OCR 难例标签 | `handwritten_pinyin`（或对应 badcase 簇） | 仅在该子集上：清洗前 vs 清洗后评 F1/CER | 子集主指标 Δ ≥ `max(0.25×expected_gain, min_clear_gain)`，且全量指标跌幅 ≤ `global_max_drop` |
+| 难子集增广 / 重采样 | 对应 hard_subset 簇 | 子集指标↑ | 同上 |
+| 换清洗教师 / 基座 | 方案指定的 probe 切片 | 小切片可用性 + 子集指标 | 同上 |
+
+### 步骤
+
+1. **Record the plan**（id, hypothesis, steps, `expected_gain`, risks, **source**）。
+2. 在 `plans/P*.md` / `plan.meta` 写明：
+   - `target_subset` / `probe_subset`：验证落在哪一簇/切片（来自 Module A 的 special_question / cluster）
+   - `min_clear_gain`（默认 **0.01** 绝对增益）：「明显」的下限
+   - `global_max_drop`（默认 **0.02**）：全量集最多允许跌多少
+3. 在**该子集**上应用方案（数据/标签/小模型步骤），跑 mini-eval（`reference/mini_eval.py`）。
+4. 指标约定：`eval_slice()` 返回的 **`target.metric` = 子集分数**；可选 `{metric}_global` = 全量分数（护栏）。
+5. **不通过** → 修订方案再 mini-verify；**不得**跳过子集验证直接全量训。
+6. Prefer **Predict-then-Verify**：多方案先偏好排序；仅 Top-1（或用户指定 Top-k）在子集 mini-check 通过后全量执行。
+
+实现钩子：`mini_validate_plan` / `cycle_until_stable`；orchestrator 的 `mini_verify` 须把修订后的 `plan` 回传给全量训练。
 
 ---
 
@@ -235,7 +254,7 @@ Notation from product spec:
 
 1. Start from context + latest metrics/badcases.
 2. Produce **≥2** (prefer **m=10**) solution plans; score via pairwise preference with confidence gate **c=0.7** (see `reference/tournament.py`).
-3. Select **Top-1** (`k=1`); mini-validate (`reference/mini_eval.py`); if fail, try next plan or revise.
+3. Select **Top-1** (`k=1`); **subset mini-validate** (`reference/mini_eval.py` — clear gain on `target_subset`); if fail, try next plan or revise.
 4. Full train + eval; compare to `target_score`.
 5. **Stop when**:
    - `target_score` met, **or**

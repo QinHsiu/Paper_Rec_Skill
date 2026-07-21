@@ -94,6 +94,9 @@ def run_exp_loop(
                 "plan_id": cur.plan_id,
                 "plan": cur,  # revised plan after mini cycles — must feed full_train_eval
                 "promote_to_full_train": last.promote_to_full_train,
+                "target_subset": getattr(last, "target_subset", "") or cur.meta.get("target_subset"),
+                "subset_gain": getattr(last, "subset_gain", None),
+                "global_delta": getattr(last, "global_delta", None),
                 "mini_history": [h.__dict__ for h in hist],
             }
 

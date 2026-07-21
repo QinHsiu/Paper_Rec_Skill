@@ -56,12 +56,19 @@ Keep each subsection short unless the user asks for depth.
 ```markdown
 # Mini-Validation — <plan_id>
 
-- change summary:
-- probe set / slice:
-- metrics before → after:
+- **plan under test** (方案本身): e.g. Qwen clean OCR labels / resample tail classes
+- **target_subset** (目标子集): e.g. handwritten_pinyin | cluster C2
+- probe size / ids:
+- metrics **on subset** before → after → Δ:
+- metrics **global** before → after → Δ (optional guardrail):
+- clear gain? (Δ_subset ≥ max(0.25×expected_gain, min_clear_gain)) yes/no
+- global within max_drop? yes/no/n/a
 - matches plan expectation? yes/no
 - decision: promote_to_full_train | revise | discard
+- notes: …
 ```
+
+规则：Mini-verify = **方案验证**；必须在声明的目标子集上看到明显收益，才能 promote。
 
 ---
 

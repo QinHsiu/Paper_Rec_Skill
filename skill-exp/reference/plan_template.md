@@ -37,9 +37,15 @@ Order: **先证据与结论，再给可执行调整**；三侧都要写——若
 | D1 | | | |
 | D2 | | | |
 
-### 1.5 Mini-verify（数据）
-- probe 集: …
-- 成功标准: …
+### 1.5 Mini-verify（数据）— **验证本方案，看目标子集**
+- **验证对象**: 本方案的数据/标签动作（不是全量训练）
+- **target_subset / probe**: 来自 badcase 簇，例如 `handwritten_pinyin`（须与 special_question 对齐）
+- **协议**: 子集上 before → 应用方案 → after；主指标 = `target_score.metric`
+- **明显收益**: 子集 Δ ≥ `max(0.25×expected_gain, min_clear_gain)`（默认 min_clear_gain=0.01）
+- **护栏**: 可选测 `{metric}_global`；跌幅不得超过 `global_max_drop`（默认 0.02）
+- **失败**: revise 方案后再测；禁止「子集无收益却开全量训」
+
+示例：方案「Qwen 清洗 OCR 标签」→ probe=`handwritten_pinyin` → 清洗前后子集 F1 须明显↑。
 
 ## 2. 模型侧（Model）
 ### 2.1 是否需要选型
@@ -58,7 +64,10 @@ Order: **先证据与结论，再给可执行调整**；三侧都要写——若
 - 结论: …
 
 ### 2.4 Mini-verify（模型）
-- 小切片上教师/基座可用性检查: …
+- 验证对象: 选定教师/基座在本方案中的用法（如 Qwen 作 `clean_open`）
+- target_subset: 与数据侧同一难子集（或声明不同子集的理由）
+- 小切片可用性 + **子集主指标明显收益**（标准同 §1.5）
+- 失败则换 primary/backup，不得直接全量
 
 ## 3. 训练侧（Train）
 ### 3.1 现象 / 动机
@@ -74,8 +83,10 @@ Order: **先证据与结论，再给可执行调整**；三侧都要写——若
 - early-stop / 异常信号: …
 
 ### 3.4 Mini-verify（训练）
-- 短训步数 / 子集: …
-- 成功标准: …
+- 验证对象: 本方案的训练配方 diff（短训），不是最终长训
+- 短训步数 + **target_subset** 指标 before/after
+- 成功标准: 同 §1.5「明显收益」+ 曲线无爆炸/NaN
+- 通过后再 `/exp_training` 全量
 
 ## 4. 预期收益与风险
 - expected_gain vs `target_score`: …
@@ -136,8 +147,9 @@ Order: **先证据与结论，再给可执行调整**；三侧都要写——若
 | D3 | 头部降采样（可选） | 头部每类最多不超过中位数 ×3 | 缓解极端偏斜 |
 
 ### 1.5 Mini-verify（数据）
-- probe: 固定 2k 子集，按新采样器抽 1 epoch 统计类频
-- 成功: 尾类有效曝光 ≥ 原 3×；头部占比下降且全局先验不过度扭曲
+- target_subset: 稀有类 / long-tail 簇（非全量集）
+- probe: 固定 2k 子集，按新采样器抽 1 epoch 统计类频 + 子集主指标
+- 明显收益: 尾类有效曝光 ≥ 原 3× **且** 子集 F1/召回 Δ 达 `min_clear_gain`；`F1_global` 跌幅 ≤ `global_max_drop`
 
 ## 2. 模型侧（Model）
 ### 2.1 是否需要选型
