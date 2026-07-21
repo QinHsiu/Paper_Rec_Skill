@@ -1,0 +1,19 @@
+# Per-phase task notes (AgentLaboratory)
+
+Optional `content/exp/<id>/task_notes.yaml` — human constraints injected into each `/exp_*` phase:
+
+```yaml
+plan:
+  - Prefer subset mini-verify on handwritten_pinyin
+  - Do not change backbone in round 1
+data:
+  - Keep label taxonomy frozen
+run:
+  - max_steps: 2000 for mini; seed: 42
+results:
+  - Report target_subset metric first
+report:
+  - Link figures under figures/; no invented numbers
+```
+
+Agent must quote applicable bullets at the start of each phase output.

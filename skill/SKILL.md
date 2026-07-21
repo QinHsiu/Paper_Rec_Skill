@@ -108,6 +108,18 @@ Templates per mode: [output-template.md](output-template.md)
 
 ---
 
+## Module 0: Clarify gate / 澄清门（可选）
+
+**When**: Ambiguous ask, conflicting goals, or `rank-intent` returns `ambiguous=true`.
+
+**Action**: Follow [`references/clarify-gate.md`](references/clarify-gate.md) — emit `need_clarification` JSON and **wait** before Module 1 rewrite / retrieval.
+
+Idea seeds (no finished paper yet): [`references/idea-template.md`](references/idea-template.md).  
+Library search operators: [`references/wiki-query-filters.md`](references/wiki-query-filters.md).  
+Screening stop: [`references/screening-stop.md`](references/screening-stop.md).
+
+---
+
 ## Module 1: Input / 输入模块
 
 Transform the user's raw query into retrieval-ready form through three steps.
@@ -201,6 +213,8 @@ Chinese mode:
 2. Inject into rewrite: `hypothesis`, open `claims`, `evidence_gaps`, `seed_queries` / `seed_terms`, plus titles/tags of up to 15 member `paper_paths` if readable.
 3. Produce **extra** rewritten queries from open questions / gaps (one path per gap when useful).
 4. Announce at report top: `Thread: {title} ({id})`.
+
+**Seed-from-papers** (AI-Researcher): if user only provides a reference-paper list (no hypothesis), create thread with hypothesis = “Synthesize gaps from seed papers”, `paper_paths` = list, and derive `seed_queries` from titles — do not require an uploaded idea doc.
 
 If multiple active threads and no `thread:` prefix → **ask** which thread to use (or proceed without thread context).
 
@@ -540,7 +554,8 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
 | `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
 
-Writing checklist: [`references/writing-gates.md`](references/writing-gates.md) (contribution → Figure 1 → SEARCH→VERIFY cites).
+Writing checklist: [`references/writing-gates.md`](references/writing-gates.md) (contribution → Figure 1 → SEARCH→VERIFY cites).  
+Draft review gate: [`references/neurips-review-gate.md`](references/neurips-review-gate.md) (AI-Scientist).
 
 ### Thread ops (do this yourself)
 

@@ -205,7 +205,11 @@ Order: **先证据与结论，再给可执行调整**；三侧都要写——若
 
 ---
 
-## 与其它模块的关系
+## Related references
+
+- Workspace layout: [`workspace_layout.md`](workspace_layout.md) (Curie-inspired)
+- Task notes example: [`task_notes.example.yaml`](task_notes.example.yaml) (AgentLaboratory)
+- Plan template claim binding §6
 
 | 产出 | 模板位置 |
 |------|----------|

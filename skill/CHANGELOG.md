@@ -4,6 +4,12 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.8] — 2026-07-22
+
+### Added
+
+- Module 0 clarify-gate; idea-template; neurips-review-gate; screening-stop; wiki-query-filters; seed-from-papers
+
 ## [1.12.7] — 2026-07-22
 
 ### Added

@@ -6,6 +6,12 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.31.0] — 2026-07-22
+
+### Added
+
+- Remaining competitor UX ports: clarify/idea/NeurIPS review/screening/wiki filters; exp task_notes + workspace layout; MCP session pattern; seed-from-papers
+
 ## [2.30.0] — 2026-07-22
 
 ### Added

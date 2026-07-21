@@ -1,5 +1,11 @@
 # Changelog — exp-sandbox
 
+## [1.8.4] — 2026-07-22
+
+### Added
+
+- `reference/workspace_layout.md` (Curie) + `task_notes.example.yaml` (AgentLaboratory)
+
 ## [1.8.3] — 2026-07-22
 
 ### Added
