@@ -1,5 +1,12 @@
 # Changelog — exp-sandbox
 
+## [1.8.3] — 2026-07-22
+
+### Added
+
+- Plan §6 claim↔experiment binding (AI-Research-SKILLs)
+- `/exp_loop` dead_end leaf logging before next plan; read dead_ends to avoid rediscovery
+
 ## [1.8.2] — 2026-07-21
 
 ### Clarified

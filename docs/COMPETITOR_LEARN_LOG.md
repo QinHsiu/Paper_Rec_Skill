@@ -9,6 +9,7 @@ Clones: `../paper-rec-competitors/`
 | 2 | PaperPilot | done | filter-code, matrix-build, claim-ledger; Module 1 protocol/code fields |
 | 3 | paper-search-pro | done | rank-intent, ris-export, RRF DOI-first, OpenAlex multi-sort docs |
 | 4 | paper-qa | done | answer-ground, PDF page markers, cannot-answer on evidence-coverage |
-| 5–18 | (pending clones + per-repo passes) | queued | |
+| 5 | AI-Research-SKILLs | done | claim↔exp binding, dead_ends, draw Step 0, writing-gates |
+| 6–18 | (pending clones + per-repo passes) | queued | |
 
 Each row: explore → patch → offline/regress tests → commit → push branch.

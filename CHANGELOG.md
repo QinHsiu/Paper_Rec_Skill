@@ -6,6 +6,14 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.29.0] — 2026-07-22
+
+### Added
+
+- exp-sandbox **1.8.3**: claim↔experiment binding + `/exp_loop` dead_end logging (AI-Research-SKILLs)
+- skill-draw **1.2.1**: Step 0 chart/diagram decision table
+- `skill/references/writing-gates.md`: contribution + SEARCH→VERIFY citation checklist
+
 ## [2.28.0] — 2026-07-22
 
 ### Added

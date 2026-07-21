@@ -4,6 +4,12 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.6] — 2026-07-22
+
+### Added
+
+- `references/writing-gates.md` (AI-Research-SKILLs): contribution gate + citation SEARCH→VERIFY
+
 ## [1.12.5] — 2026-07-22
 
 ### Added
