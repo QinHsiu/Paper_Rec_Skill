@@ -42,3 +42,5 @@ Do not invent sources during revise — only restructure or mark `[CITATION NEED
 ## Related-work outline merge (AutoSurvey · optional)
 
 For large hit lists: draft 2–3 outline chunks from disjoint paper batches → merge headings → edit to drop overlapping subsections → then `related-work` / section-outline. Prefer section **description** as the retrieval query for each subsection’s local paper set.
+
+Scored venue-style review: [`neurips-review-gate.md`](neurips-review-gate.md) (AI-Scientist).
