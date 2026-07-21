@@ -1,6 +1,6 @@
 ---
 name: exp-sandbox
-version: 1.8.2
+version: 1.8.4
 description: >-
   Automated experiment sandbox: dataset analysis, training, evaluation, and a
   self-improving loop (analyze → multi-plan → mini-verify → train → eval →
@@ -274,6 +274,25 @@ Notation from product spec:
 - evaluation:
 - decision: continue | stop
 ```
+
+### Dead-ends (required on failure · AI-Research-SKILLs)
+
+When mini-verify **fails** or a plan is **rejected**, append a leaf node under `content/exp/<id>/trace/dead_ends.md` (or `trace/exploration.yaml`) **before** proposing the next plan:
+
+```markdown
+## dead_end DE-N
+- hypothesis: （本方案假设）
+- failure_mode: subset_no_gain | global_drop | train_diverge | …
+- lesson: （下一轮禁止再试的具体坑）
+- plan_id: P*
+- evidence: metrics path / figure
+```
+
+`/exp_loop` **must read existing dead_ends** so the same failure is not rediscovered. Dead-ends are leaf-only (no children).
+
+### Claim ↔ experiment binding
+
+After `/exp_eval`, check plan §6: every open thread claim referenced by the run has a verifying `E*`; else list under `evidence_gaps` (do not auto-flip claim status).
 
 ---
 

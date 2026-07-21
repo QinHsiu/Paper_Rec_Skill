@@ -364,6 +364,58 @@ def cmd_claim_suggest(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_citation_verify(args: argparse.Namespace) -> int:
+    from .citation_verify import verify_bib_file
+
+    bib = Path(args.bib)
+    out_json = Path(args.out) if args.out else bib.with_suffix(".verify.json")
+    filtered = Path(args.filtered_bib) if args.filtered_bib else None
+    if args.write_filtered and filtered is None:
+        filtered = bib.with_name(bib.stem + ".clean.bib")
+    report = verify_bib_file(
+        bib,
+        out_json=out_json,
+        filtered_bib=filtered,
+        mailto=args.mailto or "paper-rec@local",
+    )
+    summary = report.get("summary") or {}
+    print(
+        json.dumps(
+            {
+                "integrity_score": summary.get("integrity_score"),
+                "verified": summary.get("verified"),
+                "suspicious": summary.get("suspicious"),
+                "hallucinated": summary.get("hallucinated"),
+                "skipped": summary.get("skipped"),
+                "report": str(out_json),
+                "filtered_bib": str(filtered) if filtered else None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    # non-zero if any hallucinated (blocks "ready to submit")
+    return 1 if int(summary.get("hallucinated") or 0) > 0 else 0
+
+
+def cmd_latex_export(args: argparse.Namespace) -> int:
+    from .latex_export import export_latex_pack
+
+    draft = Path(args.draft_dir) if args.draft_dir else Path()
+    if args.thread:
+        from . import thread_store as ts
+
+        draft = ts.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+    out = export_latex_pack(
+        draft,
+        venue=args.venue,
+        title=args.title or "",
+        bib_path=Path(args.bib) if args.bib else None,
+    )
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_bibtex_export(args: argparse.Namespace) -> int:
     from .bibtex_export import export_bibtex
 
@@ -384,6 +436,148 @@ def cmd_bibtex_export(args: argparse.Namespace) -> int:
             for w in out["warnings"]:
                 print(f"% {w}", file=sys.stderr)
     return 0
+
+
+def cmd_ris_export(args: argparse.Namespace) -> int:
+    from .ris_export import export_ris
+
+    paths = _split_csv(args.paths) if args.paths else []
+    if args.thread:
+        data = thread_store.load_thread(Path(args.wiki_root), args.thread)
+        paths = list(dict.fromkeys(paths + list(data.get("paper_paths") or [])))
+    out = export_ris(Path(args.wiki_root), paths)
+    if args.out:
+        Path(args.out).write_text(out["ris"], encoding="utf-8")
+        print(f"Wrote {args.out} ({out['count']} entries)")
+        for w in out["warnings"]:
+            print(f"  ! {w}")
+    else:
+        print(out["ris"])
+    return 0
+
+
+def cmd_rank_intent(args: argparse.Namespace) -> int:
+    from .rank_intent import parse_rank_intent
+
+    intent = parse_rank_intent(args.query)
+    print(json.dumps(intent.to_dict(), ensure_ascii=False, indent=2))
+    return 1 if intent.ambiguous and args.strict else 0
+
+
+def cmd_filter_code(args: argparse.Namespace) -> int:
+    from .code_filter import filter_by_code
+
+    payload = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        items = payload
+    else:
+        items = list(payload.get("documents") or payload.get("papers") or payload.get("candidates") or [])
+    out = filter_by_code(items, mode=args.mode)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps({"kept_n": out["kept_n"], "dropped_n": out["dropped_n"], "out": args.out}, ensure_ascii=False))
+    else:
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_matrix_build(args: argparse.Namespace) -> int:
+    from .literature_matrix import build_literature_matrix
+
+    payload = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        items = payload
+    else:
+        items = list(payload.get("documents") or payload.get("papers") or payload.get("rows") or [])
+    out = build_literature_matrix(items)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    if args.md_out:
+        Path(args.md_out).write_text(out["markdown"], encoding="utf-8")
+    summary = {"count": out["count"], "out": args.out or None, "md_out": args.md_out or None}
+    print(json.dumps(summary if (args.out or args.md_out) else out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_claim_ledger(args: argparse.Namespace) -> int:
+    from .claim_ledger import build_claim_ledger, build_claim_ledger_from_paths
+
+    known = _split_csv(args.known_keys) if args.known_keys else []
+    paths: list[Path] = []
+    if args.draft_dir:
+        d = Path(args.draft_dir)
+        paths.extend(sorted(d.glob("*.md")))
+    if args.markdown:
+        paths.append(Path(args.markdown))
+    if args.claims_json:
+        paths.append(Path(args.claims_json))
+    if args.thread:
+        td = thread_store.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+        if td.is_dir():
+            paths.extend(sorted(td.glob("*.md")))
+    if paths:
+        out = build_claim_ledger_from_paths(paths, known_keys=known)
+    else:
+        md = Path(args.markdown).read_text(encoding="utf-8") if args.markdown else ""
+        out = build_claim_ledger(markdown=md, known_keys=known)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(
+        json.dumps(
+            {
+                "claim_count": out["claim_count"],
+                "grounded": out["grounded"],
+                "material_gap": out["material_gap"],
+                "unknown_cite": out["unknown_cite"],
+                "out": args.out or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 1 if int(out.get("material_gap") or 0) > 0 and args.strict else 0
+
+
+def cmd_answer_ground(args: argparse.Namespace) -> int:
+    from .evidence_ground import check_claims_against_abstracts, ground_answer, ground_from_files
+
+    if args.check_nli:
+        claims = json.loads(Path(args.claims_json).read_text(encoding="utf-8")) if args.claims_json else []
+        if isinstance(claims, dict):
+            claims = list(claims.get("claims") or [])
+        papers = json.loads(Path(args.evidences_json).read_text(encoding="utf-8"))
+        if isinstance(papers, dict):
+            papers = list(papers.get("evidences") or papers.get("papers") or papers.get("contexts") or [])
+        out = check_claims_against_abstracts(claims, papers)
+        if args.out:
+            Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps({"yes": out["yes"], "no": out["no"], "out": args.out or None}, ensure_ascii=False, indent=2))
+        return 1 if int(out.get("no") or 0) > 0 and args.strict else 0
+
+    if args.answer_file and args.evidences_json:
+        out = ground_from_files(Path(args.answer_file), Path(args.evidences_json), lang=args.lang)
+    else:
+        evs = json.loads(Path(args.evidences_json).read_text(encoding="utf-8"))
+        if isinstance(evs, dict):
+            evs = list(evs.get("evidences") or evs.get("contexts") or [])
+        out = ground_answer(args.answer or "", evs, lang=args.lang)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(
+        json.dumps(
+            {
+                "has_successful_answer": out.get("has_successful_answer"),
+                "cannot_answer": out.get("cannot_answer"),
+                "used_evidences": out.get("used_evidences"),
+                "unknown_citations": out.get("unknown_citations"),
+                "answer": out.get("grounded_answer") or out.get("answer"),
+                "out": args.out or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0 if out.get("has_successful_answer") else 1
 
 
 def cmd_related_work(args: argparse.Namespace) -> int:
@@ -837,6 +1031,87 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--thread", default="", help="also include thread member papers")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_bibtex_export)
+
+    s = sub.add_parser("ris-export", help="Export RIS (Zotero/EndNote) from wiki paths")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--paths", default="")
+    s.add_argument("--thread", default="")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_ris_export)
+
+    s = sub.add_parser(
+        "rank-intent",
+        help="Strip journal-rank / language markers from query (CAS/JCR/SJR)",
+    )
+    s.add_argument("--query", required=True)
+    s.add_argument("--strict", action="store_true", help="exit 1 if ambiguous platform")
+    s.set_defaults(func=cmd_rank_intent)
+
+    s = sub.add_parser(
+        "filter-code",
+        help="Filter candidates by code availability (any|required|none)",
+    )
+    s.add_argument("--json", required=True, help="JSON list or {documents/papers/candidates}")
+    s.add_argument("--mode", default="any", choices=["any", "required", "none"])
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_filter_code)
+
+    s = sub.add_parser("matrix-build", help="Build literature matrix rows (+ optional MD table)")
+    s.add_argument("--json", required=True, help="JSON list or {documents/papers}")
+    s.add_argument("--out", default="", help="write matrix JSON")
+    s.add_argument("--md-out", default="", help="write Markdown table")
+    s.set_defaults(func=cmd_matrix_build)
+
+    s = sub.add_parser(
+        "claim-ledger",
+        help="Scan draft MD/JSON for uncited claims (MATERIAL GAP gate)",
+    )
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="", help="scan drafts/paper_draft/*.md")
+    s.add_argument("--draft-dir", default="")
+    s.add_argument("--markdown", default="", help="single .md path")
+    s.add_argument("--claims-json", default="", help="optional claims JSON")
+    s.add_argument("--known-keys", default="", help="comma-separated allowed cite keys")
+    s.add_argument("--out", default="")
+    s.add_argument("--strict", action="store_true", help="exit 1 if any material_gap")
+    s.set_defaults(func=cmd_claim_ledger)
+
+    s = sub.add_parser(
+        "answer-ground",
+        help="Expand (E12) cites → References; cannot-answer if no usable evidence",
+    )
+    s.add_argument("--answer", default="", help="raw answer text with (E1) markers")
+    s.add_argument("--answer-file", default="")
+    s.add_argument("--evidences-json", required=True, help="list or {evidences:[...]}")
+    s.add_argument("--claims-json", default="", help="with --check-nli: claims to verify")
+    s.add_argument("--check-nli", action="store_true", help="AutoSurvey Yes/No abstract support check")
+    s.add_argument("--strict", action="store_true", help="exit 1 if any No under --check-nli")
+    s.add_argument("--lang", default="en", help="en|zh for cannot-answer phrase")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_answer_ground)
+
+    s = sub.add_parser(
+        "citation-verify",
+        help="Verify BibTeX against arXiv/CrossRef/OpenAlex (hallucination gate)",
+    )
+    s.add_argument("--bib", required=True, help="path to .bib")
+    s.add_argument("--out", default="", help="JSON report path")
+    s.add_argument("--filtered-bib", default="", help="write cleaned .bib (drop hallucinated)")
+    s.add_argument("--write-filtered", action="store_true", help="auto-write *.clean.bib")
+    s.add_argument("--mailto", default="paper-rec@local")
+    s.set_defaults(func=cmd_citation_verify)
+
+    s = sub.add_parser(
+        "latex-export",
+        help="Export paper_draft Markdown → Overleaf-ready latex/main.tex",
+    )
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="", help="use content/threads/<id>/drafts/paper_draft")
+    s.add_argument("--draft-dir", default="", help="explicit draft directory")
+    s.add_argument("--venue", default="generic", help="neurips|icml|iclr|cvpr|acl|generic")
+    s.add_argument("--title", default="")
+    s.add_argument("--bib", default="", help="optional references.bib path")
+    s.set_defaults(func=cmd_latex_export)
 
     s = sub.add_parser("related-work", help="Write Related Work outline from thread")
     s.add_argument("--wiki-root", required=True)

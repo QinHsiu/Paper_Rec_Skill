@@ -1,6 +1,6 @@
 ---
 name: plot-draw
-version: 1.2.0
+version: 1.2.1
 description: >-
   Publication-quality chart drawing skill. Activated by /draw. Infers best chart
   type from data path + text description (or uses a user-specified type), applies
@@ -70,11 +70,25 @@ Collect (ask if missing):
 
 ```
 Task Progress:
+- [ ] Step 0 — decide chart vs diagram + extract entities/metrics (announce why)
 - [ ] Parse /draw + load data schema (shape, dtypes, columns)
 - [ ] Resolve chart type (user | auto via lib.select_chart)
 - [ ] Render with lib.draw / lib.charts (headless Agg)
 - [ ] Save pdf+png; report paths + one-line why this chart
 ```
+
+### Step 0 — What did the user give me? (AI-Research-SKILLs)
+
+| Input look | Extract | Prefer |
+|------------|---------|--------|
+| Time / step / epoch series | x + 1–N metrics | `line` / `broken_line` |
+| Categories × methods table | method × metric matrix | `multi_bar` / `ablation` |
+| Square / confusion / attention | 2D numeric matrix | `heatmap` |
+| Score lists per class / fold | distribution | `box` / `violin` |
+| Boxes + arrows / architecture (no numbers) | nodes/edges only | **diagram** (not matplotlib) — say so and skip `/draw` numeric path |
+| Metric vs cost/latency | 2 numeric axes | `scatter` |
+
+Always state: `step0=<table_row> · highlight=Ours · reason=…` before plotting. Numerical axes → matplotlib via `lib`; pure structure → diagram note.
 
 ### Module A — Inspect data
 

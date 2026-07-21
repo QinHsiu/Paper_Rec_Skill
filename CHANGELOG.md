@@ -6,6 +6,57 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.31.0] — 2026-07-22
+
+### Added
+
+- Remaining competitor UX ports: clarify/idea/NeurIPS review/screening/wiki filters; exp task_notes + workspace layout; MCP session pattern; seed-from-papers
+
+## [2.30.0] — 2026-07-22
+
+### Added
+
+- prerank **norm_cite** (OpenScholar); Module 2a SERP/OpenScholar/STORM gap paths
+- `answer-ground --check-nli` Yes/No abstract support (AutoSurvey); writing-gates reviewer loop + outline merge
+
+## [2.29.0] — 2026-07-22
+
+### Added
+
+- exp-sandbox **1.8.3**: claim↔experiment binding + `/exp_loop` dead_end logging (AI-Research-SKILLs)
+- skill-draw **1.2.1**: Step 0 chart/diagram decision table
+- `skill/references/writing-gates.md`: contribution + SEARCH→VERIFY citation checklist
+
+## [2.28.0] — 2026-07-22
+
+### Added
+
+- **answer-ground** (paper-qa): `(E12)` → human References; explicit cannot-answer when evidence empty
+- PDF ingest page markers (`<!-- page: N -->`) + `quote_loc.page` on claim-suggest; evidence-coverage `cannot_answer` flag
+
+## [2.27.0] — 2026-07-22
+
+### Added
+
+- **rank-intent** + **ris-export** (paper-search-pro): strip CAS/JCR/Q1/language markers; Zotero RIS export
+- RRF dedup: DOI-first (+ arXiv version strip, PMID, title+year); OpenAlex multi-sort recipe in sources-reference
+
+## [2.26.0] — 2026-07-22
+
+### Added
+
+- **filter-code** / **matrix-build** / **claim-ledger** (PaperPilot-inspired): code availability filter, literature matrix table, draft MATERIAL GAP claim gate
+- Skill: `/wiki filter-code`, `/wiki matrix`, `/wiki claim-ledger`; Module 1 protocol + code filter fields
+
+## [2.25.0] — 2026-07-21
+
+### Added
+
+- **citation-verify** CLI (from AutoResearchClaw): arXiv / CrossRef·DataCite / OpenAlex BibTeX integrity gate + `.clean.bib`
+- **latex-export** CLI: `paper_draft` Markdown → Overleaf-ready `latex/main.tex` + `references.bib`
+- Skill commands: `/wiki verify-cites`, `/wiki latex-export`
+- Branch workstream: learn from competitor clones under `feat/competitor-learn`
+
 ## [2.24.1] — 2026-07-21
 
 ### Fixed

@@ -12,6 +12,17 @@ Recommended composition:
 2. `thread_query_hint` / `thread_search_context` / `thread_score_papers` → Thread-conditioned judgment  
 3. `thread_link_*` + `thread_add_evidence` after human/agent gate  
 
+### Session pattern (gptr-mcp inspired)
+
+Prefer a stable **`thread_id` / research_id** for the turn:
+
+1. `thread_show` / create → bind session  
+2. **quick** path: `thread_search_context` + score (shallow)  
+3. **deep** path: multi-path `/query_*` + evidence adds + `claim-ledger`  
+4. Always expose **sources** (`paper_paths` / cite keys) before claiming context is grounded  
+
+Do not invent a second research MCP; chain Thread tools with Skill retrieval.
+
 ## Quick config (2.16+)
 
 **推荐**：安装后先 dry-run，再 `--apply` 写入。

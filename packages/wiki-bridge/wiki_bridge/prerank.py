@@ -105,17 +105,38 @@ def citation_boost(item: dict[str, Any]) -> float:
     return 0.0
 
 
+def citation_count(item: dict[str, Any]) -> float:
+    for key in ("citationCount", "citations", "cited_by", "n_citations"):
+        v = item.get(key)
+        if v is None:
+            continue
+        try:
+            return max(0.0, float(v))
+        except (TypeError, ValueError):
+            continue
+    return 0.0
+
+
+def norm_cite_boost(item: dict[str, Any], max_citations: float) -> float:
+    """OpenScholar-style: citation_counts / max_citations in the pool (cap 1.0)."""
+    if max_citations <= 0:
+        return 0.0
+    return min(1.0, citation_count(item) / max_citations)
+
+
 def prerank(
     query: str,
     candidates: list[dict[str, Any]],
     *,
     top_k: int = 30,
     use_citations: bool = True,
+    norm_cite: bool = True,
     now_year: int | None = None,
 ) -> dict[str, Any]:
     """Score candidates and keep Top-K for LLM fine-rank.
 
     Each candidate should have at least ``title``; optional ``summary``/``year``/citations.
+    When ``norm_cite`` is on, add OpenScholar-style normalized citation prior (≤1.0).
     """
     if not candidates:
         return {
@@ -127,18 +148,21 @@ def prerank(
         }
     docs = [_doc_text(c) for c in candidates]
     lexical = bm25_scores(query, docs)
+    max_c = max((citation_count(c) for c in candidates), default=0.0) if (use_citations and norm_cite) else 0.0
     scored: list[dict[str, Any]] = []
     for i, c in enumerate(candidates):
         year = _year_of(c)
         lex = lexical[i]
         rec = recency_boost(year, now_year=now_year)
         cite = citation_boost(c) if use_citations else 0.0
-        total = lex + rec + cite
+        nc = norm_cite_boost(c, max_c) if (use_citations and norm_cite) else 0.0
+        total = lex + rec + cite + nc
         row = dict(c)
         row["prerank_score"] = round(total, 4)
         row["prerank_lexical"] = round(lex, 4)
         row["prerank_recency"] = round(rec, 4)
         row["prerank_cite"] = round(cite, 4)
+        row["prerank_norm_cite"] = round(nc, 4)
         scored.append(row)
     scored.sort(key=lambda r: r["prerank_score"], reverse=True)
     kept = scored[: max(1, top_k)]
@@ -148,6 +172,7 @@ def prerank(
         "input_n": len(candidates),
         "kept_n": len(kept),
         "top_k": top_k,
+        "norm_cite": bool(use_citations and norm_cite),
         "items": kept,
         "dropped_n": max(0, len(candidates) - len(kept)),
     }
@@ -159,6 +184,7 @@ def prerank_from_json(
     query: str = "",
     top_k: int = 30,
     use_citations: bool = True,
+    norm_cite: bool = True,
 ) -> dict[str, Any]:
     if isinstance(payload, list):
         cands = payload
@@ -166,4 +192,4 @@ def prerank_from_json(
     else:
         cands = list(payload.get("papers") or payload.get("candidates") or [])
         q = query or str(payload.get("query") or payload.get("original_query") or "")
-    return prerank(q, cands, top_k=top_k, use_citations=use_citations)
+    return prerank(q, cands, top_k=top_k, use_citations=use_citations, norm_cite=norm_cite)

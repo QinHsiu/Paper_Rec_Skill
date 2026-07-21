@@ -4,6 +4,53 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.8] — 2026-07-22
+
+### Added
+
+- Module 0 clarify-gate; idea-template; neurips-review-gate; screening-stop; wiki-query-filters; seed-from-papers
+
+## [1.12.7] — 2026-07-22
+
+### Added
+
+- Module 2a: OpenScholar short-query fan-out, gpt-researcher SERP-conditioned refine, STORM unused-snippet gaps
+- writing-gates: bounded reviewer→reviser + AutoSurvey outline merge notes
+- prerank norm_cite; answer-ground `--check-nli`
+
+## [1.12.6] — 2026-07-22
+
+### Added
+
+- `references/writing-gates.md` (AI-Research-SKILLs): contribution gate + citation SEARCH→VERIFY
+
+## [1.12.5] — 2026-07-22
+
+### Added
+
+- `/wiki answer-ground` (paper-qa): grounded Q&A cites + cannot-answer sentinel
+- PDF page markers for claim-suggest `quote_loc`
+
+## [1.12.4] — 2026-07-22
+
+### Added
+
+- `/wiki rank-intent`, `/wiki ris` (paper-search-pro): journal-rank strip + RIS export
+- Module 1: strip CAS/JCR/Q1 before search; OpenAlex multi-sort + DOI-first dedup docs
+
+## [1.12.3] — 2026-07-22
+
+### Added
+
+- `/wiki filter-code`, `/wiki matrix`, `/wiki claim-ledger` (PaperPilot: code filter, literature matrix, claim MATERIAL GAP)
+- Module 1 rewrite: optional protocol + `Code: any|required|none`
+
+## [1.12.2] — 2026-07-21
+
+### Added
+
+- `/wiki verify-cites` + `/wiki latex-export` (AutoResearchClaw-inspired citation gate + Overleaf pack)
+
 ## [1.12.1] — 2026-07-21
 
 ### Fixed

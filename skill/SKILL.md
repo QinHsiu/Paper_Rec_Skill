@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.12.1
+version: 1.12.2
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -108,6 +108,18 @@ Templates per mode: [output-template.md](output-template.md)
 
 ---
 
+## Module 0: Clarify gate / 澄清门（可选）
+
+**When**: Ambiguous ask, conflicting goals, or `rank-intent` returns `ambiguous=true`.
+
+**Action**: Follow [`references/clarify-gate.md`](references/clarify-gate.md) — emit `need_clarification` JSON and **wait** before Module 1 rewrite / retrieval.
+
+Idea seeds (no finished paper yet): [`references/idea-template.md`](references/idea-template.md).  
+Library search operators: [`references/wiki-query-filters.md`](references/wiki-query-filters.md).  
+Screening stop: [`references/screening-stop.md`](references/screening-stop.md).
+
+---
+
 ## Module 1: Input / 输入模块
 
 Transform the user's raw query into retrieval-ready form through three steps.
@@ -156,6 +168,17 @@ Exclude: [terms to filter out, if any]
 | **Keyword** | Exact-term match for APIs and site search |
 | **Recent** | Add year filter terms if user wants latest work |
 
+**Before searching**: run `rank-intent` (or equivalent) so journal-rank / language markers never pollute the topic string:
+
+```powershell
+python -m wiki_bridge.cli rank-intent --query "中科院一区 情绪调节"
+# → cleaned_query: 情绪调节 · platform=cas · tiers=[1]
+```
+
+- Strip CAS/JCR/SJR/Q1/顶刊 into **Filters** (apply after retrieval if venue/ISSN known; never as search keywords).
+- Strip 中文文献/英文文献/CSSCI into **language scope** (`en`/`zh`/`both`); ask once if bare Q1 without platform (`ambiguous=true`).
+- Put partition intent into Filters / report header — not into OpenAlex/S2 query text.
+
 **Output artifact** (show to user before retrieval; language follows active mode):
 
 English mode:
@@ -165,6 +188,8 @@ English mode:
 - Specific: ...
 - Keywords: ...
 - Filters: year range, venue preference
+- Code: any | required | none (papers with GitHub/GitLab/HF links)
+- Protocol (optional): inclusion / exclusion / negative keywords (audit trail; not a second planner)
 ```
 
 Chinese mode:
@@ -175,6 +200,8 @@ Chinese mode:
 - 关键词：...
 - 英文检索词（国际源）：...
 - 筛选：年份范围、会议偏好
+- 代码：any | required | none（需开源实现 / 仅理论）
+- 协议（可选）：纳入/排除标准、负向词（可审计；不另起规划器）
 ```
 
 ### 1.5 Thread Context Inject / 研究主线注入（可选）
@@ -186,6 +213,8 @@ Chinese mode:
 2. Inject into rewrite: `hypothesis`, open `claims`, `evidence_gaps`, `seed_queries` / `seed_terms`, plus titles/tags of up to 15 member `paper_paths` if readable.
 3. Produce **extra** rewritten queries from open questions / gaps (one path per gap when useful).
 4. Announce at report top: `Thread: {title} ({id})`.
+
+**Seed-from-papers** (AI-Researcher): if user only provides a reference-paper list (no hypothesis), create thread with hypothesis = “Synthesize gaps from seed papers”, `paper_paths` = list, and derive `seed_queries` from titles — do not require an uploaded idea doc.
 
 If multiple active threads and no `thread:` prefix → **ask** which thread to use (or proceed without thread context).
 
@@ -368,8 +397,11 @@ For the final report, deep-read the **top 10–15** papers; use metadata-only fo
    - **specific** — Module 1 Specific / Keyword
    - **gap** — one query per open `evidence_gaps` / open question (cap 2)
    - **claim** — paraphrase of open claims that need evidence (cap 2)
-2. Search packs with these paths; tag each hit with `path_id`.
-3. Merge & dedupe across paths (same rules as 2.4).
+2. **OpenScholar-style fan-out** (optional): expand Keyword into **3–5 short comma-separated queries** (entities/methods only), search union, then RRF.
+3. **gpt-researcher SERP-conditioned** (optional, after wave 0): rewrite 1–2 extra queries from **top-5 titles/abstracts already retrieved** (not from the raw ask alone).
+4. **STORM unused-snippet gaps**: when ranking/drafting, prefer next questions from papers **retrieved but not cited** in the draft / ledger (advance coverage, avoid niche loops).
+5. Search packs with these paths; tag each hit with `path_id`.
+6. Merge & dedupe across paths (same rules as 2.4). Prerank uses **norm_cite** (citation / max_in_pool) by default.
 
 ### 2b Iterative refine / 自动收窄·放宽（有上限）
 
@@ -510,9 +542,20 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki pdf <path> --pdf file` | Ingest PDF/txt → `fulltext.md` beside paper |
 | `/wiki claim-suggest <path> --thread id` | Suggested claims/evidences from fulltext |
 | `/wiki bibtex [--thread id]` | Export BibTeX for paths / thread members |
+| `/wiki ris [--thread id]` | Export RIS for Zotero/EndNote |
+| `/wiki rank-intent` | Strip CAS/JCR/Q1/language markers → cleaned query |
+| `/wiki verify-cites` | Citation integrity gate (arXiv/DOI/OpenAlex); drop hallucinated |
+| `/wiki latex-export [--thread id]` | Markdown draft → Overleaf `latex/main.tex` pack |
+| `/wiki filter-code` | Post-RRF code filter: `any` / `required` / `none` |
+| `/wiki matrix` | Literature matrix JSON/MD table for related-work |
+| `/wiki claim-ledger` | Draft claim→cite gate (MATERIAL GAP if uncited) |
+| `/wiki answer-ground` | Expand `(E12)` → References; cannot-answer if no evidence |
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
 | `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
 | `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
+
+Writing checklist: [`references/writing-gates.md`](references/writing-gates.md) (contribution → Figure 1 → SEARCH→VERIFY cites).  
+Draft review gate: [`references/neurips-review-gate.md`](references/neurips-review-gate.md) (AI-Scientist).
 
 ### Thread ops (do this yourself)
 
@@ -526,6 +569,15 @@ python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id <thread_id> --mode
 python -m wiki_bridge.cli thread-graph --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli related-work --wiki-root ../.. --thread <thread_id> --print-md
 python -m wiki_bridge.cli paper-draft --wiki-root ../.. --thread <thread_id> --venue generic
+python -m wiki_bridge.cli bibtex-export --wiki-root ../.. --thread <id> --out refs.bib
+python -m wiki_bridge.cli ris-export --wiki-root ../.. --thread <id> --out refs.ris
+python -m wiki_bridge.cli rank-intent --query "JCR Q1 retrieval augmented generation"
+python -m wiki_bridge.cli citation-verify --bib refs.bib --write-filtered
+python -m wiki_bridge.cli latex-export --wiki-root ../.. --thread <id> --venue neurips
+python -m wiki_bridge.cli filter-code --json fused.json --mode required --out coded.json
+python -m wiki_bridge.cli matrix-build --json coded.json --out matrix.json --md-out matrix.md
+python -m wiki_bridge.cli claim-ledger --wiki-root ../.. --thread <id> --out claim_ledger.json --strict
+python -m wiki_bridge.cli answer-ground --answer "Result holds (E1)." --evidences-json evs.json
 python -m wiki_bridge.cli evidence-coverage --wiki-root ../.. --thread <thread_id>
 python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path llm/2025/foo
 python -m wiki_bridge.cli claim-suggest --wiki-root ../.. --path llm/2025/foo --thread <id> --apply

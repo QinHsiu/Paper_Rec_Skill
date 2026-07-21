@@ -183,11 +183,33 @@ Order: **先证据与结论，再给可执行调整**；三侧都要写——若
 1. D1–D3 → 数据 mini-verify
 2. T1–T3 短训 → 训练 mini-verify
 3. 通过后全量 `/exp_training`
+
+## 6. Claim 绑定（可选 · AI-Research-SKILLs）
+若存在研究主线 / thread claims，补全：
+
+```markdown
+## Claims
+### C01
+- Statement: …
+- Falsification: 若子集指标不升 / 全局跌超 ε → 否证
+- Proof: [E…] 或本方案 mini-verify 路径
+
+## Experiments
+### E01
+- Verifies: C01
+- Setup / Procedure / Expected: （方向性即可）
+```
+
+规则：每个 `C*` 至少有一个 `E*`；每个 `E*` 必须声明 `Verifies`。`/exp_eval` 后做一次绑定检查（未绑定 → 记入 gaps，勿自动改 claim status）。
 ```
 
 ---
 
-## 与其它模块的关系
+## Related references
+
+- Workspace layout: [`workspace_layout.md`](workspace_layout.md) (Curie-inspired)
+- Task notes example: [`task_notes.example.yaml`](task_notes.example.yaml) (AgentLaboratory)
+- Plan template claim binding §6
 
 | 产出 | 模板位置 |
 |------|----------|

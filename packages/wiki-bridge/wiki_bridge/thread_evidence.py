@@ -373,6 +373,7 @@ def hypothesis_evidence_coverage(
         hyp_advice += " 建议补充实验或高置信文献证据。"
     elif total_low > total_high:
         hyp_advice += " 低置信偏多，建议筛选或补强。"
+    cannot = total_high == 0 and total_low == 0
     level_hist: dict[str, int] = {c: 0 for c in CEBM_LEVELS}
     level_hist["unset"] = 0
     for e in evs:
@@ -392,6 +393,9 @@ def hypothesis_evidence_coverage(
         "evidence_count": len(evs),
         "cebm_histogram": level_hist,
         "cebm_note": "CEBM-lite (1a–5) is orthogonal to confidence/gate; optional supplement.",
+        "cannot_answer": cannot,
+        "has_successful_answer": not cannot and total_high > 0,
+        "cannot_answer_phrase": "I cannot answer" if cannot else None,
     }
 
 
