@@ -129,14 +129,14 @@ def infer_roles_from_actions(actions: list[str]) -> list[str]:
         roles.append("train_base")
     if "distill" in blob or "蒸馏" in blob:
         roles.extend(["distill_teacher", "distill_student"])
-    # dedupe preserve order
+    # dedupe preserve order; empty = no model-select block (e.g. pure data_clean)
     seen: set[str] = set()
     out: list[str] = []
     for r in roles:
         if r not in seen:
             seen.add(r)
             out.append(r)
-    return out or ["train_base"]
+    return out
 
 
 def render_model_select_md(spec: ModelSelectSpec) -> str:

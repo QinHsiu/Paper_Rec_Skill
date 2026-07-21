@@ -6,10 +6,15 @@ Maps to Exp_Sandbox:
 """
 from __future__ import annotations
 
+import json
+import re
 from collections import defaultdict
 from typing import Any, Iterable
 
 from .types import AskLLM, Cluster, Plan
+
+
+_JSON_OBJ_RE = re.compile(r"\{.*\}", re.DOTALL)
 
 
 def collect_badcases(eval_rows: Iterable[dict[str, Any]], *, fail_key: str = "correct") -> list[dict]:
@@ -25,23 +30,20 @@ def cluster_badcases(
     max_clusters: int = 12,
 ) -> list[Cluster]:
     """
-    PSEUDOCODE clustering:
+    Clustering:
       1) heuristic tags (error type / length / modality) if present
-      2) else ask LLM to assign cluster labels with diversity constraint
+      2) if too few buckets, ask LLM to assign diverse labels
       3) aggregate counts; keep long-tail clusters (diversity), not only top mass
     """
     if not badcases:
         return []
-    # --- heuristic fallback ---
     buckets: dict[str, list[dict]] = defaultdict(list)
     for row in badcases:
         key = row.get("error_type") or row.get("tag") or "misc"
         buckets[str(key)].append(row)
 
     if len(buckets) < min_clusters:
-        # agent: call ask() to refine labels for diversity
-        _ = ask  # placeholder — wire LLM clustering prompt in production
-        pass
+        buckets = _llm_refine_buckets(badcases, ask, buckets, min_clusters=min_clusters)
 
     total = max(sum(len(v) for v in buckets.values()), 1)
     clusters: list[Cluster] = []
@@ -59,6 +61,63 @@ def cluster_badcases(
             )
         )
     return clusters
+
+
+def _llm_refine_buckets(
+    badcases: list[dict],
+    ask: AskLLM,
+    buckets: dict[str, list[dict]],
+    *,
+    min_clusters: int,
+) -> dict[str, list[dict]]:
+    """Ask LLM for per-id labels when heuristic diversity is too low."""
+    sample = []
+    for r in badcases[:40]:
+        sample.append(
+            {
+                k: r.get(k)
+                for k in ("id", "pred", "gold", "error_type", "tag", "input")
+                if k in r
+            }
+        )
+    system = (
+        "You cluster evaluation failures into diverse error types. "
+        f"Return JSON only: {{\"labels\": {{\"<id>\": \"<short_label>\", ...}}}} "
+        f"with at least {min_clusters} distinct labels when possible."
+    )
+    user = "Badcases:\n" + json.dumps(sample, ensure_ascii=False)
+    try:
+        raw = ask(system, user)
+    except Exception:
+        return buckets
+    labels = _parse_label_map(raw)
+    if not labels:
+        return buckets
+    refined: dict[str, list[dict]] = defaultdict(list)
+    for row in badcases:
+        rid = str(row.get("id", ""))
+        lab = labels.get(rid) or row.get("error_type") or row.get("tag") or "misc"
+        refined[str(lab)].append(row)
+    return refined if len(refined) >= len(buckets) else buckets
+
+
+def _parse_label_map(text: str) -> dict[str, str]:
+    if not text:
+        return {}
+    blob = text
+    m = _JSON_OBJ_RE.search(text)
+    if m:
+        blob = m.group(0)
+    try:
+        data = json.loads(blob)
+    except json.JSONDecodeError:
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    labels = data.get("labels", data)
+    if not isinstance(labels, dict):
+        return {}
+    return {str(k): str(v) for k, v in labels.items()}
 
 
 def special_questions_from_clusters(clusters: list[Cluster]) -> list[str]:
@@ -95,18 +154,19 @@ def plans_from_clusters(
         fam = str(p.meta.get("family", ""))
         if needs_model_select(blob) or fam in ("label_clean", "train_recipe"):
             roles = infer_roles_from_actions(p.actions + [fam, str(p.meta.get("symptom", ""))])
-            blocks = "\n".join(
-                render_model_select_md(
-                    ModelSelectSpec(
-                        role=r,
-                        task_hint=p.hypothesis,
-                        family=None,  # agent fills after board + family search
+            if roles:
+                blocks = "\n".join(
+                    render_model_select_md(
+                        ModelSelectSpec(
+                            role=r,
+                            task_hint=p.hypothesis,
+                            family=None,  # agent fills after board + family search
+                        )
                     )
+                    for r in roles
                 )
-                for r in roles
-            )
-            md = merge_model_block(md, blocks)
-            p.meta["needs_model_select"] = True
-            p.meta["model_roles"] = roles
+                md = merge_model_block(md, blocks)
+                p.meta["needs_model_select"] = True
+                p.meta["model_roles"] = roles
         p.meta["plan_md"] = md
     return plans

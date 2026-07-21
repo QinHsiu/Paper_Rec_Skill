@@ -4,6 +4,12 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.0] — 2026-07-21
+
+### Added
+
+- **OpenAlex** as a first-class retrieval source: API recipes (`works?search=`, year/OA filters, `/works/W…`), field→report mapping, Pack A/H listing, Module 2.2 default API lane, OpenAlex ID dedup
+
 ## [1.11.0] — 2026-07-18
 
 ### Added

@@ -82,9 +82,17 @@ def run_exp_loop(
             cur, hist = cycle_until_stable(
                 plan, target, apply_plan, eval_slice, revise_plan
             )
+            if not hist:
+                return {
+                    "plan_id": cur.plan_id,
+                    "plan": cur,
+                    "promote_to_full_train": False,
+                    "mini_history": [],
+                }
             last = hist[-1]
             return {
                 "plan_id": cur.plan_id,
+                "plan": cur,  # revised plan after mini cycles — must feed full_train_eval
                 "promote_to_full_train": last.promote_to_full_train,
                 "mini_history": [h.__dict__ for h in hist],
             }
@@ -133,7 +141,8 @@ def run_exp_loop(
     return logs
 
 
-def _write_round_md(path: Path, log: RoundLog) -> None:
+def _write_round_md(path: Path | str, log: RoundLog) -> None:
+    path = Path(path)
     chosen = log.chosen.plan_id if log.chosen else "None"
     path.write_text(
         f"## Round {log.round_idx}\n"
@@ -148,7 +157,8 @@ def _write_round_md(path: Path, log: RoundLog) -> None:
     )
 
 
-def _write_final(path: Path, target: TargetScore, logs: list[RoundLog]) -> None:
+def _write_final(path: Path | str, target: TargetScore, logs: list[RoundLog]) -> None:
+    path = Path(path)
     met = any(r.evaluation.get("target_met") for r in logs)
     lines = [
         f"# Final Experiment Report",

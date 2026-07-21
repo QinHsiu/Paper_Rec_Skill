@@ -79,6 +79,7 @@ def predict_then_verify_step(
     best_primary = float("-inf") if target.higher_is_better else float("inf")
 
     for plan in to_run:
+        plan_to_run = plan
         record: dict[str, Any] = {"plan_id": plan.plan_id}
         if cfg.prefer_mini_before_full:
             mini = mini_verify(plan)
@@ -86,7 +87,15 @@ def predict_then_verify_step(
             if not mini.get("promote_to_full_train", True):
                 verified.append(record)
                 continue
-        metrics = full_train_eval(plan)
+            # Prefer revised plan from mini-eval (cycle_until_stable may rewrite actions)
+            revised = mini.get("plan")
+            if isinstance(revised, Plan):
+                plan_to_run = revised
+                record["plan_id"] = plan_to_run.plan_id
+            elif isinstance(mini.get("plan_id"), str) and mini["plan_id"]:
+                # plan object missing but id updated — keep original object, note id
+                record["plan_id"] = mini["plan_id"]
+        metrics = full_train_eval(plan_to_run)
         record["metrics"] = metrics
         verified.append(record)
         primary = float(metrics.get(target.metric, metrics.get("primary", 0.0)))
@@ -95,7 +104,7 @@ def predict_then_verify_step(
         )
         if better:
             best_primary = primary
-            best_plan = plan
+            best_plan = plan_to_run
             best_metrics = metrics
 
     target_met = bool(best_metrics) and target.met(

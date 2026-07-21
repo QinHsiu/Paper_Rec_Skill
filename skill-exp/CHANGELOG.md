@@ -1,5 +1,21 @@
 # Changelog — exp-sandbox
 
+## [1.8.1] — 2026-07-21
+
+### Fixed
+
+- Preference JSON parse: nested / missing JSON no longer crashes; missing `predicted_best_index` defaults safely
+- Tournament: out-of-range / negative `winner_index` rejected (no IndexError, no silent `pair[-1]`)
+- Predict-then-verify: full train uses **revised** plan from mini-eval (`mini["plan"]`)
+- `_load_prompt_pair` fallback when `---USER---` missing (aligned with data_report)
+- `cycle_until_stable(max_cycles<1)` clamped; orchestrator guards empty mini history
+- `should_early_stop`: standard running-best + patience (removed dead code)
+- `_write_round_md` / `_write_final` accept `str | Path`
+- `profile_raw_stats`: stub profile instead of `NotImplementedError`
+- `cluster_badcases`: actually calls LLM when heuristic buckets are too few
+- `infer_roles_from_actions`: no default `train_base` for pure data_clean plans
+- Stale `tricks.py` keyword-order comment
+
 ## [1.8.0] — 2026-07-18
 
 ### Added

@@ -68,7 +68,12 @@ def cycle_until_stable(
     *,
     max_cycles: int = 3,
 ) -> tuple[Plan, list[MiniResult]]:
-    """If mini-eval fails, revise plan and retry (bounded)."""
+    """If mini-eval fails, revise plan and retry (bounded).
+
+    ``max_cycles < 1`` is clamped to 1 so callers never get an empty history.
+    """
+    if max_cycles < 1:
+        max_cycles = 1
     history: list[MiniResult] = []
     cur = plan
     for _ in range(max_cycles):

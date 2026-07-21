@@ -1,11 +1,11 @@
 ---
 name: paper-rec
-version: 1.8.0
+version: 1.12.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
   /query_chinese, /query_other, or /wiki. Use when the user asks for paper
-  recommendations, literature search, related work, arXiv/HuggingFace/GitHub
+  recommendations, literature search, related work, OpenAlex/arXiv/HuggingFace/GitHub
   paper discovery, query改写/论文检索/论文推荐, wiki library status / start wiki UI,
   or research thread / 研究主线 association.
 ---
@@ -227,14 +227,14 @@ Named CN models (Qwen / DeepSeek / GLM / InternLM / 混元 / 豆包 …) → for
 
 | Pack | Name | Core sources |
 |------|------|--------------|
-| **A** | AI / CS core | arXiv, HF Papers, PwC, GitHub, Semantic Scholar, DBLP, OpenReview, ACL, CVF |
+| **A** | AI / CS core | **OpenAlex**, arXiv, HF Papers, PwC, GitHub, Semantic Scholar, DBLP, OpenReview, ACL, CVF |
 | **A-CN** | CN LLM labs | DeepSeek, Qwen, THUDM, InternLM, BAAI, OpenBMB, Yi, Moonshot, Baichuan, Hunyuan, ByteDance, IDEA + Discovery indexes |
 | **B** | AI industry & trends | Global labs + CN industry portals (通义/混元/豆包/盘古/文心/星火/商汤) |
 | **C** | Math / Physics | arXiv categories, Science.gov, CERN CDS |
 | **D** | Chemistry / Materials | DOAJ, SciELO, OSTI, ChemBlink*(metadata only)* |
 | **E** | Engineering / Energy / Aero | NTRS, OSTI, Science.gov, NSTL |
 | **F** | Biomed / Education | ERIC, PubMed-class portals, SciELO, DOAJ, Bioline |
-| **H** | Open Access hubs | DOAJ, OALib, Socolar, SciELO, Cambridge Repo, NAP |
+| **H** | Open Access hubs | **OpenAlex** (`is_oa:true`), DOAJ, OALib, Socolar, SciELO, Cambridge Repo, NAP |
 | **I** | Humanities / SS | NCPSSD, CSSCI, CNKI, Wanfang, JSTOR, NTU journals |
 | **J** | Newspaper archives | 人民日报 / 光明日报 / 大公报 — **only for media history** |
 | **K** | Business / Econ | EconLit, EBSCO-class, SSRN, ScholarVox |
@@ -248,6 +248,7 @@ Named CN models (Qwen / DeepSeek / GLM / InternLM / 混元 / 豆包 …) → for
 
 - Search each **activated pack** with at least the **Specific** and **Keyword** queries from Module 1.
 - Always attach **English terms** for international packs.
+- **OpenAlex (default API lane for Pack A/H / general_oa)**: call `https://api.openalex.org/works?search=…` with `mailto=`; add `filter=publication_year:YYYY-YYYY` when latest-intent; fetch detail via `/works/W…`. Full recipes: [sources-reference.md § OpenAlex](sources-reference.md#openalex-api-recipes--openalex-检索配方必用).
 - If a pack source needs login (CNKI, JSTOR, Wanfang), still collect metadata/title when possible; mark `access: paywall`.
 
 ### 2.3 Scoring / 打分
@@ -327,7 +328,7 @@ When Module 1 detects **latest intent** (最新 / latest / 近期 / 刚刚发布
 
 ### 2.4 Ranking & Filtering / 排序
 
-1. Deduplicate by title / arXiv ID / DOI / normalized model-version across sources
+1. Deduplicate by OpenAlex ID / title / arXiv ID / DOI / normalized model-version across sources
 2. Apply **latest-intent / family-version gate** (above) before sorting
 3. Sort by final score descending; on ties, prefer **newer date**, then higher version number
 4. Keep **top 50** unique papers

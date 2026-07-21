@@ -1,6 +1,6 @@
 ---
 name: exp-sandbox
-version: 1.8.0
+version: 1.8.1
 description: >-
   Automated experiment sandbox: dataset analysis, training, evaluation, and a
   self-improving loop (analyze → multi-plan → mini-verify → train → eval →

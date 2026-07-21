@@ -45,14 +45,20 @@ def pairwise_prefer(
 
 
 def parse_preference_response(text: str) -> PreferenceVote:
-    """Extract final JSON: {predicted_best_index, confidence}."""
-    m = JSON_RE.search(text)
-    blob = m.group(0) if m else text[text.rfind("{") : text.rfind("}") + 1]
-    data: dict[str, Any] = json.loads(blob)
-    idx = int(data["predicted_best_index"])
-    conf = float(data.get("confidence", 0.0))
+    """Extract final JSON: {predicted_best_index, confidence}. Never raises on bad LLM text."""
+    data = _extract_preference_json(text or "")
+    raw_idx = data.get("predicted_best_index", 0)
+    try:
+        idx = int(raw_idx)
+    except (TypeError, ValueError):
+        idx = 0
+    try:
+        conf = float(data.get("confidence", 0.0))
+    except (TypeError, ValueError):
+        conf = 0.0
     conf = max(0.0, min(1.0, conf))
-    reasoning = text[: m.start()].strip() if m else text
+    m = JSON_RE.search(text or "")
+    reasoning = text[: m.start()].strip() if m else (text or "").strip()
     return PreferenceVote(winner_index=idx, confidence=conf, reasoning=reasoning, raw=data)
 
 
@@ -63,11 +69,47 @@ def gated_winner(
 ) -> Optional[int]:
     """
     Confidence gate (paper default 0.7).
-    Returns winner index if confident, else None → regenerate / ask human / fall back.
+    Returns winner index if confident and in {0,1}, else None → regenerate / ask human / fall back.
+    Out-of-range indices (e.g. 2, -1) are treated as invalid, not as Python negative indexing.
     """
+    if vote.winner_index not in (0, 1):
+        return None
     if vote.confidence >= confidence_gate:
         return vote.winner_index
     return None
+
+
+def _extract_preference_json(text: str) -> dict[str, Any]:
+    """Pull a preference dict from LLM text; tolerate nested braces and missing JSON."""
+    fallback: dict[str, Any] = {"predicted_best_index": 0, "confidence": 0.0}
+    if not text.strip():
+        return fallback
+
+    m = JSON_RE.search(text)
+    if m:
+        try:
+            obj = json.loads(m.group(0))
+            if isinstance(obj, dict):
+                return obj
+        except json.JSONDecodeError:
+            pass
+
+    decoder = json.JSONDecoder()
+    best: dict[str, Any] | None = None
+    for i, ch in enumerate(text):
+        if ch != "{":
+            continue
+        try:
+            obj, _ = decoder.raw_decode(text[i:])
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(obj, dict):
+            continue
+        if "predicted_best_index" in obj:
+            best = obj
+        elif best is None:
+            best = obj
+    return best if best is not None else fallback
 
 
 def _plan_as_text(plan: Plan) -> str:
@@ -86,5 +128,7 @@ def _load_prompt_pair(rel: str) -> tuple[str, str]:
 
     path = Path(__file__).parent / rel
     text = path.read_text(encoding="utf-8")
-    system, user = text.split("---USER---", 1)
-    return system.replace("---SYSTEM---", "").strip(), user.strip()
+    if "---USER---" in text:
+        system, user = text.split("---USER---", 1)
+        return system.replace("---SYSTEM---", "").strip(), user.strip()
+    return "You are an expert comparing two solution plans.", text

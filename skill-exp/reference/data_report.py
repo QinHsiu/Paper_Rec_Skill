@@ -30,15 +30,42 @@ def profile_raw_stats(
     sample_limit: int = 5000,
 ) -> RawProfile:
     """
-    PSEUDOCODE — replace bodies with user analysis_tool or default probes.
+    Profile → numeric / structural extraction.
+
+    Prefers a callable named ``profile`` / ``probe`` on ``tools.analysis_tools``
+    entries when present; otherwise returns an empty stub profile so
+    Profile→Verify→Verbalize and ``run_exp_loop`` can still run end-to-end.
 
     Image  → size, resolution, aspect, channel stats
     Audio  → duration, sample_rate, channels
     Text   → length hist, label distribution, language mix
     """
-    # --- agent: call tools.sources / analysis_tools here ---
-    raise NotImplementedError(
-        "Wire to user data paths. Example probes in skill-exp/SKILL.md § analysis_tool"
+    split_name = split.value if isinstance(split, Split) else str(split)
+    for tool in tools.analysis_tools or []:
+        if not isinstance(tool, dict):
+            continue
+        fn = tool.get("profile") or tool.get("probe") or tool.get("fn")
+        if callable(fn):
+            out = fn(split_name, sample_limit=sample_limit)
+            if isinstance(out, RawProfile):
+                return out
+            if isinstance(out, dict):
+                return RawProfile(
+                    split=str(out.get("split", split_name)),
+                    modality_stats=dict(out.get("modality_stats") or {}),
+                    label_stats=dict(out.get("label_stats") or {}),
+                    notes=list(out.get("notes") or []) + ["source=analysis_tool"],
+                )
+    # Stub fallback — agent should replace with real probes (see SKILL.md)
+    return RawProfile(
+        split=split_name,
+        modality_stats={},
+        label_stats={},
+        notes=[
+            "stub_profile=True",
+            f"sample_limit={sample_limit}",
+            "Wire tools.analysis_tools[].profile to replace this empty probe.",
+        ],
     )
 
 

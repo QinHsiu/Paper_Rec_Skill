@@ -6,6 +6,12 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.24.0] — 2026-07-21
+
+### Added
+
+- paper-rec **1.12.0**: OpenAlex as first-class retrieval source (API recipes in `skill/sources-reference.md`)
+
 ## [2.23.0] — 2026-07-18
 
 ### Added

@@ -39,18 +39,85 @@ After Module 1 query rewrite, **detect 1–2 primary domains**, then load the co
 
 ### Priority scholarly APIs (2.14 routing)
 
-When Pack **A** / **F** is active, prefer these hubs (web UI and/or API; compose article-mcp if configured):
+When Pack **A** / **F** / **H** is active (or `general_oa` / `cross_domain`), prefer these hubs (web UI and/or API; compose article-mcp if configured):
 
 | Source | Use | How |
 |--------|-----|-----|
 | **Semantic Scholar** | AI/CS citation + metadata | https://www.semanticscholar.org/ · optional `S2_API_KEY` |
-| **OpenAlex** | Broad scholarly graph / open metadata | https://openalex.org/ · polite pool |
+| **OpenAlex** | Broad scholarly graph / open metadata · **default API lane** | https://openalex.org/ · API below · polite pool |
 | **Crossref** | DOI resolve → BibTeX enrich | https://api.crossref.org/ |
 | **PubMed / NCBI** | Biomed (`biomed` domain → Pack F) | https://pubmed.ncbi.nlm.nih.gov/ |
 | **OpenReview** | ICLR & drafts | https://openreview.net/ |
 | **DBLP** | CS venue metadata | https://dblp.org/ |
 
 Do **not** treat source count as a KPI; activate ≤3 packs unless user asks exhaustive.
+
+### OpenAlex API recipes / OpenAlex 检索配方（必用）
+
+Base URL: `https://api.openalex.org`  
+Docs: https://docs.openalex.org/ · UI: https://openalex.org/  
+**Polite pool** (required for reliable rate limits): append `mailto=your@email.com` on every request, or set `User-Agent` to a contactable string with email.
+
+#### 1) Basic search / 基础检索
+
+```bash
+curl "https://api.openalex.org/works?search=math+tutoring&per-page=20&mailto=you@example.com"
+```
+
+- `search` — free-text (title/abstract/fulltext index); URL-encode spaces as `+` or `%20`
+- `per-page` — page size (default 25, max 200); Module 2 usually uses **20–50** then score
+- Cursor pagination: `cursor=*` then follow `meta.next_cursor`
+
+#### 2) Filtered + sorted search / 带筛选的检索
+
+```bash
+curl "https://api.openalex.org/works?search=math+tutoring&filter=publication_year:2020-2026&sort=relevance_score:desc&mailto=you@example.com"
+```
+
+Useful `filter` fragments (combine with `,`):
+
+| Filter | Example | When |
+|--------|---------|------|
+| Year range | `publication_year:2020-2026` | Recency / 「最新」 |
+| Single year | `publication_year:2024` | Snapshot year |
+| OA only | `is_oa:true` | Need free full text |
+| Type | `type:article` / `type:preprint` | Drop misc |
+| Concept | `concepts.id:C41008148` | Topic focus (lookup concept first) |
+| Author / institution | `authorships.author.id:A…` / `authorships.institutions.id:I…` | Expert / lab dig |
+
+Useful `sort`: `relevance_score:desc` (default for search) · `publication_date:desc` · `cited_by_count:desc`
+
+#### 3) Work detail / 单篇详情
+
+```bash
+curl "https://api.openalex.org/works/W2206575885?mailto=you@example.com"
+```
+
+Also accepts DOI / OpenAlex URL forms, e.g. `/works/https://doi.org/10.7717/peerj.4375`.
+
+#### Field → report mapping / 字段映射
+
+| OpenAlex field | Report / score use |
+|----------------|--------------------|
+| `id` / `ids.openalex` | Dedup key `OpenAlex:W…` |
+| `display_name` | Title |
+| `publication_year` / `publication_date` | Recency |
+| `doi` / `ids.doi` | Dedup + Crossref enrich |
+| `ids.arxiv` / `ids.pmid` | Cross-link Pack A / F |
+| `cited_by_count` | Importance signal (secondary) |
+| `primary_location` / `best_oa_location` | Venue + OA PDF URL |
+| `authorships` | Authors / affiliations |
+| `abstract_inverted_index` | Reconstruct abstract for Similarity |
+| `concepts` | Domain tags |
+| `type` | article / preprint / … |
+
+#### Agent usage rules / 使用规则
+
+1. For **Pack A / H / general_oa / cross_domain**, run at least one OpenAlex `works?search=` call with the **English Keyword** query (plus year filter when latest-intent).
+2. Prefer OpenAlex for **broad scholarly recall** and DOI/OA links; prefer arXiv / HF / PwC for **ML preprint + code**; prefer S2 when **citation neighborhood** is needed.
+3. Deduplicate: OpenAlex ID → DOI → arXiv ID → normalized title (see Scoring Reference).
+4. Do **not** invent OpenAlex IDs; only cite works returned by the API or UI.
+5. If API 403/429: retry with `mailto=`, reduce `per-page`, or fall back to https://openalex.org/ web search.
 
 ---
 
@@ -60,6 +127,7 @@ Default pack for Paper_Rec. Highest priority for ML/AI/CV/NLP/systems queries.
 
 | Source | URL | Search tip |
 |--------|-----|------------|
+| **OpenAlex** | https://openalex.org/ · API `https://api.openalex.org/works` | Broad graph; see [OpenAlex API recipes](#openalex-api-recipes--openalex-检索配方必用) |
 | arXiv | https://arxiv.org/search/ | Filter `cs.LG` `cs.CV` `cs.CL` `cs.AI` `cs.IR` `stat.ML` |
 | Hugging Face Papers | https://huggingface.co/papers | Daily trending ML papers |
 | Papers With Code | https://paperswithcode.com/ | SOTA + code links |
@@ -289,6 +357,7 @@ Activate for any domain when needing free full text or OA coverage.
 
 | Source | URL | Strength |
 |--------|-----|----------|
+| **OpenAlex** | https://api.openalex.org/works | Scholarly graph + OA locations; filter `is_oa:true` |
 | DOAJ | https://doaj.org/ | Quality-controlled OA journals |
 | OALib | https://www.oalib.com/ | Broad OA article search (CN-friendly) |
 | Socolar | https://www.socolar.com/ | OA discovery + full-text links |
@@ -434,11 +503,12 @@ cn_llm_survey      → A, A-CN(Discovery+Tier-1), B
 - Keep seminal older works only as labeled baselines, not as「最新」answers.
 
 ### Deduplication keys
-1. arXiv ID  
-2. DOI  
-3. Normalized title  
-4. Same PDF URL  
-5. Same model family + version (keep newest)
+1. OpenAlex work ID (`W…`)  
+2. arXiv ID  
+3. DOI  
+4. Normalized title  
+5. Same PDF URL  
+6. Same model family + version (keep newest)
 
 When latest-intent is on, keep the **newest version** even if an older duplicate has a richer venue.
 
@@ -451,7 +521,8 @@ When latest-intent is on, keep the **newest version** even if an older duplicate
 - [ ] If CN LLM keywords → announce A-CN labs (2–4) or Discovery
 - [ ] Announce: Domain = {id} → Packs = {list}
 - [ ] Search Pack sources with Specific + Keyword queries
+- [ ] Run OpenAlex `works?search=` (+ year/OA filters when needed); use `mailto=`
 - [ ] Add English terms for international packs
 - [ ] Score & keep Top 50
-- [ ] Prefer Pack A/H/A-CN primary (arXiv/PDF) over media blogs
+- [ ] Prefer Pack A/H/A-CN primary (OpenAlex DOI/OA · arXiv/PDF) over media blogs
 ```

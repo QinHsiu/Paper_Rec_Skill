@@ -196,7 +196,7 @@ _KEYWORD_MAP: list[tuple[str, tuple[str, ...]]] = [
     ("data_first", ("熟悉数据", "data_first", "pipeline", "新任务", "dataloader", "未摸清")),
     ("overfitting", ("overfit", "过拟合", "train>>val", "train ≫ val", "memorize")),
     ("long_tail", ("long_tail", "long-tail", "长尾", "imbalance", "不平衡", "rare class", "focal")),
-    # label_noise before hard_subset (avoid 'handwrit' matching inside 'label_noise_handwrite')
+    # label_noise before hard_subset (more specific label-noise cues first)
     ("label_noise", ("label_noise", "noisy label", "标噪", "错标", "mislabel", "cleanlab", "relabel")),
     ("hard_subset", ("handwriting", "手写", "hard_subset", "domain gap", "拼音", "style gap", "难例子集")),
     ("underfit", ("underfit", "欠拟合", "high loss", "not converge", "不收敛", "warmup")),

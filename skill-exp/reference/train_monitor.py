@@ -72,13 +72,18 @@ def should_early_stop(
     patience: int = 5,
     higher_is_better: bool = True,
 ) -> bool:
-    if len(primary_curve) < patience + 1:
+    """Return True after ``patience`` consecutive steps with no improvement on running best."""
+    if patience < 1 or len(primary_curve) < patience + 1:
         return False
-    recent = primary_curve[-(patience + 1) :]
-    best = recent[0].value
-    for p in recent[1:]:
+    best = primary_curve[0].value
+    stale = 0
+    for p in primary_curve[1:]:
         improved = p.value > best if higher_is_better else p.value < best
         if improved:
             best = p.value
-            return False
-    return True
+            stale = 0
+        else:
+            stale += 1
+            if stale >= patience:
+                return True
+    return False

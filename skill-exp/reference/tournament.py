@@ -81,7 +81,8 @@ def _duel(
     for _ in range(max_retries + 1):
         vote = pairwise_prefer(task_name, task_desc, data_report, pair[0], pair[1], ask)
         idx = gated_winner(vote, confidence_gate=confidence_gate)
-        if idx is not None:
+        # idx must be 0 or 1; gated_winner already rejects out-of-range (incl. -1)
+        if idx in (0, 1):
             return pair[idx]
         # swap order to mitigate position bias on retry (paper mentions position bias)
         pair = (pair[1], pair[0])

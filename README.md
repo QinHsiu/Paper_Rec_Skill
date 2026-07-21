@@ -78,7 +78,7 @@ flowchart LR
 
 - `/query_english` · `/query_chinese` · `/query_other`
 - Module 1.5 / 2.5 主线注入与重排
-- arXiv · HF · GitHub · PwC · CCF…
+- arXiv · **OpenAlex** · HF · GitHub · PwC · CCF…
 - Top-50 结构化字段报告
 
 [skill/README.md](skill/README.md)
