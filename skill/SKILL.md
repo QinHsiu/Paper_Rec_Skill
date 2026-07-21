@@ -532,6 +532,7 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki filter-code` | Post-RRF code filter: `any` / `required` / `none` |
 | `/wiki matrix` | Literature matrix JSON/MD table for related-work |
 | `/wiki claim-ledger` | Draft claim→cite gate (MATERIAL GAP if uncited) |
+| `/wiki answer-ground` | Expand `(E12)` → References; cannot-answer if no evidence |
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
 | `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
 | `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
@@ -556,6 +557,7 @@ python -m wiki_bridge.cli latex-export --wiki-root ../.. --thread <id> --venue n
 python -m wiki_bridge.cli filter-code --json fused.json --mode required --out coded.json
 python -m wiki_bridge.cli matrix-build --json coded.json --out matrix.json --md-out matrix.md
 python -m wiki_bridge.cli claim-ledger --wiki-root ../.. --thread <id> --out claim_ledger.json --strict
+python -m wiki_bridge.cli answer-ground --answer "Result holds (E1)." --evidences-json evs.json
 python -m wiki_bridge.cli evidence-coverage --wiki-root ../.. --thread <thread_id>
 python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path llm/2025/foo
 python -m wiki_bridge.cli claim-suggest --wiki-root ../.. --path llm/2025/foo --thread <id> --apply

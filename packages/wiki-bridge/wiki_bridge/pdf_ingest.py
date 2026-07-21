@@ -18,8 +18,12 @@ SECTION_HINTS = (
 )
 
 
-def extract_pdf_text(pdf_path: Path) -> str:
-    """Extract text; prefers pymupdf, falls back to raw bytes decode for .txt."""
+def extract_pdf_text(pdf_path: Path, *, with_page_markers: bool = True) -> str:
+    """Extract text; prefers pymupdf, falls back to raw bytes decode for .txt.
+
+    When ``with_page_markers`` and pymupdf succeed, insert ``<!-- page: N -->``
+    before each page (paper-qa-inspired locators for claim-suggest / evidence).
+    """
     if pdf_path.suffix.lower() in {".txt", ".md"}:
         return pdf_path.read_text(encoding="utf-8", errors="ignore")
     try:
@@ -27,7 +31,9 @@ def extract_pdf_text(pdf_path: Path) -> str:
 
         doc = fitz.open(pdf_path)
         parts = []
-        for page in doc:
+        for i, page in enumerate(doc, start=1):
+            if with_page_markers:
+                parts.append(f"<!-- page: {i} -->")
             parts.append(page.get_text("text"))
         doc.close()
         return "\n".join(parts)
@@ -36,6 +42,34 @@ def extract_pdf_text(pdf_path: Path) -> str:
             "PDF ingest requires pymupdf: pip install pymupdf "
             "(or pass a .txt/.md extraction instead of .pdf)"
         ) from e
+
+
+def page_of_offset(text: str, offset: int) -> int | None:
+    """Best-effort page number for a character offset given ``<!-- page: N -->`` markers."""
+    last = None
+    for m in re.finditer(r"<!--\s*page:\s*(\d+)\s*-->", text):
+        if m.start() > offset:
+            break
+        last = int(m.group(1))
+    return last
+
+
+def quote_loc_for_snippet(fulltext: str, snippet: str) -> dict[str, Any]:
+    """Locate snippet in fulltext; return ``{page, section}`` when possible."""
+    idx = fulltext.find(snippet[:80]) if snippet else -1
+    page = page_of_offset(fulltext, idx) if idx >= 0 else None
+    section = ""
+    if idx >= 0:
+        head = fulltext[:idx]
+        secs = list(re.finditer(r"^##\s+(\S+)", head, re.M))
+        if secs:
+            section = secs[-1].group(1).lower()
+    out: dict[str, Any] = {}
+    if page is not None:
+        out["page"] = page
+    if section:
+        out["section"] = section
+    return out
 
 
 def split_sections(text: str) -> dict[str, str]:
@@ -172,6 +206,7 @@ def suggest_claims_from_fulltext(
                     "source_section": sec_name,
                     "gate": "suggested",
                     "confidence": conf,
+                    "quote_loc": quote_loc_for_snippet(body, s),
                 }
             )
             if len(cands) >= max_claims:

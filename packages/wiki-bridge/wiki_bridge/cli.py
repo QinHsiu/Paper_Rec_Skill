@@ -538,6 +538,35 @@ def cmd_claim_ledger(args: argparse.Namespace) -> int:
     return 1 if int(out.get("material_gap") or 0) > 0 and args.strict else 0
 
 
+def cmd_answer_ground(args: argparse.Namespace) -> int:
+    from .evidence_ground import ground_answer, ground_from_files
+
+    if args.answer_file and args.evidences_json:
+        out = ground_from_files(Path(args.answer_file), Path(args.evidences_json), lang=args.lang)
+    else:
+        evs = json.loads(Path(args.evidences_json).read_text(encoding="utf-8"))
+        if isinstance(evs, dict):
+            evs = list(evs.get("evidences") or evs.get("contexts") or [])
+        out = ground_answer(args.answer or "", evs, lang=args.lang)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(
+        json.dumps(
+            {
+                "has_successful_answer": out.get("has_successful_answer"),
+                "cannot_answer": out.get("cannot_answer"),
+                "used_evidences": out.get("used_evidences"),
+                "unknown_citations": out.get("unknown_citations"),
+                "answer": out.get("grounded_answer") or out.get("answer"),
+                "out": args.out or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0 if out.get("has_successful_answer") else 1
+
+
 def cmd_related_work(args: argparse.Namespace) -> int:
     from .related_work import build_related_work_outline
 
@@ -1033,6 +1062,17 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--out", default="")
     s.add_argument("--strict", action="store_true", help="exit 1 if any material_gap")
     s.set_defaults(func=cmd_claim_ledger)
+
+    s = sub.add_parser(
+        "answer-ground",
+        help="Expand (E12) cites → References; cannot-answer if no usable evidence",
+    )
+    s.add_argument("--answer", default="", help="raw answer text with (E1) markers")
+    s.add_argument("--answer-file", default="")
+    s.add_argument("--evidences-json", required=True, help="list or {evidences:[...]}")
+    s.add_argument("--lang", default="en", help="en|zh for cannot-answer phrase")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_answer_ground)
 
     s = sub.add_parser(
         "citation-verify",

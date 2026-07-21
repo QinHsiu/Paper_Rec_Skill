@@ -4,6 +4,13 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.5] — 2026-07-22
+
+### Added
+
+- `/wiki answer-ground` (paper-qa): grounded Q&A cites + cannot-answer sentinel
+- PDF page markers for claim-suggest `quote_loc`
+
 ## [1.12.4] — 2026-07-22
 
 ### Added

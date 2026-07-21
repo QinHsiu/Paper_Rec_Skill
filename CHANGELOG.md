@@ -6,6 +6,13 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.28.0] — 2026-07-22
+
+### Added
+
+- **answer-ground** (paper-qa): `(E12)` → human References; explicit cannot-answer when evidence empty
+- PDF ingest page markers (`<!-- page: N -->`) + `quote_loc.page` on claim-suggest; evidence-coverage `cannot_answer` flag
+
 ## [2.27.0] — 2026-07-22
 
 ### Added
