@@ -20,6 +20,8 @@ If any step fails → `[CITATION NEEDED]` or `PLACEHOLDER_<key>` — then run:
 ```powershell
 python -m wiki_bridge.cli citation-verify --bib refs.bib --write-filtered
 python -m wiki_bridge.cli claim-ledger --thread <id> --strict
+python -m wiki_bridge.cli number-verify --thread <id> --exp-dir content/exp/<id> --strict
+python -m wiki_bridge.cli posthoc-cite --thread <id> --evidences-json evs.json
 ```
 
 ## Post-draft audit (short)

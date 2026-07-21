@@ -6,6 +6,22 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.32.0] — 2026-07-22
+
+### Added
+
+- **number-verify**: experiment-metrics whitelist for draft/LaTeX floats (anti-fabrication)
+- **discovery-curve**: advisory retrieval saturation from wave snapshots
+- **reflect-search**: coverage reflection → follow-up queries (pdf/code/recency)
+- **screen-next**: active screening batches from accept/skip labels (hybrid/max/uncertainty)
+- **posthoc-cite**: bind uncited claim sentences to evidence abstracts
+- **research-brief**: scope artifact between clarify and Module 1
+- **wiki-filter-parse**: implement `+term -term dt>= file:` library query operators
+
+### Notes (inspiration → CHANGELOG only)
+
+Deepened ports beyond prior doc-only stubs; patterns drawn from the competitor study set logged in `docs/COMPETITOR_LEARN_LOG.md` (retrieval saturation / AL screening / number registry / post-hoc attribution / research brief / wiki filters). Commit messages intentionally omit third-party project names.
+
 ## [2.31.0] — 2026-07-22
 
 ### Added
