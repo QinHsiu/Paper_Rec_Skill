@@ -4,6 +4,12 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.2] — 2026-07-21
+
+### Added
+
+- `/wiki verify-cites` + `/wiki latex-export` (AutoResearchClaw-inspired citation gate + Overleaf pack)
+
 ## [1.12.1] — 2026-07-21
 
 ### Fixed

@@ -6,6 +6,15 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.25.0] — 2026-07-21
+
+### Added
+
+- **citation-verify** CLI (from AutoResearchClaw): arXiv / CrossRef·DataCite / OpenAlex BibTeX integrity gate + `.clean.bib`
+- **latex-export** CLI: `paper_draft` Markdown → Overleaf-ready `latex/main.tex` + `references.bib`
+- Skill commands: `/wiki verify-cites`, `/wiki latex-export`
+- Branch workstream: learn from competitor clones under `feat/competitor-learn`
+
 ## [2.24.1] — 2026-07-21
 
 ### Fixed

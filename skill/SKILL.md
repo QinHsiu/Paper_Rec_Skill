@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.12.1
+version: 1.12.2
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -510,6 +510,8 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki pdf <path> --pdf file` | Ingest PDF/txt → `fulltext.md` beside paper |
 | `/wiki claim-suggest <path> --thread id` | Suggested claims/evidences from fulltext |
 | `/wiki bibtex [--thread id]` | Export BibTeX for paths / thread members |
+| `/wiki verify-cites` | Citation integrity gate (arXiv/DOI/OpenAlex); drop hallucinated |
+| `/wiki latex-export [--thread id]` | Markdown draft → Overleaf `latex/main.tex` pack |
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
 | `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
 | `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
@@ -526,6 +528,9 @@ python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id <thread_id> --mode
 python -m wiki_bridge.cli thread-graph --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli related-work --wiki-root ../.. --thread <thread_id> --print-md
 python -m wiki_bridge.cli paper-draft --wiki-root ../.. --thread <thread_id> --venue generic
+python -m wiki_bridge.cli bibtex-export --wiki-root ../.. --thread <id> --out refs.bib
+python -m wiki_bridge.cli citation-verify --bib refs.bib --write-filtered
+python -m wiki_bridge.cli latex-export --wiki-root ../.. --thread <id> --venue neurips
 python -m wiki_bridge.cli evidence-coverage --wiki-root ../.. --thread <thread_id>
 python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path llm/2025/foo
 python -m wiki_bridge.cli claim-suggest --wiki-root ../.. --path llm/2025/foo --thread <id> --apply

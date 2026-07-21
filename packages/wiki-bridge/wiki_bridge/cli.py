@@ -364,6 +364,58 @@ def cmd_claim_suggest(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_citation_verify(args: argparse.Namespace) -> int:
+    from .citation_verify import verify_bib_file
+
+    bib = Path(args.bib)
+    out_json = Path(args.out) if args.out else bib.with_suffix(".verify.json")
+    filtered = Path(args.filtered_bib) if args.filtered_bib else None
+    if args.write_filtered and filtered is None:
+        filtered = bib.with_name(bib.stem + ".clean.bib")
+    report = verify_bib_file(
+        bib,
+        out_json=out_json,
+        filtered_bib=filtered,
+        mailto=args.mailto or "paper-rec@local",
+    )
+    summary = report.get("summary") or {}
+    print(
+        json.dumps(
+            {
+                "integrity_score": summary.get("integrity_score"),
+                "verified": summary.get("verified"),
+                "suspicious": summary.get("suspicious"),
+                "hallucinated": summary.get("hallucinated"),
+                "skipped": summary.get("skipped"),
+                "report": str(out_json),
+                "filtered_bib": str(filtered) if filtered else None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    # non-zero if any hallucinated (blocks "ready to submit")
+    return 1 if int(summary.get("hallucinated") or 0) > 0 else 0
+
+
+def cmd_latex_export(args: argparse.Namespace) -> int:
+    from .latex_export import export_latex_pack
+
+    draft = Path(args.draft_dir) if args.draft_dir else Path()
+    if args.thread:
+        from . import thread_store as ts
+
+        draft = ts.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+    out = export_latex_pack(
+        draft,
+        venue=args.venue,
+        title=args.title or "",
+        bib_path=Path(args.bib) if args.bib else None,
+    )
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_bibtex_export(args: argparse.Namespace) -> int:
     from .bibtex_export import export_bibtex
 
@@ -837,6 +889,29 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--thread", default="", help="also include thread member papers")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_bibtex_export)
+
+    s = sub.add_parser(
+        "citation-verify",
+        help="Verify BibTeX against arXiv/CrossRef/OpenAlex (hallucination gate)",
+    )
+    s.add_argument("--bib", required=True, help="path to .bib")
+    s.add_argument("--out", default="", help="JSON report path")
+    s.add_argument("--filtered-bib", default="", help="write cleaned .bib (drop hallucinated)")
+    s.add_argument("--write-filtered", action="store_true", help="auto-write *.clean.bib")
+    s.add_argument("--mailto", default="paper-rec@local")
+    s.set_defaults(func=cmd_citation_verify)
+
+    s = sub.add_parser(
+        "latex-export",
+        help="Export paper_draft Markdown → Overleaf-ready latex/main.tex",
+    )
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="", help="use content/threads/<id>/drafts/paper_draft")
+    s.add_argument("--draft-dir", default="", help="explicit draft directory")
+    s.add_argument("--venue", default="generic", help="neurips|icml|iclr|cvpr|acl|generic")
+    s.add_argument("--title", default="")
+    s.add_argument("--bib", default="", help="optional references.bib path")
+    s.set_defaults(func=cmd_latex_export)
 
     s = sub.add_parser("related-work", help="Write Related Work outline from thread")
     s.add_argument("--wiki-root", required=True)
