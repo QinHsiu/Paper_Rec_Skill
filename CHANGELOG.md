@@ -6,6 +6,14 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.33.0] — 2026-07-22
+
+### Added
+
+- **exp-eval-hook**: persist eval metrics → `metrics/summary.json`, then optional number-verify on drafts
+- **exp-tree**: lightweight draft/improve/ablation experiment tree CLI + `/exp_loop` auto-update
+- exp-sandbox **1.9.0**: `eval_hook` + `exp_tree` wired into orchestrator
+
 ## [2.32.0] — 2026-07-22
 
 ### Added

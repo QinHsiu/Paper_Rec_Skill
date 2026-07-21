@@ -569,6 +569,8 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki claim-ledger` | Draft claim→cite gate (MATERIAL GAP if uncited) |
 | `/wiki answer-ground` | Expand `(E12)` → References; cannot-answer if no evidence |
 | `/wiki number-verify` | Draft/LaTeX floats must appear in exp metrics whitelist |
+| `/wiki exp-eval-hook` | Persist `/exp_eval` metrics then optional number-verify |
+| `/wiki exp-tree` | Experiment tree show/add/buggy/ready |
 | `/wiki posthoc-cite` | Bind uncited claim sentences to evidence pool |
 | `/wiki research-brief` | Scope artifact before Module 1 |
 | `/wiki screen-next` | Active screening next batch from accept/skip |

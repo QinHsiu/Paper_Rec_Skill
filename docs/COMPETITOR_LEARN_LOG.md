@@ -26,7 +26,6 @@ Honest gap analysis: prior “done” rows often lacked engines. Deep P0 impleme
 | Gap | Priority |
 |-----|----------|
 | Map-reduce per-chunk evidence scores before answer | P0 |
-| BFTS-lite experiment tree + ablation nodes | P0 |
 | Control/experimental partitions + double-exec repro | P0 |
 | Survey outline-merge + subsection RAG writer | P0 |
 | Outer `/exp_reflect` + 6-dim rigor seal | P0 |
@@ -34,4 +33,7 @@ Honest gap analysis: prior “done” rows often lacked engines. Deep P0 impleme
 | VLM figure↔caption review | P1 |
 | Persona-parallel question lanes | P1 |
 
-Per-project star strengths and file-level maps live in agent transcripts; this log tracks **what Paper_Rec shipped**.
+### Shipped in 2.33
+
+- Experiment tree / ablation journal (`exp_tree` + `exp-tree` CLI)
+- number-verify ↔ `/exp_eval` (`eval_hook` + `exp-eval-hook`)

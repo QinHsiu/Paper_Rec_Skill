@@ -5,6 +5,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from .conventions import paper_wiki_path
 from .dashboard import write_dashboard
@@ -609,6 +610,128 @@ def cmd_number_verify(args: argparse.Namespace) -> int:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps({k: out[k] for k in ("ok", "verified_n", "unverified_n", "unverified", "registry_n", "metrics_sources") if k in out}, ensure_ascii=False, indent=2))
     return 0 if out.get("ok") else (1 if args.strict else 0)
+
+
+def cmd_exp_eval_hook(args: argparse.Namespace) -> int:
+    """Write/refresh eval metrics bundle then optionally number-verify drafts."""
+    from .number_verify import discover_exp_metrics, verify_paths
+
+    exp_dir = Path(args.exp_dir)
+    metrics_dir = exp_dir / "metrics"
+    metrics_dir.mkdir(parents=True, exist_ok=True)
+
+    bundle_info: dict[str, Any] = {}
+    if args.metrics_json:
+        raw = json.loads(Path(args.metrics_json).read_text(encoding="utf-8-sig"))
+        # Prefer skill-exp eval_hook if importable; else write summary locally
+        try:
+            sys.path.insert(0, str(workspace_root_from_here() / "skill-exp"))
+            from reference.eval_hook import write_eval_bundle  # type: ignore
+
+            eid = args.experiment_id or exp_dir.name
+            content_root = exp_dir.parent
+            target = {}
+            if args.target_metric:
+                target = {
+                    "metric": args.target_metric,
+                    "threshold": args.target_threshold,
+                    "direction": args.direction,
+                }
+            bundle_info = write_eval_bundle(
+                eid,
+                raw if isinstance(raw, dict) else {"value": raw},
+                content_root=content_root,
+                target=target or None,
+                plan_id=args.plan_id or "",
+            )
+        except Exception:
+            summary = metrics_dir / "summary.json"
+            payload = raw if isinstance(raw, dict) else {"metrics": raw}
+            if "metrics" not in payload and isinstance(payload, dict):
+                payload = {"metrics": payload, "number_verify_ready": True}
+            summary.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            (metrics_dir / "final.json").write_text(summary.read_text(encoding="utf-8"), encoding="utf-8")
+            bundle_info = {"summary_path": str(summary)}
+
+    verify_report = None
+    if args.thread or args.draft or args.draft_dir:
+        drafts: list[Path] = []
+        if args.draft:
+            drafts.append(Path(args.draft))
+        if args.draft_dir:
+            drafts.extend(sorted(Path(args.draft_dir).glob("*.md")))
+        if args.thread:
+            td = thread_store.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+            if td.is_dir():
+                drafts.extend(sorted(td.glob("*.md")))
+        metrics = discover_exp_metrics(exp_dir)
+        verify_report = verify_paths(drafts, metrics, tolerance=args.tolerance)
+        out_path = metrics_dir / "number_verify.json"
+        out_path.write_text(json.dumps(verify_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        verify_report["report_path"] = str(out_path)
+
+    result = {
+        "exp_dir": str(exp_dir),
+        "bundle": bundle_info,
+        "number_verify": verify_report,
+        "metrics_files": [str(p) for p in discover_exp_metrics(exp_dir)],
+    }
+    if args.out:
+        Path(args.out).write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    if verify_report is not None and args.strict and not verify_report.get("ok"):
+        return 1
+    return 0
+
+
+def cmd_exp_tree(args: argparse.Namespace) -> int:
+    """Manage lightweight experiment tree under content/exp/<id>/trace/exp_tree.json."""
+    # Import from skill-exp reference
+    skill_exp = workspace_root_from_here() / "skill-exp"
+    if str(skill_exp) not in sys.path:
+        sys.path.insert(0, str(skill_exp))
+    from reference.exp_tree import (  # type: ignore
+        expand_from_best,
+        load_tree,
+        mark_buggy,
+        ready_for_next_stage,
+        render_tree_md,
+        save_tree,
+    )
+
+    content_root = Path(args.content_root)
+    tree = load_tree(content_root, args.experiment_id)
+    action = args.action
+    if action == "show":
+        out = {"tree": tree.to_dict(), "markdown": render_tree_md(tree), "ready": ready_for_next_stage(tree)}
+    elif action == "add":
+        node = expand_from_best(
+            tree,
+            plan_id=args.plan_id or "P?",
+            metric=args.metric,
+            metric_name=args.metric_name or "",
+            as_ablation=args.ablation,
+        )
+        if args.buggy:
+            mark_buggy(tree, node.id, notes=args.notes or "")
+        path = save_tree(tree, content_root)
+        out = {"node": node.id, "path": str(path), "ready": ready_for_next_stage(tree)}
+    elif action == "buggy":
+        if not args.node_id:
+            print(json.dumps({"error": "--node-id required"}, ensure_ascii=False))
+            return 2
+        mark_buggy(tree, args.node_id, notes=args.notes or "")
+        path = save_tree(tree, content_root)
+        out = {"node": args.node_id, "path": str(path), "ready": ready_for_next_stage(tree)}
+    elif action == "ready":
+        out = ready_for_next_stage(tree)
+    else:
+        print(json.dumps({"error": f"unknown action {action}"}, ensure_ascii=False))
+        return 2
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
 
 
 def cmd_discovery_curve(args: argparse.Namespace) -> int:
@@ -1250,6 +1373,40 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--strict", action="store_true", help="exit 1 if any unverified float")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_number_verify)
+
+    s = sub.add_parser(
+        "exp-eval-hook",
+        help="Write metrics/summary.json from eval JSON, then optional number-verify",
+    )
+    s.add_argument("--exp-dir", required=True, help="content/exp/<id>")
+    s.add_argument("--experiment-id", default="", help="defaults to exp-dir name")
+    s.add_argument("--metrics-json", default="", help="eval metrics JSON to persist")
+    s.add_argument("--plan-id", default="")
+    s.add_argument("--target-metric", default="")
+    s.add_argument("--target-threshold", type=float, default=None)
+    s.add_argument("--direction", default="maximize")
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="", help="if set, number-verify thread drafts")
+    s.add_argument("--draft", default="")
+    s.add_argument("--draft-dir", default="")
+    s.add_argument("--tolerance", type=float, default=0.011)
+    s.add_argument("--strict", action="store_true")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_exp_eval_hook)
+
+    s = sub.add_parser("exp-tree", help="Lightweight experiment tree (draft/improve/ablation)")
+    s.add_argument("--content-root", default="content/exp")
+    s.add_argument("--experiment-id", required=True)
+    s.add_argument("--action", required=True, choices=["show", "add", "buggy", "ready"])
+    s.add_argument("--plan-id", default="")
+    s.add_argument("--metric", type=float, default=None)
+    s.add_argument("--metric-name", default="")
+    s.add_argument("--ablation", action="store_true")
+    s.add_argument("--buggy", action="store_true")
+    s.add_argument("--node-id", default="")
+    s.add_argument("--notes", default="")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_exp_tree)
 
     s = sub.add_parser("discovery-curve", help="Advisory saturation fit on retrieval wave snapshots")
     s.add_argument("--json", required=True, help="list of {papers_evaluated, highly_relevant_count}")

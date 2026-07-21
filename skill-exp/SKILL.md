@@ -1,6 +1,6 @@
 ---
 name: exp-sandbox
-version: 1.8.4
+version: 1.9.0
 description: >-
   Automated experiment sandbox: dataset analysis, training, evaluation, and a
   self-improving loop (analyze → multi-plan → mini-verify → train → eval →
@@ -233,8 +233,25 @@ Do not claim training finished without evidence from logs/metrics the user or to
 
 1. Run (or read) eval on the declared `target_score.eval_set`.
 2. Table: metric → value → vs threshold → pass/fail.
-3. Attach stratified / badcase summary if available.
-4. If fail, propose next-step candidates (link to Module A).
+3. **Persist metrics bundle** (required for draft integrity):
+
+```powershell
+# After eval numbers are known — write content/exp/<id>/metrics/summary.json
+python -m wiki_bridge.cli exp-eval-hook --exp-dir content/exp/<id> --metrics-json eval_metrics.json --target-metric F1 --target-threshold 0.85
+```
+
+Or from Python: `reference.eval_hook.write_eval_bundle(experiment_id, metrics, target=...)`.
+
+4. Attach stratified / badcase summary if available.
+5. If fail, propose next-step candidates (link to Module A).
+6. **Auto number-verify** when a paper draft / thread exists (blocks fabricated Results floats):
+
+```powershell
+python -m wiki_bridge.cli exp-eval-hook --exp-dir content/exp/<id> --thread <thread_id> --strict
+# equivalent: number-verify --exp-dir ... --thread ... --strict
+```
+
+Report path: `content/exp/<id>/metrics/number_verify.json`. Do **not** claim Results numbers that fail this gate.
 
 ---
 
@@ -261,6 +278,15 @@ Notation from product spec:
    - no remaining plan with positive expected value / user aborts.
 6. Always emit **final_eval & analysis** (see Output).
 7. Prefer calling `reference.orchestrator.run_exp_loop` mental model / stubs over inventing a new control flow.
+8. **Experiment tree** (`trace/exp_tree.json`): each full train/eval appends a node (draft → improve → ablation). Inspect / extend:
+
+```powershell
+python -m wiki_bridge.cli exp-tree --experiment-id <id> --action show
+python -m wiki_bridge.cli exp-tree --experiment-id <id> --action add --plan-id P2 --metric 0.81
+python -m wiki_bridge.cli exp-tree --experiment-id <id> --action ready
+```
+
+On plateau, prefer `--ablation` children; mark failed runs `--action buggy --node-id N…`. Gate next stage with `ready_for_next_stage` (healthy nodes + metric progress vs root).
 
 ### Iteration log (append each round)
 

@@ -1,5 +1,14 @@
 # Changelog — exp-sandbox
 
+## [1.9.0] — 2026-07-22
+
+### Added
+
+- `eval_hook.write_eval_bundle` — persist `metrics/summary.json` after `/exp_eval` for number-verify
+- `exp_tree` — draft→improve→ablation journal under `trace/exp_tree.json`
+- `orchestrator.run_exp_loop` auto-writes eval bundle + expands experiment tree each full train/eval
+- CLI via wiki-bridge: `exp-eval-hook`, `exp-tree`
+
 ## [1.8.4] — 2026-07-22
 
 ### Added
