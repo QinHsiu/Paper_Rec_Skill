@@ -438,6 +438,80 @@ def cmd_bibtex_export(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_filter_code(args: argparse.Namespace) -> int:
+    from .code_filter import filter_by_code
+
+    payload = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        items = payload
+    else:
+        items = list(payload.get("documents") or payload.get("papers") or payload.get("candidates") or [])
+    out = filter_by_code(items, mode=args.mode)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps({"kept_n": out["kept_n"], "dropped_n": out["dropped_n"], "out": args.out}, ensure_ascii=False))
+    else:
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_matrix_build(args: argparse.Namespace) -> int:
+    from .literature_matrix import build_literature_matrix
+
+    payload = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        items = payload
+    else:
+        items = list(payload.get("documents") or payload.get("papers") or payload.get("rows") or [])
+    out = build_literature_matrix(items)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    if args.md_out:
+        Path(args.md_out).write_text(out["markdown"], encoding="utf-8")
+    summary = {"count": out["count"], "out": args.out or None, "md_out": args.md_out or None}
+    print(json.dumps(summary if (args.out or args.md_out) else out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_claim_ledger(args: argparse.Namespace) -> int:
+    from .claim_ledger import build_claim_ledger, build_claim_ledger_from_paths
+
+    known = _split_csv(args.known_keys) if args.known_keys else []
+    paths: list[Path] = []
+    if args.draft_dir:
+        d = Path(args.draft_dir)
+        paths.extend(sorted(d.glob("*.md")))
+    if args.markdown:
+        paths.append(Path(args.markdown))
+    if args.claims_json:
+        paths.append(Path(args.claims_json))
+    if args.thread:
+        td = thread_store.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+        if td.is_dir():
+            paths.extend(sorted(td.glob("*.md")))
+    if paths:
+        out = build_claim_ledger_from_paths(paths, known_keys=known)
+    else:
+        md = Path(args.markdown).read_text(encoding="utf-8") if args.markdown else ""
+        out = build_claim_ledger(markdown=md, known_keys=known)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(
+        json.dumps(
+            {
+                "claim_count": out["claim_count"],
+                "grounded": out["grounded"],
+                "material_gap": out["material_gap"],
+                "unknown_cite": out["unknown_cite"],
+                "out": args.out or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 1 if int(out.get("material_gap") or 0) > 0 and args.strict else 0
+
+
 def cmd_related_work(args: argparse.Namespace) -> int:
     from .related_work import build_related_work_outline
 
@@ -889,6 +963,35 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--thread", default="", help="also include thread member papers")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_bibtex_export)
+
+    s = sub.add_parser(
+        "filter-code",
+        help="Filter candidates by code availability (any|required|none)",
+    )
+    s.add_argument("--json", required=True, help="JSON list or {documents/papers/candidates}")
+    s.add_argument("--mode", default="any", choices=["any", "required", "none"])
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_filter_code)
+
+    s = sub.add_parser("matrix-build", help="Build literature matrix rows (+ optional MD table)")
+    s.add_argument("--json", required=True, help="JSON list or {documents/papers}")
+    s.add_argument("--out", default="", help="write matrix JSON")
+    s.add_argument("--md-out", default="", help="write Markdown table")
+    s.set_defaults(func=cmd_matrix_build)
+
+    s = sub.add_parser(
+        "claim-ledger",
+        help="Scan draft MD/JSON for uncited claims (MATERIAL GAP gate)",
+    )
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="", help="scan drafts/paper_draft/*.md")
+    s.add_argument("--draft-dir", default="")
+    s.add_argument("--markdown", default="", help="single .md path")
+    s.add_argument("--claims-json", default="", help="optional claims JSON")
+    s.add_argument("--known-keys", default="", help="comma-separated allowed cite keys")
+    s.add_argument("--out", default="")
+    s.add_argument("--strict", action="store_true", help="exit 1 if any material_gap")
+    s.set_defaults(func=cmd_claim_ledger)
 
     s = sub.add_parser(
         "citation-verify",

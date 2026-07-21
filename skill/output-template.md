@@ -39,6 +39,9 @@ Copy and fill for each paper. **Each field: ≤2 sentences.** Choose the templat
 **Reference Value**
 {≤2 sentences}
 
+**Code** (optional)
+{github/gitlab/hf url or "none"}
+
 **Strengths**
 {≤2 sentences}
 
@@ -65,6 +68,17 @@ Copy and fill for each paper. **Each field: ≤2 sentences.** Choose the templat
 - Broad: ...
 - Specific: ...
 - Keywords: ...
+- Code filter: any | required | none
+
+---
+
+## 1b. Literature Matrix (optional)
+
+| Key | Year | Method | Task | Code | Evidence |
+|-----|------|--------|------|------|----------|
+| … | … | … | … | … | … |
+
+*(build via `matrix-build`; after draft run `claim-ledger`)*
 
 ---
 

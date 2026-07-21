@@ -4,6 +4,13 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.3] — 2026-07-22
+
+### Added
+
+- `/wiki filter-code`, `/wiki matrix`, `/wiki claim-ledger` (PaperPilot: code filter, literature matrix, claim MATERIAL GAP)
+- Module 1 rewrite: optional protocol + `Code: any|required|none`
+
 ## [1.12.2] — 2026-07-21
 
 ### Added

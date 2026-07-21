@@ -6,6 +6,13 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.26.0] — 2026-07-22
+
+### Added
+
+- **filter-code** / **matrix-build** / **claim-ledger** (PaperPilot-inspired): code availability filter, literature matrix table, draft MATERIAL GAP claim gate
+- Skill: `/wiki filter-code`, `/wiki matrix`, `/wiki claim-ledger`; Module 1 protocol + code filter fields
+
 ## [2.25.0] — 2026-07-21
 
 ### Added

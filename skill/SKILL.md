@@ -165,6 +165,8 @@ English mode:
 - Specific: ...
 - Keywords: ...
 - Filters: year range, venue preference
+- Code: any | required | none (papers with GitHub/GitLab/HF links)
+- Protocol (optional): inclusion / exclusion / negative keywords (audit trail; not a second planner)
 ```
 
 Chinese mode:
@@ -175,6 +177,8 @@ Chinese mode:
 - 关键词：...
 - 英文检索词（国际源）：...
 - 筛选：年份范围、会议偏好
+- 代码：any | required | none（需开源实现 / 仅理论）
+- 协议（可选）：纳入/排除标准、负向词（可审计；不另起规划器）
 ```
 
 ### 1.5 Thread Context Inject / 研究主线注入（可选）
@@ -512,6 +516,9 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki bibtex [--thread id]` | Export BibTeX for paths / thread members |
 | `/wiki verify-cites` | Citation integrity gate (arXiv/DOI/OpenAlex); drop hallucinated |
 | `/wiki latex-export [--thread id]` | Markdown draft → Overleaf `latex/main.tex` pack |
+| `/wiki filter-code` | Post-RRF code filter: `any` / `required` / `none` |
+| `/wiki matrix` | Literature matrix JSON/MD table for related-work |
+| `/wiki claim-ledger` | Draft claim→cite gate (MATERIAL GAP if uncited) |
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
 | `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
 | `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
@@ -531,6 +538,9 @@ python -m wiki_bridge.cli paper-draft --wiki-root ../.. --thread <thread_id> --v
 python -m wiki_bridge.cli bibtex-export --wiki-root ../.. --thread <id> --out refs.bib
 python -m wiki_bridge.cli citation-verify --bib refs.bib --write-filtered
 python -m wiki_bridge.cli latex-export --wiki-root ../.. --thread <id> --venue neurips
+python -m wiki_bridge.cli filter-code --json fused.json --mode required --out coded.json
+python -m wiki_bridge.cli matrix-build --json coded.json --out matrix.json --md-out matrix.md
+python -m wiki_bridge.cli claim-ledger --wiki-root ../.. --thread <id> --out claim_ledger.json --strict
 python -m wiki_bridge.cli evidence-coverage --wiki-root ../.. --thread <thread_id>
 python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path llm/2025/foo
 python -m wiki_bridge.cli claim-suggest --wiki-root ../.. --path llm/2025/foo --thread <id> --apply
