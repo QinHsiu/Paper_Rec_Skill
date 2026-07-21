@@ -5,6 +5,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from .conventions import paper_wiki_path
 from .dashboard import write_dashboard
@@ -580,6 +581,274 @@ def cmd_answer_ground(args: argparse.Namespace) -> int:
     return 0 if out.get("has_successful_answer") else 1
 
 
+def cmd_number_verify(args: argparse.Namespace) -> int:
+    from .number_verify import discover_exp_metrics, verify_paths
+
+    drafts: list[Path] = []
+    if args.draft:
+        drafts.append(Path(args.draft))
+    if args.draft_dir:
+        d = Path(args.draft_dir)
+        drafts.extend(sorted(d.glob("*.md")))
+        drafts.extend(sorted(d.glob("**/*.tex")))
+    if args.thread:
+        td = thread_store.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+        if td.is_dir():
+            drafts.extend(sorted(td.glob("*.md")))
+            latex = td.parent / "latex" / "main.tex"
+            if not latex.is_file():
+                latex = td / "latex" / "main.tex"
+            if latex.is_file():
+                drafts.append(latex)
+    metrics: list[Path] = []
+    if args.metrics:
+        metrics.extend(Path(p) for p in _split_csv(args.metrics))
+    if args.exp_dir:
+        metrics.extend(discover_exp_metrics(Path(args.exp_dir)))
+    out = verify_paths(drafts, metrics, tolerance=args.tolerance)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({k: out[k] for k in ("ok", "verified_n", "unverified_n", "unverified", "registry_n", "metrics_sources") if k in out}, ensure_ascii=False, indent=2))
+    return 0 if out.get("ok") else (1 if args.strict else 0)
+
+
+def cmd_exp_eval_hook(args: argparse.Namespace) -> int:
+    """Write/refresh eval metrics bundle then optionally number-verify drafts."""
+    from .number_verify import discover_exp_metrics, verify_paths
+
+    exp_dir = Path(args.exp_dir)
+    metrics_dir = exp_dir / "metrics"
+    metrics_dir.mkdir(parents=True, exist_ok=True)
+
+    bundle_info: dict[str, Any] = {}
+    if args.metrics_json:
+        raw = json.loads(Path(args.metrics_json).read_text(encoding="utf-8-sig"))
+        # Prefer skill-exp eval_hook if importable; else write summary locally
+        try:
+            sys.path.insert(0, str(workspace_root_from_here() / "skill-exp"))
+            from reference.eval_hook import write_eval_bundle  # type: ignore
+
+            eid = args.experiment_id or exp_dir.name
+            content_root = exp_dir.parent
+            target = {}
+            if args.target_metric:
+                target = {
+                    "metric": args.target_metric,
+                    "threshold": args.target_threshold,
+                    "direction": args.direction,
+                }
+            bundle_info = write_eval_bundle(
+                eid,
+                raw if isinstance(raw, dict) else {"value": raw},
+                content_root=content_root,
+                target=target or None,
+                plan_id=args.plan_id or "",
+            )
+        except Exception:
+            summary = metrics_dir / "summary.json"
+            payload = raw if isinstance(raw, dict) else {"metrics": raw}
+            if "metrics" not in payload and isinstance(payload, dict):
+                payload = {"metrics": payload, "number_verify_ready": True}
+            summary.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            (metrics_dir / "final.json").write_text(summary.read_text(encoding="utf-8"), encoding="utf-8")
+            bundle_info = {"summary_path": str(summary)}
+
+    verify_report = None
+    if args.thread or args.draft or args.draft_dir:
+        drafts: list[Path] = []
+        if args.draft:
+            drafts.append(Path(args.draft))
+        if args.draft_dir:
+            drafts.extend(sorted(Path(args.draft_dir).glob("*.md")))
+        if args.thread:
+            td = thread_store.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+            if td.is_dir():
+                drafts.extend(sorted(td.glob("*.md")))
+        metrics = discover_exp_metrics(exp_dir)
+        verify_report = verify_paths(drafts, metrics, tolerance=args.tolerance)
+        out_path = metrics_dir / "number_verify.json"
+        out_path.write_text(json.dumps(verify_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        verify_report["report_path"] = str(out_path)
+
+    result = {
+        "exp_dir": str(exp_dir),
+        "bundle": bundle_info,
+        "number_verify": verify_report,
+        "metrics_files": [str(p) for p in discover_exp_metrics(exp_dir)],
+    }
+    if args.out:
+        Path(args.out).write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    if verify_report is not None and args.strict and not verify_report.get("ok"):
+        return 1
+    return 0
+
+
+def cmd_exp_tree(args: argparse.Namespace) -> int:
+    """Manage lightweight experiment tree under content/exp/<id>/trace/exp_tree.json."""
+    # Import from skill-exp reference
+    skill_exp = workspace_root_from_here() / "skill-exp"
+    if str(skill_exp) not in sys.path:
+        sys.path.insert(0, str(skill_exp))
+    from reference.exp_tree import (  # type: ignore
+        expand_from_best,
+        load_tree,
+        mark_buggy,
+        ready_for_next_stage,
+        render_tree_md,
+        save_tree,
+    )
+
+    content_root = Path(args.content_root)
+    tree = load_tree(content_root, args.experiment_id)
+    action = args.action
+    if action == "show":
+        out = {"tree": tree.to_dict(), "markdown": render_tree_md(tree), "ready": ready_for_next_stage(tree)}
+    elif action == "add":
+        node = expand_from_best(
+            tree,
+            plan_id=args.plan_id or "P?",
+            metric=args.metric,
+            metric_name=args.metric_name or "",
+            as_ablation=args.ablation,
+        )
+        if args.buggy:
+            mark_buggy(tree, node.id, notes=args.notes or "")
+        path = save_tree(tree, content_root)
+        out = {"node": node.id, "path": str(path), "ready": ready_for_next_stage(tree)}
+    elif action == "buggy":
+        if not args.node_id:
+            print(json.dumps({"error": "--node-id required"}, ensure_ascii=False))
+            return 2
+        mark_buggy(tree, args.node_id, notes=args.notes or "")
+        path = save_tree(tree, content_root)
+        out = {"node": args.node_id, "path": str(path), "ready": ready_for_next_stage(tree)}
+    elif action == "ready":
+        out = ready_for_next_stage(tree)
+    else:
+        print(json.dumps({"error": f"unknown action {action}"}, ensure_ascii=False))
+        return 2
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_discovery_curve(args: argparse.Namespace) -> int:
+    from .discovery_curve import analyze_snapshots
+
+    payload = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    snaps = payload if isinstance(payload, list) else list(payload.get("snapshots") or [])
+    out = analyze_snapshots(snaps)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 1 if out.get("warn_low_progress") and args.strict else 0
+
+
+def cmd_reflect_search(args: argparse.Namespace) -> int:
+    from .reflect_search import reflect_coverage
+
+    payload = json.loads(Path(args.json).read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        papers = payload
+    else:
+        papers = list(payload.get("documents") or payload.get("papers") or payload.get("candidates") or [])
+    out = reflect_coverage(
+        papers,
+        query=args.query or "",
+        since_year=args.since_year or None,
+        max_papers=args.max_papers,
+        code_filter=args.code_filter,
+    )
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_screen_next(args: argparse.Namespace) -> int:
+    from .screen_next import build_label_map, screen_next
+
+    cands = json.loads(Path(args.candidates).read_text(encoding="utf-8"))
+    if isinstance(cands, dict):
+        cands = list(cands.get("documents") or cands.get("papers") or cands.get("candidates") or [])
+    labels: dict[str, int] = {}
+    if args.labels_json:
+        raw = json.loads(Path(args.labels_json).read_text(encoding="utf-8"))
+        if isinstance(raw, dict) and "labels" in raw:
+            labels = {str(k): int(v) for k, v in raw["labels"].items()}
+        elif isinstance(raw, list):
+            labels = build_label_map(raw)
+        else:
+            labels = {str(k): int(v) for k, v in raw.items()}
+    elif args.thread:
+        data = thread_store.load_thread(Path(args.wiki_root), args.thread)
+        events = list(data.get("events") or []) + list(data.get("feedback") or [])
+        labels = build_label_map(events)
+    out = screen_next(
+        cands,
+        labels,
+        batch_size=args.batch_size,
+        strategy=args.strategy,
+        consecutive_irrelevant_stop=args.stop_n,
+    )
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({**{k: out[k] for k in out if k != "batch"}, "batch_titles": [x.get("title") for x in out.get("batch") or []]}, ensure_ascii=False, indent=2))
+    return 1 if out.get("stopped") else 0
+
+
+def cmd_posthoc_cite(args: argparse.Namespace) -> int:
+    from .posthoc_cite import posthoc_attribute
+
+    md = Path(args.markdown).read_text(encoding="utf-8") if args.markdown else ""
+    if args.thread and not md:
+        td = thread_store.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+        parts = []
+        if td.is_dir():
+            for p in sorted(td.glob("*.md")):
+                parts.append(p.read_text(encoding="utf-8"))
+        md = "\n\n".join(parts)
+    evs = json.loads(Path(args.evidences_json).read_text(encoding="utf-8"))
+    if isinstance(evs, dict):
+        evs = list(evs.get("evidences") or evs.get("papers") or evs.get("contexts") or [])
+    out = posthoc_attribute(md, evs, max_sentences=args.max_sentences)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({k: out[k] for k in ("scanned_claims", "attributed_n", "needs_attribution_n")}, ensure_ascii=False, indent=2))
+    return 1 if out.get("needs_attribution_n") and args.strict else 0
+
+
+def cmd_research_brief(args: argparse.Namespace) -> int:
+    from .research_brief import build_research_brief
+
+    must = _split_csv(args.must_answer) if args.must_answer else []
+    oos = _split_csv(args.out_of_scope) if args.out_of_scope else []
+    packs = _split_csv(args.packs) if args.packs else []
+    out = build_research_brief(
+        topic=args.topic,
+        must_answer=must,
+        out_of_scope=oos,
+        packs=packs,
+        language=args.lang,
+    )
+    if args.out:
+        Path(args.out).write_text(out["markdown"], encoding="utf-8")
+    if args.json_out:
+        Path(args.json_out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({"topic": out["topic"], "must_answer": out["must_answer"], "out": args.out or None}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_wiki_filter_parse(args: argparse.Namespace) -> int:
+    from .wiki_filters import parse_wiki_query
+
+    out = parse_wiki_query(args.query).to_dict()
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_related_work(args: argparse.Namespace) -> int:
     from .related_work import build_related_work_outline
 
@@ -1089,6 +1358,105 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--lang", default="en", help="en|zh for cannot-answer phrase")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_answer_ground)
+
+    s = sub.add_parser(
+        "number-verify",
+        help="Reject draft/LaTeX floats not present in experiment metrics whitelist",
+    )
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="")
+    s.add_argument("--draft", default="", help="single md/tex file")
+    s.add_argument("--draft-dir", default="")
+    s.add_argument("--exp-dir", default="", help="content/exp/<id> — auto-discover metrics/*.json")
+    s.add_argument("--metrics", default="", help="comma-separated metric JSON paths")
+    s.add_argument("--tolerance", type=float, default=0.011)
+    s.add_argument("--strict", action="store_true", help="exit 1 if any unverified float")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_number_verify)
+
+    s = sub.add_parser(
+        "exp-eval-hook",
+        help="Write metrics/summary.json from eval JSON, then optional number-verify",
+    )
+    s.add_argument("--exp-dir", required=True, help="content/exp/<id>")
+    s.add_argument("--experiment-id", default="", help="defaults to exp-dir name")
+    s.add_argument("--metrics-json", default="", help="eval metrics JSON to persist")
+    s.add_argument("--plan-id", default="")
+    s.add_argument("--target-metric", default="")
+    s.add_argument("--target-threshold", type=float, default=None)
+    s.add_argument("--direction", default="maximize")
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="", help="if set, number-verify thread drafts")
+    s.add_argument("--draft", default="")
+    s.add_argument("--draft-dir", default="")
+    s.add_argument("--tolerance", type=float, default=0.011)
+    s.add_argument("--strict", action="store_true")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_exp_eval_hook)
+
+    s = sub.add_parser("exp-tree", help="Lightweight experiment tree (draft/improve/ablation)")
+    s.add_argument("--content-root", default="content/exp")
+    s.add_argument("--experiment-id", required=True)
+    s.add_argument("--action", required=True, choices=["show", "add", "buggy", "ready"])
+    s.add_argument("--plan-id", default="")
+    s.add_argument("--metric", type=float, default=None)
+    s.add_argument("--metric-name", default="")
+    s.add_argument("--ablation", action="store_true")
+    s.add_argument("--buggy", action="store_true")
+    s.add_argument("--node-id", default="")
+    s.add_argument("--notes", default="")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_exp_tree)
+
+    s = sub.add_parser("discovery-curve", help="Advisory saturation fit on retrieval wave snapshots")
+    s.add_argument("--json", required=True, help="list of {papers_evaluated, highly_relevant_count}")
+    s.add_argument("--out", default="")
+    s.add_argument("--strict", action="store_true", help="exit 1 when warn_low_progress")
+    s.set_defaults(func=cmd_discovery_curve)
+
+    s = sub.add_parser("reflect-search", help="Coverage reflection → improved follow-up queries")
+    s.add_argument("--json", required=True, help="ranked candidates JSON")
+    s.add_argument("--query", default="")
+    s.add_argument("--since-year", type=int, default=0)
+    s.add_argument("--max-papers", type=int, default=50)
+    s.add_argument("--code-filter", default="any", choices=["any", "required", "none"])
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_reflect_search)
+
+    s = sub.add_parser("screen-next", help="Active screening next batch from accept/skip labels")
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="", help="read feedback events from thread")
+    s.add_argument("--candidates", required=True, help="candidate pool JSON")
+    s.add_argument("--labels-json", default="", help="path→0/1 map or feedback event list")
+    s.add_argument("--strategy", default="hybrid", choices=["hybrid", "max", "uncertainty"])
+    s.add_argument("--batch-size", type=int, default=10)
+    s.add_argument("--stop-n", type=int, default=10, help="stop after N irrelevant labels (cold skip storm)")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_screen_next)
+
+    s = sub.add_parser("posthoc-cite", help="Bind uncited claim sentences to evidence pool")
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="")
+    s.add_argument("--markdown", default="")
+    s.add_argument("--evidences-json", required=True)
+    s.add_argument("--max-sentences", type=int, default=20)
+    s.add_argument("--strict", action="store_true")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_posthoc_cite)
+
+    s = sub.add_parser("research-brief", help="Write research brief before Module 1 rewrite")
+    s.add_argument("--topic", required=True)
+    s.add_argument("--must-answer", default="", help="comma-separated questions")
+    s.add_argument("--out-of-scope", default="")
+    s.add_argument("--packs", default="")
+    s.add_argument("--lang", default="en")
+    s.add_argument("--out", default="", help="write markdown brief")
+    s.add_argument("--json-out", default="")
+    s.set_defaults(func=cmd_research_brief)
+
+    s = sub.add_parser("wiki-filter-parse", help="Parse +term -term dt>=YYYY file:pdf library query")
+    s.add_argument("--query", required=True)
+    s.set_defaults(func=cmd_wiki_filter_parse)
 
     s = sub.add_parser(
         "citation-verify",

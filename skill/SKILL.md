@@ -114,9 +114,17 @@ Templates per mode: [output-template.md](output-template.md)
 
 **Action**: Follow [`references/clarify-gate.md`](references/clarify-gate.md) — emit `need_clarification` JSON and **wait** before Module 1 rewrite / retrieval.
 
+After clarify (or when clear): write a **research brief** then continue:
+
+```powershell
+python -m wiki_bridge.cli research-brief --topic "..." --must-answer "q1,q2" --out content/threads/<id>/research_brief.md
+```
+
+Module 1 rewrite + packs must stay inside the brief’s must-answer / out-of-scope.
+
 Idea seeds (no finished paper yet): [`references/idea-template.md`](references/idea-template.md).  
-Library search operators: [`references/wiki-query-filters.md`](references/wiki-query-filters.md).  
-Screening stop: [`references/screening-stop.md`](references/screening-stop.md).
+Library search operators: [`references/wiki-query-filters.md`](references/wiki-query-filters.md) — parse via `wiki-filter-parse`.  
+Screening stop: [`references/screening-stop.md`](references/screening-stop.md) — use `screen-next` after feedback.
 
 ---
 
@@ -402,6 +410,16 @@ For the final report, deep-read the **top 10–15** papers; use metadata-only fo
 4. **STORM unused-snippet gaps**: when ranking/drafting, prefer next questions from papers **retrieved but not cited** in the draft / ledger (advance coverage, avoid niche loops).
 5. Search packs with these paths; tag each hit with `path_id`.
 6. Merge & dedupe across paths (same rules as 2.4). Prerank uses **norm_cite** (citation / max_in_pool) by default.
+7. After each wave, append a discovery snapshot `{papers_evaluated, highly_relevant_count}` and optionally:
+
+```powershell
+python -m wiki_bridge.cli discovery-curve --json snapshots.json
+python -m wiki_bridge.cli reflect-search --json fused.json --query "<topic>" --since-year 2023
+```
+
+If `reflect-search.should_retry`, run **at most one** refine wave with `improved_queries` (Module 2b). Saturation warnings are **advisory only**.
+8. Interactive screening after Top-N: `thread-feedback` accept|skip → `screen-next --strategy hybrid`.
+
 
 ### 2b Iterative refine / 自动收窄·放宽（有上限）
 
@@ -550,6 +568,14 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki matrix` | Literature matrix JSON/MD table for related-work |
 | `/wiki claim-ledger` | Draft claim→cite gate (MATERIAL GAP if uncited) |
 | `/wiki answer-ground` | Expand `(E12)` → References; cannot-answer if no evidence |
+| `/wiki number-verify` | Draft/LaTeX floats must appear in exp metrics whitelist |
+| `/wiki exp-eval-hook` | Persist `/exp_eval` metrics then optional number-verify |
+| `/wiki exp-tree` | Experiment tree show/add/buggy/ready |
+| `/wiki posthoc-cite` | Bind uncited claim sentences to evidence pool |
+| `/wiki research-brief` | Scope artifact before Module 1 |
+| `/wiki screen-next` | Active screening next batch from accept/skip |
+| `/wiki reflect-search` | Coverage issues → follow-up queries |
+| `/wiki discovery-curve` | Advisory retrieval saturation |
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
 | `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
 | `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
@@ -577,6 +603,8 @@ python -m wiki_bridge.cli latex-export --wiki-root ../.. --thread <id> --venue n
 python -m wiki_bridge.cli filter-code --json fused.json --mode required --out coded.json
 python -m wiki_bridge.cli matrix-build --json coded.json --out matrix.json --md-out matrix.md
 python -m wiki_bridge.cli claim-ledger --wiki-root ../.. --thread <id> --out claim_ledger.json --strict
+python -m wiki_bridge.cli number-verify --wiki-root ../.. --thread <id> --exp-dir ../../content/exp/<exp> --strict
+python -m wiki_bridge.cli posthoc-cite --wiki-root ../.. --thread <id> --evidences-json evs.json
 python -m wiki_bridge.cli answer-ground --answer "Result holds (E1)." --evidences-json evs.json
 python -m wiki_bridge.cli evidence-coverage --wiki-root ../.. --thread <thread_id>
 python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path llm/2025/foo

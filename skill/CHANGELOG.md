@@ -4,6 +4,15 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.13.0] — 2026-07-22
+
+### Added
+
+- Module 0 → `research-brief` before rewrite
+- Module 2a: `discovery-curve` + `reflect-search` + `screen-next` after Top-N
+- Writing: `number-verify` + `posthoc-cite` before latex-export
+- `/wiki` library: `wiki-filter-parse` for filter operators
+
 ## [1.12.8] — 2026-07-22
 
 ### Added

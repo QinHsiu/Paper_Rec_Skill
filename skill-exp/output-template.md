@@ -103,11 +103,18 @@ Keep each subsection short unless the user asks for depth.
 |--------|-------|-----------|-------|
 | | | | |
 
+## Metrics bundle
+- path: `content/exp/<id>/metrics/summary.json` (via `exp-eval-hook` / `write_eval_bundle`)
+- number_verify: pass/fail · report `metrics/number_verify.json`
+
 ## Stratified / notes
 -
 
 ## Badcase digest
 -
+
+## Experiment tree
+- node: N… · stage: draft|improve|ablation · ready_for_next_stage: yes/no
 
 ## Next-step candidates
 -

@@ -14,6 +14,8 @@ They **adapt** published ideas (Predict-then-Verify, data-centric pairwise prefe
 | [`predict_then_verify.py`](predict_then_verify.py) | Core Predict-then-Verify loop |
 | [`badcase.py`](badcase.py) | Badcase cluster → special questions → multi-plans |
 | [`mini_eval.py`](mini_eval.py) | **Plan** mini-verify on **target subset** (clear gain) before full train |
+| [`eval_hook.py`](eval_hook.py) | Write `metrics/summary.json` after `/exp_eval` for number-verify |
+| [`exp_tree.py`](exp_tree.py) | Lightweight draft→improve→ablation tree under `trace/` |
 | [`train_monitor.py`](train_monitor.py) | Loss / metric curve monitoring helpers |
 | [`orchestrator.py`](orchestrator.py) | Maps `/exp_loop` to the above pipeline |
 | [`prompts/`](prompts/) | Prompt templates adapted from the paper appendix |
