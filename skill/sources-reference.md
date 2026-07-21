@@ -114,9 +114,10 @@ Also accepts DOI / OpenAlex URL forms, e.g. `/works/https://doi.org/10.7717/peer
 #### Agent usage rules / 使用规则
 
 1. For **Pack A / H / general_oa / cross_domain**, run at least one OpenAlex `works?search=` call with the **English Keyword** query (plus year filter when latest-intent).
-2. Prefer OpenAlex for **broad scholarly recall** and DOI/OA links; prefer arXiv / HF / PwC for **ML preprint + code**; prefer S2 when **citation neighborhood** is needed.
-3. Deduplicate: OpenAlex ID → DOI → arXiv ID → normalized title (see Scoring Reference).
-4. Do **not** invent OpenAlex IDs; only cite works returned by the API or UI.
+2. **Multi-strategy (paper-search-pro)**: for high-stakes / deep queries, fan out **3 OpenAlex sorts** on the same cleaned topic — `relevance_score:desc`, `publication_date:desc`, `cited_by_count:desc` — then RRF-fuse (do not treat them as unrelated topics).
+3. Prefer OpenAlex for **broad scholarly recall** and DOI/OA links; prefer arXiv / HF / PwC for **ML preprint + code**; prefer S2 when **citation neighborhood** is needed.
+4. Deduplicate: **DOI (normalized)** → arXiv ID (strip `vN`) → PMID → OpenAlex ID → title+year (see Scoring Reference / `wiki_bridge.rrf`).
+5. Do **not** invent OpenAlex IDs; only cite works returned by the API or UI.
 5. If API 403/429: retry with `mailto=`, reduce `per-page`, or fall back to https://openalex.org/ web search.
 
 ---
@@ -503,12 +504,13 @@ cn_llm_survey      → A, A-CN(Discovery+Tier-1), B
 - Keep seminal older works only as labeled baselines, not as「最新」answers.
 
 ### Deduplication keys
-1. OpenAlex work ID (`W…`) — same as `wiki_bridge.rrf._doc_key`  
-2. arXiv ID  
-3. DOI  
-4. Normalized title  
-5. Same PDF URL  
-6. Same model family + version (keep newest)
+1. **DOI** (normalized; strip `https://doi.org/`, arXiv DOI `vN`) — primary `wiki_bridge.rrf._doc_key`
+2. arXiv ID (strip `vN`)
+3. PMID
+4. OpenAlex work ID (`W…`)
+5. Normalized title + year
+6. Same PDF URL
+7. Same model family + version (keep newest)
 
 When merging across lanes/sources, **keep all lane tags** (`_lanes` / every `source`); never drop a keep-rule lane just because another copy scored higher.
 

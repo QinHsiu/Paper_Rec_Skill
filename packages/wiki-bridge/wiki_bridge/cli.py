@@ -438,6 +438,32 @@ def cmd_bibtex_export(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_ris_export(args: argparse.Namespace) -> int:
+    from .ris_export import export_ris
+
+    paths = _split_csv(args.paths) if args.paths else []
+    if args.thread:
+        data = thread_store.load_thread(Path(args.wiki_root), args.thread)
+        paths = list(dict.fromkeys(paths + list(data.get("paper_paths") or [])))
+    out = export_ris(Path(args.wiki_root), paths)
+    if args.out:
+        Path(args.out).write_text(out["ris"], encoding="utf-8")
+        print(f"Wrote {args.out} ({out['count']} entries)")
+        for w in out["warnings"]:
+            print(f"  ! {w}")
+    else:
+        print(out["ris"])
+    return 0
+
+
+def cmd_rank_intent(args: argparse.Namespace) -> int:
+    from .rank_intent import parse_rank_intent
+
+    intent = parse_rank_intent(args.query)
+    print(json.dumps(intent.to_dict(), ensure_ascii=False, indent=2))
+    return 1 if intent.ambiguous and args.strict else 0
+
+
 def cmd_filter_code(args: argparse.Namespace) -> int:
     from .code_filter import filter_by_code
 
@@ -963,6 +989,21 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--thread", default="", help="also include thread member papers")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_bibtex_export)
+
+    s = sub.add_parser("ris-export", help="Export RIS (Zotero/EndNote) from wiki paths")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--paths", default="")
+    s.add_argument("--thread", default="")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_ris_export)
+
+    s = sub.add_parser(
+        "rank-intent",
+        help="Strip journal-rank / language markers from query (CAS/JCR/SJR)",
+    )
+    s.add_argument("--query", required=True)
+    s.add_argument("--strict", action="store_true", help="exit 1 if ambiguous platform")
+    s.set_defaults(func=cmd_rank_intent)
 
     s = sub.add_parser(
         "filter-code",

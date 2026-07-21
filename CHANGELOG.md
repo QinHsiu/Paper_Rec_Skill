@@ -6,6 +6,13 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.27.0] — 2026-07-22
+
+### Added
+
+- **rank-intent** + **ris-export** (paper-search-pro): strip CAS/JCR/Q1/language markers; Zotero RIS export
+- RRF dedup: DOI-first (+ arXiv version strip, PMID, title+year); OpenAlex multi-sort recipe in sources-reference
+
 ## [2.26.0] — 2026-07-22
 
 ### Added

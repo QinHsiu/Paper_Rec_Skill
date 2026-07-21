@@ -4,6 +4,13 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.4] — 2026-07-22
+
+### Added
+
+- `/wiki rank-intent`, `/wiki ris` (paper-search-pro): journal-rank strip + RIS export
+- Module 1: strip CAS/JCR/Q1 before search; OpenAlex multi-sort + DOI-first dedup docs
+
 ## [1.12.3] — 2026-07-22
 
 ### Added

@@ -156,6 +156,17 @@ Exclude: [terms to filter out, if any]
 | **Keyword** | Exact-term match for APIs and site search |
 | **Recent** | Add year filter terms if user wants latest work |
 
+**Before searching**: run `rank-intent` (or equivalent) so journal-rank / language markers never pollute the topic string:
+
+```powershell
+python -m wiki_bridge.cli rank-intent --query "中科院一区 情绪调节"
+# → cleaned_query: 情绪调节 · platform=cas · tiers=[1]
+```
+
+- Strip CAS/JCR/SJR/Q1/顶刊 into **Filters** (apply after retrieval if venue/ISSN known; never as search keywords).
+- Strip 中文文献/英文文献/CSSCI into **language scope** (`en`/`zh`/`both`); ask once if bare Q1 without platform (`ambiguous=true`).
+- Put partition intent into Filters / report header — not into OpenAlex/S2 query text.
+
 **Output artifact** (show to user before retrieval; language follows active mode):
 
 English mode:
@@ -514,6 +525,8 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki pdf <path> --pdf file` | Ingest PDF/txt → `fulltext.md` beside paper |
 | `/wiki claim-suggest <path> --thread id` | Suggested claims/evidences from fulltext |
 | `/wiki bibtex [--thread id]` | Export BibTeX for paths / thread members |
+| `/wiki ris [--thread id]` | Export RIS for Zotero/EndNote |
+| `/wiki rank-intent` | Strip CAS/JCR/Q1/language markers → cleaned query |
 | `/wiki verify-cites` | Citation integrity gate (arXiv/DOI/OpenAlex); drop hallucinated |
 | `/wiki latex-export [--thread id]` | Markdown draft → Overleaf `latex/main.tex` pack |
 | `/wiki filter-code` | Post-RRF code filter: `any` / `required` / `none` |
@@ -536,6 +549,8 @@ python -m wiki_bridge.cli thread-graph --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli related-work --wiki-root ../.. --thread <thread_id> --print-md
 python -m wiki_bridge.cli paper-draft --wiki-root ../.. --thread <thread_id> --venue generic
 python -m wiki_bridge.cli bibtex-export --wiki-root ../.. --thread <id> --out refs.bib
+python -m wiki_bridge.cli ris-export --wiki-root ../.. --thread <id> --out refs.ris
+python -m wiki_bridge.cli rank-intent --query "JCR Q1 retrieval augmented generation"
 python -m wiki_bridge.cli citation-verify --bib refs.bib --write-filtered
 python -m wiki_bridge.cli latex-export --wiki-root ../.. --thread <id> --venue neurips
 python -m wiki_bridge.cli filter-code --json fused.json --mode required --out coded.json
