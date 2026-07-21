@@ -4,6 +4,14 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.7] — 2026-07-22
+
+### Added
+
+- Module 2a: OpenScholar short-query fan-out, gpt-researcher SERP-conditioned refine, STORM unused-snippet gaps
+- writing-gates: bounded reviewer→reviser + AutoSurvey outline merge notes
+- prerank norm_cite; answer-ground `--check-nli`
+
 ## [1.12.6] — 2026-07-22
 
 ### Added

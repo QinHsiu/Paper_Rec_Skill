@@ -539,7 +539,20 @@ def cmd_claim_ledger(args: argparse.Namespace) -> int:
 
 
 def cmd_answer_ground(args: argparse.Namespace) -> int:
-    from .evidence_ground import ground_answer, ground_from_files
+    from .evidence_ground import check_claims_against_abstracts, ground_answer, ground_from_files
+
+    if args.check_nli:
+        claims = json.loads(Path(args.claims_json).read_text(encoding="utf-8")) if args.claims_json else []
+        if isinstance(claims, dict):
+            claims = list(claims.get("claims") or [])
+        papers = json.loads(Path(args.evidences_json).read_text(encoding="utf-8"))
+        if isinstance(papers, dict):
+            papers = list(papers.get("evidences") or papers.get("papers") or papers.get("contexts") or [])
+        out = check_claims_against_abstracts(claims, papers)
+        if args.out:
+            Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(json.dumps({"yes": out["yes"], "no": out["no"], "out": args.out or None}, ensure_ascii=False, indent=2))
+        return 1 if int(out.get("no") or 0) > 0 and args.strict else 0
 
     if args.answer_file and args.evidences_json:
         out = ground_from_files(Path(args.answer_file), Path(args.evidences_json), lang=args.lang)
@@ -1070,6 +1083,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--answer", default="", help="raw answer text with (E1) markers")
     s.add_argument("--answer-file", default="")
     s.add_argument("--evidences-json", required=True, help="list or {evidences:[...]}")
+    s.add_argument("--claims-json", default="", help="with --check-nli: claims to verify")
+    s.add_argument("--check-nli", action="store_true", help="AutoSurvey Yes/No abstract support check")
+    s.add_argument("--strict", action="store_true", help="exit 1 if any No under --check-nli")
     s.add_argument("--lang", default="en", help="en|zh for cannot-answer phrase")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_answer_ground)

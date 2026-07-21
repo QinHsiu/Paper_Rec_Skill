@@ -50,9 +50,22 @@ def test_ris_meta() -> None:
     assert "ER  - " in ris
 
 
+def test_norm_cite_prerank() -> None:
+    from wiki_bridge.prerank import prerank
+
+    items = [
+        {"title": "low cite match query topic", "abstract": "query topic method", "citationCount": 1},
+        {"title": "high cite query topic", "abstract": "query topic method", "citationCount": 1000},
+    ]
+    out = prerank("query topic", items, top_k=2, norm_cite=True)
+    assert out["items"][0]["prerank_norm_cite"] >= out["items"][1]["prerank_norm_cite"]
+    assert out["norm_cite"] is True
+
+
 if __name__ == "__main__":
     test_rank_intent_cas()
     test_rank_intent_ambiguous_q1()
     test_rrf_doi_first_merges_openalex()
     test_ris_meta()
+    test_norm_cite_prerank()
     print("OK paper-search-pro borrowables offline tests")

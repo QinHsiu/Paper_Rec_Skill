@@ -383,8 +383,11 @@ For the final report, deep-read the **top 10–15** papers; use metadata-only fo
    - **specific** — Module 1 Specific / Keyword
    - **gap** — one query per open `evidence_gaps` / open question (cap 2)
    - **claim** — paraphrase of open claims that need evidence (cap 2)
-2. Search packs with these paths; tag each hit with `path_id`.
-3. Merge & dedupe across paths (same rules as 2.4).
+2. **OpenScholar-style fan-out** (optional): expand Keyword into **3–5 short comma-separated queries** (entities/methods only), search union, then RRF.
+3. **gpt-researcher SERP-conditioned** (optional, after wave 0): rewrite 1–2 extra queries from **top-5 titles/abstracts already retrieved** (not from the raw ask alone).
+4. **STORM unused-snippet gaps**: when ranking/drafting, prefer next questions from papers **retrieved but not cited** in the draft / ledger (advance coverage, avoid niche loops).
+5. Search packs with these paths; tag each hit with `path_id`.
+6. Merge & dedupe across paths (same rules as 2.4). Prerank uses **norm_cite** (citation / max_in_pool) by default.
 
 ### 2b Iterative refine / 自动收窄·放宽（有上限）
 
@@ -536,6 +539,8 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
 | `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
 | `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
+
+Writing checklist: [`references/writing-gates.md`](references/writing-gates.md) (contribution → Figure 1 → SEARCH→VERIFY cites).
 
 ### Thread ops (do this yourself)
 

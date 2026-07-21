@@ -28,3 +28,17 @@ python -m wiki_bridge.cli claim-ledger --thread <id> --strict
 - [ ] Limitations section present
 - [ ] Repro: seed / data / code filter noted
 - [ ] Stats: metric + split named (no bare “SOTA”)
+
+## Bounded reviewer → reviser (gpt-researcher · max 3)
+
+After `/draft`, run a guideline-only review (no new facts):
+
+1. Reviewer returns **accept** (`None`) or a short revision note list.
+2. Reviser applies notes; re-run `claim-ledger` + `citation-verify`.
+3. Cap **3** revision rounds; then stop and surface remaining gaps to the user.
+
+Do not invent sources during revise — only restructure or mark `[CITATION NEEDED]`.
+
+## Related-work outline merge (AutoSurvey · optional)
+
+For large hit lists: draft 2–3 outline chunks from disjoint paper batches → merge headings → edit to drop overlapping subsections → then `related-work` / section-outline. Prefer section **description** as the retrieval query for each subsection’s local paper set.

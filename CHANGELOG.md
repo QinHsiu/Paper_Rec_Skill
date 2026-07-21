@@ -6,6 +6,13 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.30.0] — 2026-07-22
+
+### Added
+
+- prerank **norm_cite** (OpenScholar); Module 2a SERP/OpenScholar/STORM gap paths
+- `answer-ground --check-nli` Yes/No abstract support (AutoSurvey); writing-gates reviewer loop + outline merge
+
 ## [2.29.0] — 2026-07-22
 
 ### Added

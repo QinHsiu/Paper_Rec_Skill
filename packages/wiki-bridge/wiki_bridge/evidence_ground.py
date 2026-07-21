@@ -52,6 +52,73 @@ def format_reference(row: dict[str, Any]) -> str:
     return f"{paper} ({loc}): {quote}"
 
 
+def abstract_supports_claim(claim: str, abstract: str, *, min_overlap: int = 3) -> dict[str, Any]:
+    """AutoSurvey-style Yes/No faithfulness heuristic (no LLM): token overlap gate.
+
+    Returns ``supported`` True/False plus overlap terms. Use before inventing cites.
+    """
+    def toks(s: str) -> set[str]:
+        return {
+            t.lower()
+            for t in re.findall(r"[A-Za-z0-9\u4e00-\u9fff]{3,}", s or "")
+            if t.lower() not in {"the", "and", "for", "with", "that", "this", "from", "are", "was"}
+        }
+
+    ct, at = toks(claim), toks(abstract)
+    if not ct or not at:
+        return {"supported": False, "label": "No", "overlap": [], "reason": "empty"}
+    overlap = sorted(ct & at)
+    ok = len(overlap) >= min_overlap
+    return {
+        "supported": ok,
+        "label": "Yes" if ok else "No",
+        "overlap": overlap[:12],
+        "overlap_n": len(overlap),
+    }
+
+
+def check_claims_against_abstracts(
+    claims: list[dict[str, Any]],
+    papers: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """For each claim with citations, Yes/No support vs cited paper abstracts."""
+    by_key: dict[str, dict[str, Any]] = {}
+    for i, p in enumerate(papers or [], start=1):
+        if not isinstance(p, dict):
+            continue
+        keys = [
+            str(p.get("citation_key") or p.get("key") or ""),
+            f"E{i}",
+            str(p.get("paper_path") or ""),
+        ]
+        for k in keys:
+            if k:
+                by_key[k] = p
+    rows = []
+    yes = no = 0
+    for c in claims or []:
+        if not isinstance(c, dict):
+            continue
+        text = str(c.get("text") or c.get("claim") or "")
+        cites = list(c.get("citations") or [])
+        supports = []
+        for ck in cites:
+            paper = by_key.get(str(ck)) or by_key.get(str(ck).upper())
+            if not paper:
+                supports.append({"key": ck, "label": "No", "reason": "unknown_key"})
+                no += 1
+                continue
+            abs_ = str(paper.get("abstract") or paper.get("summary") or paper.get("quote") or "")
+            r = abstract_supports_claim(text, abs_)
+            supports.append({"key": ck, **r})
+            if r["supported"]:
+                yes += 1
+            else:
+                no += 1
+        rows.append({"claim_id": c.get("claim_id"), "text": text[:240], "checks": supports})
+    return {"yes": yes, "no": no, "claims": rows}
+
+
 def ground_answer(
     raw_answer: str,
     evidences: list[dict[str, Any]],

@@ -40,8 +40,26 @@ def test_page_markers() -> None:
     assert loc.get("page") == 2
 
 
+def test_abstract_nli() -> None:
+    from wiki_bridge.evidence_ground import abstract_supports_claim, check_claims_against_abstracts
+
+    ok = abstract_supports_claim(
+        "Transformers use self-attention for machine translation.",
+        "We propose the Transformer based on self-attention for translation tasks.",
+    )
+    assert ok["label"] == "Yes"
+    bad = abstract_supports_claim("Quantum banana networks achieve SOTA.", "Self-attention for translation.")
+    assert bad["label"] == "No"
+    report = check_claims_against_abstracts(
+        [{"claim_id": "c1", "text": "Self-attention helps translation quality.", "citations": ["E1"]}],
+        [{"abstract": "Self-attention improves neural machine translation quality significantly."}],
+    )
+    assert report["yes"] >= 1
+
+
 if __name__ == "__main__":
     test_cannot_answer_empty()
     test_ground_expand()
     test_page_markers()
+    test_abstract_nli()
     print("OK paper-qa borrowables offline tests")
