@@ -4,6 +4,20 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.12.1] — 2026-07-21
+
+### Fixed
+
+- Keyword **Exclude** must use whole-word/phrase match (no bare substring false rejects)
+- Keep short domain abbrevs (ML/AI/CV/…); align docs with bridge token rules
+- Recency **anchor date** (not always wall-clock today) for historical queries
+- Dedup/merge: preserve multi-lane tags; RRF keys prefer OpenAlex ID
+- README VERSION drift (`1.4.0` → current)
+
+### Added
+
+- OpenAlex listed in README primary sources + cross-mode English retrieval list
+
 ## [1.12.0] — 2026-07-21
 
 ### Added

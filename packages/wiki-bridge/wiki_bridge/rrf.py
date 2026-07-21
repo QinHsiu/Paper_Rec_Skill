@@ -13,6 +13,27 @@ def _norm_title(title: str) -> str:
 
 
 def _doc_key(item: dict[str, Any]) -> str:
+    """Stable merge key: OpenAlex → DOI → arXiv → normalized title."""
+    oa = ""
+    for key in ("openalex_id", "openalex"):
+        v = item.get(key)
+        if v:
+            oa = str(v).strip()
+            break
+    ids = item.get("ids")
+    if not oa and isinstance(ids, dict):
+        oa = str(ids.get("openalex") or "").strip()
+    if not oa:
+        oid = item.get("id")
+        if isinstance(oid, str) and (
+            "openalex.org" in oid.lower() or oid.upper().startswith("W")
+        ):
+            oa = oid.strip()
+    if oa:
+        token = oa.rstrip("/").split("/")[-1]
+        if token.upper().startswith("W"):
+            return f"openalex:{token.upper()}"
+
     doi = str(item.get("doi") or "").strip().lower()
     if not doi:
         ext = item.get("external_ids") or item.get("externalIds") or {}

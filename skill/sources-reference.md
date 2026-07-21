@@ -503,12 +503,14 @@ cn_llm_survey      → A, A-CN(Discovery+Tier-1), B
 - Keep seminal older works only as labeled baselines, not as「最新」answers.
 
 ### Deduplication keys
-1. OpenAlex work ID (`W…`)  
+1. OpenAlex work ID (`W…`) — same as `wiki_bridge.rrf._doc_key`  
 2. arXiv ID  
 3. DOI  
 4. Normalized title  
 5. Same PDF URL  
 6. Same model family + version (keep newest)
+
+When merging across lanes/sources, **keep all lane tags** (`_lanes` / every `source`); never drop a keep-rule lane just because another copy scored higher.
 
 When latest-intent is on, keep the **newest version** even if an older duplicate has a richer venue.
 

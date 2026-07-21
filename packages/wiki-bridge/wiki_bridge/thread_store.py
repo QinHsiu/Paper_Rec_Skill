@@ -282,7 +282,8 @@ def record_feedback(
 
     if bump_seed and path:
         slug = path.split("/")[-1].replace("-", " ")
-        tokens = [t for t in re.split(r"\s+", slug) if len(t) > 2][:4]
+        # Keep 2-char domain abbrevs (ml/ai/cv/rl); drop only single-char noise
+        tokens = [t for t in re.split(r"\s+", slug) if len(t) > 1][:4]
         seeds = list(data.get("seed_terms") or [])
         if action in ("accept", "pin", "read"):
             for t in tokens:

@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.12.0
+version: 1.12.1
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -100,7 +100,7 @@ The slash command is stripped before processing; the remaining text is the resea
 
 ### Cross-mode rules / 跨模式通用规则
 
-- Retrieval against arXiv / HF / GitHub / PwC always includes **English search terms** regardless of output mode (papers are mostly English).
+- Retrieval against OpenAlex / arXiv / HF / GitHub / PwC always includes **English search terms** regardless of output mode (papers are mostly English).
 - Do **not** mix languages within a single report section unless in `/query_other` with mixed input (then bilingual labels are allowed).
 - Field constraint unchanged: **≤2 sentences per field** in the active output language.
 
@@ -137,6 +137,11 @@ Primary: [must-match terms]
 Secondary: [nice-to-have terms]
 Exclude: [terms to filter out, if any]
 ```
+
+**Rules**:
+- Keep short domain abbreviations (**ML, AI, CV, RL, NLP, VLM, …**) — never drop tokens solely because `len ≤ 2` / `len ≤ 3`.
+- **Exclude matching must be whole-word / whole-phrase** (conceptually `\b…\b` or exact phrase). Never use bare substring checks (`"climate" in "acclimating"`, `"mri" in "Amritsar"` → false rejects).
+- Normalize consistently: strip trailing punctuation from tokens; keep a stable case policy (prefer lowercase for match keys; display may keep original).
 
 **Purpose**: Improve retrieval granularity and recall across heterogeneous sources.
 
@@ -301,13 +306,15 @@ Legal chain only (arXiv → S2 OA → Unpaywall → PMC…). **No Sci-Hub.**
 
 #### Recency scoring (0–10)
 
-| Age vs today | Default score | If query has 最新 / latest / recent / 今年 |
-|--------------|---------------|------------------------------------------|
+| Age vs anchor date | Default score | If query has 最新 / latest / recent / 今年 |
+|--------------------|---------------|------------------------------------------|
 | ≤ 3 months | 10 | 10 |
 | ≤ 6 months | 9 | 10 |
 | ≤ 12 months | 7 | 8 |
 | ≤ 24 months | 5 | 4 |
 | > 24 months | 2 | **1** (demote hard) |
+
+**Anchor date**: use **today** by default; if the user names a historical window or `--date` / 指定日期, use that date (not wall-clock today) for age and for any history/dedupe windows. When calling `wiki_bridge` prerank, pass `now_year` aligned to the anchor.
 
 #### Latest-intent hard rules（「最新」硬约束）
 
@@ -328,12 +335,13 @@ When Module 1 detects **latest intent** (最新 / latest / 近期 / 刚刚发布
 
 ### 2.4 Ranking & Filtering / 排序
 
-1. Deduplicate by OpenAlex ID / title / arXiv ID / DOI / normalized model-version across sources
-2. Apply **latest-intent / family-version gate** (above) before sorting
-3. Sort by final score descending; on ties, prefer **newer date**, then higher version number
-4. Keep **top 50** unique papers
-5. Ensure source diversity: if one source dominates (>70%), backfill from underrepresented sources
-6. In the report header, state: `Latest-intent: on/off` and `Primary family versions considered: ...`
+1. Deduplicate by OpenAlex ID / title / arXiv ID / DOI / normalized model-version across sources (same key order as `wiki_bridge.rrf._doc_key`)
+2. When merging duplicates across sources/lanes, **preserve lane tags** (e.g. `_lanes` / all `source` values) — do not let a higher score silently drop a lane-specific keep rule
+3. Apply **latest-intent / family-version gate** (above) before sorting
+4. Sort by final score descending; on ties, prefer **newer date**, then higher version number
+5. Keep **top 50** unique papers
+6. Ensure source diversity: if one source dominates (>70%), backfill from underrepresented sources
+7. In the report header, state: `Latest-intent: on/off` and `Primary family versions considered: ...`
 
 **Retrieval artifact** (internal; summarize for user):
 

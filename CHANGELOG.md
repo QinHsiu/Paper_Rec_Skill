@@ -6,6 +6,12 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.24.1] — 2026-07-21
+
+### Fixed
+
+- paper-rec **1.12.1**: Exclude whole-word rules, abbrev retention, recency anchor; RRF OpenAlex keys; feedback `seed_terms` keep 2-char tokens
+
 ## [2.24.0] — 2026-07-21
 
 ### Added

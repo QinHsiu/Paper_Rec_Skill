@@ -47,7 +47,7 @@ flowchart LR
 
 | Item | Location | Description |
 |------|----------|-------------|
-| **Current version** | [`VERSION`](VERSION) | Single source of truth (`1.4.0`) |
+| **Current version** | [`VERSION`](VERSION) | Single source of truth (`1.12.1`) |
 | **Change history** | [`CHANGELOG.md`](CHANGELOG.md) | SemVer-compliant release notes |
 | **Skill manifest** | [`SKILL.md`](SKILL.md) | Agent execution spec (`name: paper-rec`) |
 | **Repository** | [github.com/QinHsiu/Paper_Rec_Skill](https://github.com/QinHsiu/Paper_Rec_Skill) | Git remote for version tracking |
@@ -61,8 +61,8 @@ flowchart LR
 
 ```bash
 git add VERSION CHANGELOG.md SKILL.md
-git commit -m "release: v1.3.0"
-git tag v1.3.0
+git commit -m "release: v1.12.0"
+git tag v1.12.0
 git push origin master --tags
 ```
 
@@ -152,6 +152,7 @@ Paper_Rec is designed to align with established literature retrieval conventions
 
 | Resource | URL | Best for |
 |----------|-----|----------|
+| **OpenAlex** | [openalex.org](https://openalex.org/) · [API](https://docs.openalex.org/) | Broad scholarly graph / OA metadata (default API lane) |
 | **arXiv** | [arxiv.org](https://arxiv.org/) | Latest preprints; category-filtered CS/AI search |
 | **Hugging Face Papers** | [huggingface.co/papers](https://huggingface.co/papers) | Community-trending ML papers |
 | **Papers With Code** | [paperswithcode.com](https://paperswithcode.com/) | SOTA benchmarks & reproducibility |
@@ -186,12 +187,13 @@ Paper_Rec 不绑定单一 IDE。将 `skill/` 挂到 Claude Code、Codex、OpenCl
 
 ### Retrieval best practices enforced by this skill
 
-1. **Always deduplicate** by arXiv ID / DOI / normalized title before ranking
-2. **Always include English search terms** for international indexes, even in Chinese output mode
-3. **Prefer primary sources** (PDF, arXiv abstract, official project page) over blog summaries
-4. **Never fabricate** citation counts, benchmark numbers, or venue status
-5. **Cap verbosity**: ≤2 sentences per report field; Top-10 full + 11–50 compact
-6. **Flag uncertainty**: mark preprints, missing metrics, and inaccessible papers explicitly
+1. **Always deduplicate** by OpenAlex ID / arXiv ID / DOI / normalized title before ranking
+2. **Exclude filters** use whole-word/phrase match only (no bare substring)
+3. **Always include English search terms** for international indexes, even in Chinese output mode
+4. **Prefer primary sources** (PDF, arXiv abstract, official project page) over blog summaries
+5. **Never fabricate** citation counts, benchmark numbers, or venue status
+6. **Cap verbosity**: ≤2 sentences per report field; Top-10 full + 11–50 compact
+7. **Flag uncertainty**: mark preprints, missing metrics, and inaccessible papers explicitly
 
 ---
 
@@ -200,7 +202,7 @@ Paper_Rec 不绑定单一 IDE。将 `skill/` 挂到 Claude Code、Codex、OpenCl
 ```
 Paper_Rec_Skill/
 ├── SKILL.md                 # Agent skill spec
-├── VERSION                  # Current release (1.3.0)
+├── VERSION                  # Current release (1.12.1)
 ├── CHANGELOG.md             # SemVer release history
 ├── sources-reference.md     # Source & venue reference
 ├── output-template.md       # Report templates
