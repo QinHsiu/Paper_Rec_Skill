@@ -2,9 +2,17 @@
 
 All notable changes to the **Paper_Rec Workspace** follow [Semantic Versioning](https://semver.org/).
 
-Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/CHANGELOG.md`](skill-exp/CHANGELOG.md), [`skill-draw/CHANGELOG.md`](skill-draw/CHANGELOG.md).
+Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/CHANGELOG.md`](skill-exp/CHANGELOG.md), [`skill-agents/CHANGELOG.md`](skill-agents/CHANGELOG.md), [`skill-draw/CHANGELOG.md`](skill-draw/CHANGELOG.md).
 
 ---
+
+## [2.36.0] — 2026-07-22
+
+### Added
+
+- **skill-agents** (`multi-agent-lab` v1.0.0): Brain + retrieve/plan/verify/experiment/accept/write (+ critique/reflect/draw)
+- Model tiers **fast / standard / deep** with role/task routing; run store under `content/lab/`
+- Slash: `/lab`, `/lab_run`, `/lab_status` — reuses paper-rec / exp-sandbox / wiki-bridge gates
 
 ## [2.35.0] — 2026-07-22
 
