@@ -33,9 +33,19 @@ PILLAR_HINTS: dict[str, dict[str, str]] = {
         "train": "更长训、warmup、cosine、预训练",
     },
     "data_first": {
-        "data": "分布可视化 + 标注抽检 + 小子集过拟合探针",
+        "data": "分布可视化 + 标注抽检 + 缺失填充/特征相关；小子集过拟合探针",
         "model": "先证明可学再选型",
         "train": "固定 seed；先关随机增广做管线验证",
+    },
+    "seq_aug": {
+        "data": "Mask/Crop/Reorder/Substitute/Insert；sim_dict 防泄漏",
+        "model": "通常沿用序列/会话基座",
+        "train": "aug 强度与 length 直方图对齐；盯 NDCG/Hit",
+    },
+    "ranking_contrast": {
+        "data": "硬负采样（cosine/KL）；pos/neg 对构造可复现",
+        "model": "嵌入头/打分头与对比目标一致",
+        "train": "BPR / Triplet / InfoNCE(+KL)；温度与 margin 记入日志",
     },
 }
 

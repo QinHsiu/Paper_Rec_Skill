@@ -41,6 +41,18 @@ CATALOG: dict[str, list[TrickAction]] = {
             "matches hand / reference values",
             "tricks:data_first#test_loader",
         ),
+        TrickAction(
+            "data_clean",
+            "missing_impute: fill by type (const/mean·median·mode/ffill·bfill/KNN/regress); log columns",
+            "no target leak; probe ≥ drop-row baseline or documented tradeoff",
+            "tricks:data_first#missing_impute",
+        ),
+        TrickAction(
+            "data_clean",
+            "feature_corr: corr/MI vs label; drop near-dup or leaky columns",
+            "val ↑ or same with fewer features; leakage checklist empty",
+            "tricks:data_first#feature_corr",
+        ),
     ],
     "overfitting": [
         TrickAction(
@@ -101,6 +113,12 @@ CATALOG: dict[str, list[TrickAction]] = {
             "subset probe ↑",
             "tricks:hard_subset#domain_pt",
         ),
+        TrickAction(
+            "data_clean",
+            "sim_hardneg: mine hard negs by cosine/KL/Wasserstein in emb space",
+            "subset or ranking metric ↑; train loss still descends",
+            "tricks:hard_subset#sim_hardneg",
+        ),
     ],
     "underfit": [
         TrickAction(
@@ -157,7 +175,7 @@ CATALOG: dict[str, list[TrickAction]] = {
         ),
         TrickAction(
             "train_recipe",
-            "dead_relu: LeakyReLU/ELU; clean outliers before grad clip",
+            "dead_relu: LeakyReLU/ELU/GELU/Swish; clean outliers before grad clip",
             "train error moves again; no explode",
             "tricks:train_unstable#dead_relu",
         ),
@@ -174,6 +192,46 @@ CATALOG: dict[str, list[TrickAction]] = {
             "modify: shorter max length / smaller image side",
             "fits GPU; metric Δ logged",
             "tricks:oom#resize",
+        ),
+    ],
+    "seq_aug": [
+        TrickAction(
+            "data_clean",
+            "seq_mask_crop: random mask token-id; drop items or contiguous crop",
+            "NDCG/Hit/seq-F1 ↑ or holds; length histogram sane",
+            "tricks:seq_aug#mask_crop",
+        ),
+        TrickAction(
+            "data_clean",
+            "seq_reorder: shuffle a contiguous window (keep ends if causal)",
+            "metric ↑ without collapsing to bag-of-items",
+            "tricks:seq_aug#reorder",
+        ),
+        TrickAction(
+            "data_clean",
+            "seq_sub_insert: substitute/insert via item-sim dict (not uniform vocab)",
+            "rare-item recall ↑; no train–test leakage in sim_dict",
+            "tricks:seq_aug#sub_insert",
+        ),
+    ],
+    "ranking_contrast": [
+        TrickAction(
+            "train_recipe",
+            "bpr_pairwise: BPR / MarginRanking on (pos,neg); mine hard negs",
+            "AUC/NDCG/MRR ↑ vs CE-only",
+            "tricks:ranking_contrast#bpr",
+        ),
+        TrickAction(
+            "train_recipe",
+            "triplet_margin: TripletMargin with margin schedule",
+            "embedding separation ↑; retrieval@K ↑ on probe",
+            "tricks:ranking_contrast#triplet",
+        ),
+        TrickAction(
+            "train_recipe",
+            "infonce_kl: InfoNCE (in-batch/memory) and/or KL soft-label align",
+            "contrastive loss ↓ with retrieval metric ↑; temperature logged",
+            "tricks:ranking_contrast#infonce",
         ),
     ],
     "eval_boost": [
@@ -193,14 +251,17 @@ CATALOG: dict[str, list[TrickAction]] = {
 }
 
 _KEYWORD_MAP: list[tuple[str, tuple[str, ...]]] = [
-    ("data_first", ("熟悉数据", "data_first", "pipeline", "新任务", "dataloader", "未摸清")),
+    ("data_first", ("熟悉数据", "data_first", "pipeline", "新任务", "dataloader", "未摸清", "missing", "缺失", "impute", "特征相关")),
     ("overfitting", ("overfit", "过拟合", "train>>val", "train ≫ val", "memorize")),
     ("long_tail", ("long_tail", "long-tail", "长尾", "imbalance", "不平衡", "rare class", "focal")),
+    # ranking / seq before generic hard_subset
+    ("ranking_contrast", ("bpr", "infonce", "info-nce", "triplet", "margin ranking", "对比学习", "metric learning", "检索", "ndcg", "mrr")),
+    ("seq_aug", ("seq_aug", "sequence", "session", "序列推荐", "会话", "mask item", "reorder", "history crop")),
     # label_noise before hard_subset (more specific label-noise cues first)
     ("label_noise", ("label_noise", "noisy label", "标噪", "错标", "mislabel", "cleanlab", "relabel")),
-    ("hard_subset", ("handwriting", "手写", "hard_subset", "domain gap", "拼音", "style gap", "难例子集")),
+    ("hard_subset", ("handwriting", "手写", "hard_subset", "domain gap", "拼音", "style gap", "难例子集", "hard neg", "难负")),
     ("underfit", ("underfit", "欠拟合", "high loss", "not converge", "不收敛", "warmup")),
-    ("train_unstable", ("nan", "不稳定", "spike", "explode", "dead relu", "死神经元")),
+    ("train_unstable", ("nan", "不稳定", "spike", "explode", "dead relu", "死神经元", "gelu", "swish")),
     ("oom", ("oom", "out of memory", "显存", "cuda memory", "fp16")),
     ("eval_boost", ("tta", "test-time", "ensemble", "融合", "推理增强")),
 ]

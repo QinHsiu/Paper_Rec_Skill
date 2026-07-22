@@ -1,5 +1,12 @@
 # Changelog — exp-sandbox
 
+## [1.10.1] — 2026-07-23
+
+### Added
+
+- Tricks catalog from local `projects/Trick`: symptoms `seq_aug` (mask/crop/reorder/sub/insert) and `ranking_contrast` (BPR/Triplet/InfoNCE+KL)
+- `data_first`: missing_impute + feature_corr; `hard_subset`: sim_hardneg (cosine/KL/Wasserstein); `train_unstable`: GELU/Swish
+
 ## [1.10.0] — 2026-07-22
 
 ### Added

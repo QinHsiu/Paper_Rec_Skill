@@ -8,7 +8,7 @@ Do **not** invent metrics; each action has a mini-verify probe.
 
 | Symptom id | Typical signals |
 |------------|-----------------|
-| `data_first` | new task; unknown distribution; pipeline unproven |
+| `data_first` | new task; unknown distribution; pipeline unproven; missing values |
 | `overfitting` | train ≫ val; val drops late |
 | `long_tail` | rare classes dominate errors; imbalance |
 | `hard_subset` | one style/domain cluster high error |
@@ -16,6 +16,8 @@ Do **not** invent metrics; each action has a mini-verify probe.
 | `label_noise` | disagreeing labels; high loss on easy samples |
 | `train_unstable` | NaN / spikes / dead ReLU |
 | `oom` | CUDA OOM |
+| `seq_aug` | sequence / session / rec; short history; order-sensitive |
+| `ranking_contrast` | retrieval / rec / metric learning; pairwise or contrastive objectives |
 | `eval_boost` | train ok; need test-time gain (optional) |
 
 **Banned**: labeling the test set for training; blind trick-stacking without baseline.
@@ -33,6 +35,12 @@ Do **not** invent metrics; each action has a mini-verify probe.
 3. **data_clean · unit_test_loader** — batch=1, single-process numeric check.  
    Mini-verify: matches hand / reference values.  
    Source: `tricks:data_first#test_loader`
+4. **data_clean · missing_impute** — choose fill strategy by column type: constant / mean·median·mode / ffill·bfill / KNN / regress-on-correlated (tabular). Log which features were imputed.  
+   Mini-verify: imputed train does not leak target; probe ≥ drop-row baseline or documented tradeoff.  
+   Source: `tricks:data_first#missing_impute`
+5. **data_clean · feature_corr** — correlation / mutual-info bar vs label; drop near-duplicate or target-leaky columns.  
+   Mini-verify: val ↑ or same with fewer features; leakage checklist empty.  
+   Source: `tricks:data_first#feature_corr`
 
 ## `overfitting`
 
@@ -69,6 +77,9 @@ Do **not** invent metrics; each action has a mini-verify probe.
 3. **train_recipe · domain_pt** — domain MLM / similarity continued pretrain (NLP) then finetune.  
    Mini-verify: subset probe ↑.  
    Source: `tricks:hard_subset#domain_pt`
+4. **data_clean · sim_hardneg** — mine hard negatives by cosine / KL / Wasserstein in embedding or feature space (not random negs).  
+   Mini-verify: subset or ranking metric ↑; train loss still descends.  
+   Source: `tricks:hard_subset#sim_hardneg`
 
 ## `underfit`
 
@@ -102,7 +113,7 @@ Do **not** invent metrics; each action has a mini-verify probe.
 2. **train_recipe · bn_nan** — BN update on in train; locate NaN (forward vs backward).  
    Mini-verify: train↓ and eval not “fake converged”.  
    Source: `tricks:train_unstable#bn_nan`
-3. **train_recipe · dead_relu** — LeakyReLU/ELU; clean outliers before relying on grad clip.  
+3. **train_recipe · dead_relu** — LeakyReLU/ELU/GELU/Swish; clean outliers before relying on grad clip.  
    Mini-verify: train error moves again; no explode.  
    Source: `tricks:train_unstable#dead_relu`
 
@@ -114,6 +125,34 @@ Do **not** invent metrics; each action has a mini-verify probe.
 2. **data_clean · modify** — shorter max length / smaller image side.  
    Mini-verify: fits GPU; metric Δ logged.  
    Source: `tricks:oom#resize`
+
+## `seq_aug` (sequence / session / rec)
+
+From sequence-oriented aug patterns (mask / crop / reorder / substitute / insert). Prefer when history length and order matter.
+
+1. **data_clean · seq_mask_crop** — random mask token-id; random drop items or contiguous crop of history.  
+   Mini-verify: probe (e.g. NDCG/Hit/seq-F1) ↑ or holds; length histogram still sane.  
+   Source: `tricks:seq_aug#mask_crop`
+2. **data_clean · seq_reorder** — shuffle a contiguous window of the sequence (keep ends if causal).  
+   Mini-verify: metric ↑ without collapsing to bag-of-items baseline.  
+   Source: `tricks:seq_aug#reorder`
+3. **data_clean · seq_sub_insert** — substitute/insert via item-sim dict (co-occurrence / CF / embedding NN), not uniform random vocab.  
+   Mini-verify: rare-item or long-tail recall ↑; no train–test item leakage in sim_dict.  
+   Source: `tricks:seq_aug#sub_insert`
+
+## `ranking_contrast` (retrieval / rec / metric learning)
+
+Pairwise & contrastive losses beyond CE/focal — use when the task is ranking or representation alignment.
+
+1. **train_recipe · bpr_pairwise** — BPR / MarginRanking on (pos, neg) score pairs; mine hard negs.  
+   Mini-verify: ranking metric (AUC/NDCG/MRR) ↑ vs CE-only.  
+   Source: `tricks:ranking_contrast#bpr`
+2. **train_recipe · triplet_margin** — TripletMargin (anchor, pos, neg) with margin schedule.  
+   Mini-verify: embedding separation ↑; retrieval@K ↑ on probe.  
+   Source: `tricks:ranking_contrast#triplet`
+3. **train_recipe · infonce_kl** — InfoNCE (in-batch or memory-bank) and/or KL for soft-label / distillation alignment.  
+   Mini-verify: contrastive loss ↓ with retrieval metric ↑; temperature logged.  
+   Source: `tricks:ranking_contrast#infonce`
 
 ## `eval_boost` (optional; after train plan)
 
@@ -132,3 +171,4 @@ Do **not** invent metrics; each action has a mini-verify probe.
 2. Take **2–3** actions → `content/exp/<id>/plans/P*.md` with `source:`.
 3. Prefer `data_clean` / `label_clean` before `train_recipe`; `eval_boost` last.
 4. Rank via PTV; mini-verify before full `/exp_training`.
+5. For **rec / session / sequential** tasks prefer `seq_aug` + `ranking_contrast` after `data_first`.
