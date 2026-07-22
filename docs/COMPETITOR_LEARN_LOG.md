@@ -148,3 +148,42 @@ Do **not** become: 23-stage auto paper OS, AgentRxiv, Khoj second brain, Curie D
 | 2 | Fig semantic + VLM hook | `fig-review --emit-vlm-prompts` / `--vlm-json` |
 | 3 | True-er survey | `survey-draft` TF-IDF clusters + cite audit (`--strict`) |
 | 4 | Feedback → rewrite → re-retrieve | `feedback-edit` |
+
+## Pass 5 — leftover after multi-agent-lab (2026-07-22, workspace 2.36)
+
+Lens: after hard-gate / survey deepen / feedback-edit / fig VLM-hook / **skill-agents** Brain+tiers, what engines are **still shallow or missing**?
+
+### Verdict
+
+Surface ports and orchestration are largely saturated. Lab ate most “who does what / which model tier” value. Remaining ROI is **deeper engines**, not more role markdown.
+
+### Top 10 still worth building
+
+| # | Capability | Best source | Paper_Rec today | Pri |
+|---|------------|-------------|-----------------|-----|
+| 1 | **True VLM call** fig↔caption↔body | AI-Scientist-v2 `perform_vlm_review.py` / `vlm.py` | `fig-review` prompts + `--vlm-json` only | P0 |
+| 2 | Supervisor **parallel** sub-research + compress | open_deep_research ConductResearch / compress | `deep-research` tree; lab sequential DAG | P0 |
+| 3 | Trust: **retraction** + OA/S2 cite conflict + influCit | paper-qa `retractions.py`; PSP `ss_helper.py` | none | P1 |
+| 4 | Scientific AL **stoppers** (N-consecutive irrelevant, …) | asreview `models/stoppers.py` | `screen-next` fake consecutive | P0/P1 |
+| 5 | Persona parallel lanes / Co-STORM topic map | storm `persona_generator.py` | none | P1 |
+| 6 | Survey **LLM** outline-merge + subsection RAG (±NLI) | AutoSurvey `src/prompt.py` | TF-IDF `survey-draft` | P1 |
+| 7 | Multi-round **harsh novelty** + live search | AI-Scientist `generate_ideas.py` | single-shot `novelty-check` | P1 |
+| 8 | Interest **drift → Watch/rank** | PaperFlow `drift_engine.py` | feedback events unused for profile | P1 |
+| 9 | Wiki filter **apply** on pages search | khoj search_filter; local `match_meta` unused by API | parse-only CLI | P1 |
+| 10 | Intent audit → **on/off-intent** rewrite | paperseek prompts/revision loop | `rank-intent` / `reflect` no audit loop | P1 |
+
+### Honorable mentions (P2)
+
+ARA 6-dim scorer · Devil’s-advocate code into Critique · MetaClaw lesson→skill · CORE PDF fallback · PRISMA-S log · Curie redo_partition · gpt-r dynamic agent_creator.
+
+### Saturated / different-product
+
+| State | Repos |
+|-------|--------|
+| Mostly squeezed | gptr-mcp; PaperPilot (except devil’s); PSP core retrieve; OpenScholar main loop; ARC hard-gate/stats surface |
+| Different product only | Curie Docker OS; AgentRxiv; khoj second brain; AI-Scientist(v2) full discovery; gpt-researcher SaaS; storm pure wiki; SKILLs×98; AutoSurvey 530k DB |
+| Lab already covers | Brain/roles/tiers; Accept-before-Write protocol text (needs engines above, not more agents) |
+
+### Suggested next cut
+
+**#1–#4 first** (true vision gate · parallel deep research · trust metadata · real screening stop). Then #5–#10 by product need (survey-heavy → #6; daily Watch → #8).
