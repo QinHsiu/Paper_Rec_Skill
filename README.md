@@ -47,14 +47,22 @@
 
 ## 演示
 
-以研究生一周工作流为主线的 Wiki 宣传片（含中文旁白）：
+以研究生一周工作流为主线的 Wiki 宣传片（含中文旁白）。
 
-[![Paper_Rec 研究生工作流演示](docs/promo/shots/01-home.png)](docs/promo/out/paper-rec-grad-demo.mp4)
+GitHub README **不能**直接播放仓库内相对路径的 MP4，因此这里用可内嵌的动图预览；完整有声成片请用下方链接下载或用 `<video>` CDN 地址打开。
 
-**[▶ 观看演示视频](docs/promo/out/paper-rec-grad-demo.mp4)** ·
-[双栏研读截图](docs/promo/shots/03-read-dual.png) ·
-[口播与分镜](docs/promo/GRAD_DEMO_PLAYBOOK.md) ·
-[宣传物料说明](docs/promo/README.md)
+<div align="center">
+
+<img src="docs/promo/out/paper-rec-grad-demo.gif" alt="Paper_Rec 研究生工作流演示预览" width="900" />
+
+<video src="https://media.githubusercontent.com/media/QinHsiu/Paper_Rec_Skill/master/docs/promo/out/paper-rec-grad-demo.mp4" controls width="900" poster="docs/promo/shots/01-home.png">
+</video>
+
+</div>
+
+- **有声 MP4（推荐）**：[下载 / 浏览器打开](https://media.githubusercontent.com/media/QinHsiu/Paper_Rec_Skill/master/docs/promo/out/paper-rec-grad-demo.mp4)
+- 仓库路径：[`docs/promo/out/paper-rec-grad-demo.mp4`](docs/promo/out/paper-rec-grad-demo.mp4)（请用系统播放器打开，勿依赖 GitHub 文件页预览）
+- [双栏研读截图](docs/promo/shots/03-read-dual.png) · [口播与分镜](docs/promo/GRAD_DEMO_PLAYBOOK.md) · [宣传物料](docs/promo/README.md)
 
 检索入库 → 双栏挂证据 → 主线 Delta → 实验硬闸 → 诚信写作——本地 Git 真源可回滚。
 

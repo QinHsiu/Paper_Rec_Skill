@@ -10,6 +10,13 @@
 
 完整口播、分镜、时长见 [`GRAD_DEMO_PLAYBOOK.md`](GRAD_DEMO_PLAYBOOK.md)。
 
+## 播放说明（重要）
+
+- **GitHub README** 不会播放仓库里的相对路径 `.mp4`（安全策略会剥掉 / 以二进制下载）。
+- README 已改为：内嵌 **GIF 预览** + `media.githubusercontent.com` 有声 MP4 链接。
+- 本地请打开 [`out/play.html`](out/play.html)，或用系统播放器打开 `out/paper-rec-grad-demo.mp4`。
+- 成片已重编码为 H.264 Main + AAC 44.1kHz，便于浏览器播放。
+
 ## 已产出文件
 
 | 路径 | 用途 |
