@@ -21,7 +21,16 @@ Prefer a stable **`thread_id` / research_id** for the turn:
 3. **deep** path: multi-path `/query_*` + evidence adds + `claim-ledger`  
 4. Always expose **sources** (`paper_paths` / cite keys) before claiming context is grounded  
 
-Do not invent a second research MCP; chain Thread tools with Skill retrieval.
+Deferred gather→write (disk-backed):
+
+```powershell
+python -m wiki_bridge.cli research-session --wiki-root ../.. --action create --topic "..." --sources-json papers.json
+# later
+python -m wiki_bridge.cli research-session --wiki-root ../.. --action sources --research-id <id>
+python -m wiki_bridge.cli research-session --wiki-root ../.. --action write-report --research-id <id>
+```
+
+Store: `content/_meta/research_sessions.json` (TTL ~7d). Do not invent a second research MCP; chain Thread tools with Skill retrieval.
 
 ## Quick config (2.16+)
 

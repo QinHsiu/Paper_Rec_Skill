@@ -555,13 +555,19 @@ def cmd_answer_ground(args: argparse.Namespace) -> int:
         print(json.dumps({"yes": out["yes"], "no": out["no"], "out": args.out or None}, ensure_ascii=False, indent=2))
         return 1 if int(out.get("no") or 0) > 0 and args.strict else 0
 
+    cutoff = float(getattr(args, "relevance_cutoff", 0) or 0)
     if args.answer_file and args.evidences_json:
-        out = ground_from_files(Path(args.answer_file), Path(args.evidences_json), lang=args.lang)
+        out = ground_from_files(
+            Path(args.answer_file),
+            Path(args.evidences_json),
+            lang=args.lang,
+            relevance_cutoff=cutoff,
+        )
     else:
         evs = json.loads(Path(args.evidences_json).read_text(encoding="utf-8"))
         if isinstance(evs, dict):
             evs = list(evs.get("evidences") or evs.get("contexts") or [])
-        out = ground_answer(args.answer or "", evs, lang=args.lang)
+        out = ground_answer(args.answer or "", evs, lang=args.lang, relevance_cutoff=cutoff)
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(
@@ -732,6 +738,180 @@ def cmd_exp_tree(args: argparse.Namespace) -> int:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0
+
+
+def cmd_gather_evidence(args: argparse.Namespace) -> int:
+    from .evidence_score import gather_evidence
+
+    docs = json.loads(Path(args.documents).read_text(encoding="utf-8-sig"))
+    if isinstance(docs, dict):
+        docs = list(docs.get("documents") or docs.get("papers") or docs.get("fulltexts") or [])
+    out = gather_evidence(args.question, docs, cutoff=args.cutoff)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(
+        json.dumps(
+            {
+                "kept_n": out["kept_n"],
+                "dropped_n": out["dropped_n"],
+                "cannot_answer": out["cannot_answer"],
+                "out": args.out or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 1 if out.get("cannot_answer") and args.strict else 0
+
+
+def cmd_stats_rigor(args: argparse.Namespace) -> int:
+    from .stats_rigor import check_stats_rigor
+
+    text = Path(args.draft).read_text(encoding="utf-8") if args.draft else ""
+    if args.thread and not text:
+        td = thread_store.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+        parts = []
+        if td.is_dir():
+            for p in sorted(td.glob("*.md")):
+                parts.append(p.read_text(encoding="utf-8"))
+        text = "\n\n".join(parts)
+    out = check_stats_rigor(text)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({k: out[k] for k in ("ok", "claim_sentences", "issue_n", "section_has_variance_cue")}, ensure_ascii=False, indent=2))
+    return 0 if out.get("ok") else (1 if args.strict else 0)
+
+
+def cmd_survey_draft(args: argparse.Namespace) -> int:
+    from .survey_write import build_survey_draft
+
+    papers = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
+    if isinstance(papers, dict):
+        papers = list(papers.get("papers") or papers.get("documents") or [])
+    out = build_survey_draft(papers, chunk_size=args.chunk_size, rag_k=args.rag_k)
+    if args.out:
+        Path(args.out).write_text(out["markdown"], encoding="utf-8")
+    if args.json_out:
+        Path(args.json_out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({"section_n": out["section_n"], "outline_chunks": out["outline_chunks"], "out": args.out or None}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_novelty_check(args: argparse.Namespace) -> int:
+    from .novelty_check import check_idea_novelty
+
+    papers = []
+    if args.papers_json:
+        raw = json.loads(Path(args.papers_json).read_text(encoding="utf-8-sig"))
+        papers = raw if isinstance(raw, list) else list(raw.get("papers") or raw.get("documents") or [])
+    out = check_idea_novelty(args.idea, papers, use_openalex=args.openalex, mailto=args.mailto)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({"novel": out["novel"], "decision": out["decision"]}, ensure_ascii=False, indent=2))
+    return 0 if out.get("novel") else (1 if args.strict else 0)
+
+
+def cmd_fig_review(args: argparse.Namespace) -> int:
+    from .fig_review import review_figures
+
+    text = Path(args.draft).read_text(encoding="utf-8") if args.draft else ""
+    paths = _split_csv(args.figure_paths) if args.figure_paths else []
+    out = review_figures(text, figure_paths=paths or None)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({k: out[k] for k in ("ok", "figure_n", "ref_n", "issue_n")}, ensure_ascii=False, indent=2))
+    return 0 if out.get("ok") else (1 if args.strict else 0)
+
+
+def cmd_deep_research(args: argparse.Namespace) -> int:
+    from .deep_research import build_deep_research_plan
+
+    papers = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
+    if isinstance(papers, dict):
+        papers = list(papers.get("papers") or papers.get("documents") or [])
+    out = build_deep_research_plan(args.topic, papers, max_depth=args.max_depth, breadth=args.breadth)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps({"next_queries": out["next_queries"], "out": args.out or None}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_research_session(args: argparse.Namespace) -> int:
+    from . import research_session as rs
+
+    root = Path(args.wiki_root)
+    if args.action == "create":
+        sources = []
+        context = {}
+        if args.sources_json:
+            sources = json.loads(Path(args.sources_json).read_text(encoding="utf-8-sig"))
+            if isinstance(sources, dict):
+                sources = list(sources.get("sources") or sources.get("papers") or [])
+        if args.context_json:
+            context = json.loads(Path(args.context_json).read_text(encoding="utf-8-sig"))
+        out = rs.create_session(root, topic=args.topic, sources=sources, context=context, thread_id=args.thread or "")
+    elif args.action == "sources":
+        out = rs.get_sources(root, args.research_id)
+    elif args.action == "write-report":
+        out = rs.write_report_payload(root, args.research_id)
+    else:
+        out = {"error": f"unknown action {args.action}"}
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0 if out.get("ok", True) and "error" not in out else 1
+
+
+def cmd_exp_reflect(args: argparse.Namespace) -> int:
+    skill_exp = workspace_root_from_here() / "skill-exp"
+    if str(skill_exp) not in sys.path:
+        sys.path.insert(0, str(skill_exp))
+    from reference.exp_reflect import build_findings  # type: ignore
+
+    out = build_findings(Path(args.exp_dir), hypothesis=args.hypothesis or "")
+    print(json.dumps({"findings_path": out["findings_path"], "state_path": out["state_path"]}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_repro_check(args: argparse.Namespace) -> int:
+    skill_exp = workspace_root_from_here() / "skill-exp"
+    if str(skill_exp) not in sys.path:
+        sys.path.insert(0, str(skill_exp))
+    from reference.repro_design import (  # type: ignore
+        default_design,
+        double_exec_check,
+        load_design,
+        save_design,
+        validate_design,
+        write_repro_report,
+    )
+
+    exp_dir = Path(args.exp_dir)
+    if args.init_design:
+        path = exp_dir / "trace" / "exp_design.json"
+        save_design(path, default_design(args.metric or "F1"))
+        print(json.dumps({"wrote": str(path)}, ensure_ascii=False, indent=2))
+        return 0
+    design_path = Path(args.design) if args.design else exp_dir / "trace" / "exp_design.json"
+    design = load_design(design_path) if design_path.is_file() else default_design(args.metric or "F1")
+    v = validate_design(design)
+    if args.run_a and args.run_b:
+        a = json.loads(Path(args.run_a).read_text(encoding="utf-8-sig"))
+        b = json.loads(Path(args.run_b).read_text(encoding="utf-8-sig"))
+        if isinstance(a, dict) and "metrics" in a:
+            a = a["metrics"]
+        if isinstance(b, dict) and "metrics" in b:
+            b = b["metrics"]
+        check = double_exec_check(
+            a,
+            b,
+            metric=args.metric or design.metric,
+            max_rel_diff=args.max_rel_diff,
+        )
+        report = {"design_ok": v["ok"], "design_issues": v["issues"], "double_exec": check}
+        write_repro_report(exp_dir, report)
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0 if check.get("ok") else (1 if args.strict else 0)
+    print(json.dumps(v, ensure_ascii=False, indent=2))
+    return 0 if v.get("ok") else (1 if args.strict else 0)
 
 
 def cmd_discovery_curve(args: argparse.Namespace) -> int:
@@ -1356,6 +1536,12 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--check-nli", action="store_true", help="AutoSurvey Yes/No abstract support check")
     s.add_argument("--strict", action="store_true", help="exit 1 if any No under --check-nli")
     s.add_argument("--lang", default="en", help="en|zh for cannot-answer phrase")
+    s.add_argument(
+        "--relevance-cutoff",
+        type=float,
+        default=0.0,
+        help="drop evidences with relevance_score below this (use after gather-evidence)",
+    )
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_answer_ground)
 
@@ -1407,6 +1593,80 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--notes", default="")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_exp_tree)
+
+    s = sub.add_parser("gather-evidence", help="Chunk docs, score relevance 0-10, keep above cutoff")
+    s.add_argument("--question", required=True)
+    s.add_argument("--documents", required=True, help="JSON list of {fulltext|abstract|text}")
+    s.add_argument("--cutoff", type=float, default=3.0)
+    s.add_argument("--strict", action="store_true")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_gather_evidence)
+
+    s = sub.add_parser("stats-rigor", help="Results claims need ±/std/CI/seeds cues")
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="")
+    s.add_argument("--draft", default="")
+    s.add_argument("--strict", action="store_true")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_stats_rigor)
+
+    s = sub.add_parser("survey-draft", help="Outline-merge + subsection RAG related-work draft")
+    s.add_argument("--json", required=True, help="papers JSON")
+    s.add_argument("--chunk-size", type=int, default=8)
+    s.add_argument("--rag-k", type=int, default=5)
+    s.add_argument("--out", default="", help="markdown path")
+    s.add_argument("--json-out", default="")
+    s.set_defaults(func=cmd_survey_draft)
+
+    s = sub.add_parser("novelty-check", help="Idea novelty vs local corpus (+ optional OpenAlex)")
+    s.add_argument("--idea", required=True)
+    s.add_argument("--papers-json", default="")
+    s.add_argument("--openalex", action="store_true")
+    s.add_argument("--mailto", default="paper-rec@local")
+    s.add_argument("--strict", action="store_true")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_novelty_check)
+
+    s = sub.add_parser("fig-review", help="Figure/caption/ref consistency (heuristic)")
+    s.add_argument("--draft", required=True)
+    s.add_argument("--figure-paths", default="")
+    s.add_argument("--strict", action="store_true")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_fig_review)
+
+    s = sub.add_parser("deep-research", help="Learnings tree → follow-up queries (depth×breadth)")
+    s.add_argument("--topic", required=True)
+    s.add_argument("--json", required=True, help="current paper hits JSON")
+    s.add_argument("--max-depth", type=int, default=2)
+    s.add_argument("--breadth", type=int, default=3)
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_deep_research)
+
+    s = sub.add_parser("research-session", help="Deferred gather→write_report session store")
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--action", required=True, choices=["create", "sources", "write-report"])
+    s.add_argument("--topic", default="")
+    s.add_argument("--thread", default="")
+    s.add_argument("--research-id", default="")
+    s.add_argument("--sources-json", default="")
+    s.add_argument("--context-json", default="")
+    s.set_defaults(func=cmd_research_session)
+
+    s = sub.add_parser("exp-reflect", help="Outer-loop findings.md + research-state from exp dir")
+    s.add_argument("--exp-dir", required=True)
+    s.add_argument("--hypothesis", default="")
+    s.set_defaults(func=cmd_exp_reflect)
+
+    s = sub.add_parser("repro-check", help="Control/experimental design + double-exec gate")
+    s.add_argument("--exp-dir", required=True)
+    s.add_argument("--init-design", action="store_true")
+    s.add_argument("--design", default="")
+    s.add_argument("--run-a", default="", help="metrics JSON run A")
+    s.add_argument("--run-b", default="", help="metrics JSON run B")
+    s.add_argument("--metric", default="F1")
+    s.add_argument("--max-rel-diff", type=float, default=0.02)
+    s.add_argument("--strict", action="store_true")
+    s.set_defaults(func=cmd_repro_check)
 
     s = sub.add_parser("discovery-curve", help="Advisory saturation fit on retrieval wave snapshots")
     s.add_argument("--json", required=True, help="list of {papers_evaluated, highly_relevant_count}")

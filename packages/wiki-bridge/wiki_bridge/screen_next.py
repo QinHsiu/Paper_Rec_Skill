@@ -48,11 +48,19 @@ def build_label_map(feedback_events: list[dict[str, Any]]) -> dict[str, int]:
     return labels
 
 
-def _centroid(docs: list[list[str]]) -> Counter[str]:
-    c: Counter[str] = Counter()
+def _tfidf_weights(docs: list[list[str]]) -> Counter[str]:
+    """Very small IDF-weighted centroid for labeled classes."""
+    df: Counter[str] = Counter()
     for toks in docs:
-        c.update(set(toks))
-    return c
+        df.update(set(toks))
+    n = max(1, len(docs))
+    w: Counter[str] = Counter()
+    for toks in docs:
+        tf = Counter(toks)
+        for t, c in tf.items():
+            idf = math.log(1 + n / (1 + df[t]))
+            w[t] += (1 + math.log(1 + c)) * idf
+    return w
 
 
 def _score_vs(centroid: Counter[str], toks: list[str]) -> float:
@@ -102,8 +110,8 @@ def screen_next(
     consecutive_accepts = sum(1 for v in labels.values() if v == 1)
     stop = consecutive_skips >= consecutive_irrelevant_stop and consecutive_accepts == 0
 
-    pos_c = _centroid(pos_docs)
-    neg_c = _centroid(neg_docs)
+    pos_c = _tfidf_weights(pos_docs)
+    neg_c = _tfidf_weights(neg_docs)
 
     unscored: list[tuple[float, float, dict[str, Any]]] = []
     for item in candidates or []:

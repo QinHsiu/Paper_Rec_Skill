@@ -1,5 +1,13 @@
 # Changelog — exp-sandbox
 
+## [1.10.0] — 2026-07-22
+
+### Added
+
+- `reference/repro_design.py` — control/experimental partitions + double-exec gate
+- `reference/exp_reflect.py` — outer-loop `findings.md` + `research-state.yaml`
+- CLI: `repro-check`, `exp-reflect` (via wiki-bridge)
+
 ## [1.9.0] — 2026-07-22
 
 ### Added

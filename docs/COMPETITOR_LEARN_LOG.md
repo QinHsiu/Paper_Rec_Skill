@@ -23,15 +23,13 @@ Honest gap analysis: prior “done” rows often lacked engines. Deep P0 impleme
 
 ### Still open (next passes)
 
+Critical→High engines shipped in **2.34.0** (see Pass 3 table below). Remaining:
+
 | Gap | Priority |
 |-----|----------|
-| Map-reduce per-chunk evidence scores before answer | P0 |
-| Control/experimental partitions + double-exec repro | P0 |
-| Survey outline-merge + subsection RAG writer | P0 |
-| Outer `/exp_reflect` + 6-dim rigor seal | P0 |
-| Deferred MCP `research_id` → write_report | P1 |
-| VLM figure↔caption review | P1 |
+| VLM semantic figure↔plot check (beyond heuristic) | P1 |
 | Persona-parallel question lanes | P1 |
+| Devil’s-advocate overclaim / wiki filter apply / … | P2 (Medium) |
 
 ### Shipped in 2.33
 
@@ -56,6 +54,23 @@ Prior ports closed many *surface* gaps; remaining items are **engines** that sti
 | 8 | Multi-facet topics gathered serially / shallow | **High** | open_deep_research parallel supervisor / GPT-R depth tree | `reflect-search` = one coverage pass |
 | 9 | Screening 500+ papers still hand-slog | **High** | asreview real AL cycle | `screen-next` = centroid toy |
 | 10 | MCP gather→write loses session | **High** | gptr-mcp `research_id` → deferred `write_report` | MCP.md protocol only |
+
+### Pass 3 Critical→High — shipped (2026-07-22, workspace 2.34.0)
+
+| Rank | Engine | CLI / artifact |
+|------|--------|----------------|
+| 1 | Chunk relevance map-reduce | `gather-evidence` + `answer-ground --relevance-cutoff` |
+| 2 | Stats rigor beyond float whitelist | `stats-rigor` |
+| 3 | Control/experimental + double-exec | `repro-check` → `trace/repro_check.json` |
+| 4 | Survey outline-merge + subsection RAG | `survey-draft` |
+| 5 | Novelty kill-switch | `novelty-check` (+ optional OpenAlex) |
+| 6 | Fig/caption review | `fig-review` (VLM hook stub) |
+| 7 | Outer exp reflect | `exp-reflect` → `findings.md` |
+| 8 | Deep research tree | `deep-research` |
+| 9 | Realer AL screening | `screen-next` TF-IDF hybrid |
+| 10 | Deferred research session | `research-session` (`research_id`) |
+
+Medium/polish rows below remain deferred.
 
 ### Medium / polish (defer)
 

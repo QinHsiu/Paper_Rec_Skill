@@ -4,6 +4,15 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.14.0] — 2026-07-22
+
+### Added
+
+- Writing: `gather-evidence` → `answer-ground --relevance-cutoff`; `stats-rigor`; `fig-review`
+- Related-work: `survey-draft` outline-merge + subsection RAG
+- Ideas: `novelty-check` kill-switch; `deep-research` follow-up tree; `research-session`
+- Screening: TF-IDF hybrid AL in `screen-next`
+
 ## [1.13.0] — 2026-07-22
 
 ### Added

@@ -568,12 +568,21 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki matrix` | Literature matrix JSON/MD table for related-work |
 | `/wiki claim-ledger` | Draft claim→cite gate (MATERIAL GAP if uncited) |
 | `/wiki answer-ground` | Expand `(E12)` → References; cannot-answer if no evidence |
+| `/wiki gather-evidence` | Chunk docs, score relevance 0–10, keep above cutoff |
 | `/wiki number-verify` | Draft/LaTeX floats must appear in exp metrics whitelist |
+| `/wiki stats-rigor` | Results claims need ±/std/CI/seeds cues |
+| `/wiki survey-draft` | Outline-merge + subsection RAG related-work draft |
+| `/wiki novelty-check` | Idea novelty vs local corpus (+ optional OpenAlex) |
+| `/wiki fig-review` | Figure/caption/ref consistency (heuristic) |
+| `/wiki deep-research` | Learnings tree → follow-up queries (depth×breadth) |
+| `/wiki research-session` | Deferred gather→write_report session (`research_id`) |
+| `/wiki exp-reflect` | Outer-loop `findings.md` + research-state from exp dir |
+| `/wiki repro-check` | Control/experimental design + double-exec gate |
 | `/wiki exp-eval-hook` | Persist `/exp_eval` metrics then optional number-verify |
 | `/wiki exp-tree` | Experiment tree show/add/buggy/ready |
 | `/wiki posthoc-cite` | Bind uncited claim sentences to evidence pool |
 | `/wiki research-brief` | Scope artifact before Module 1 |
-| `/wiki screen-next` | Active screening next batch from accept/skip |
+| `/wiki screen-next` | Active screening next batch (TF-IDF hybrid AL) |
 | `/wiki reflect-search` | Coverage issues → follow-up queries |
 | `/wiki discovery-curve` | Advisory retrieval saturation |
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
@@ -605,7 +614,16 @@ python -m wiki_bridge.cli matrix-build --json coded.json --out matrix.json --md-
 python -m wiki_bridge.cli claim-ledger --wiki-root ../.. --thread <id> --out claim_ledger.json --strict
 python -m wiki_bridge.cli number-verify --wiki-root ../.. --thread <id> --exp-dir ../../content/exp/<exp> --strict
 python -m wiki_bridge.cli posthoc-cite --wiki-root ../.. --thread <id> --evidences-json evs.json
-python -m wiki_bridge.cli answer-ground --answer "Result holds (E1)." --evidences-json evs.json
+python -m wiki_bridge.cli answer-ground --answer "Result holds (E1)." --evidences-json evs.json --relevance-cutoff 3.0
+python -m wiki_bridge.cli gather-evidence --question "..." --documents docs.json --out evs.json
+python -m wiki_bridge.cli stats-rigor --wiki-root ../.. --thread <id> --strict
+python -m wiki_bridge.cli survey-draft --json papers.json --out related.md
+python -m wiki_bridge.cli novelty-check --idea "..." --papers-json corpus.json
+python -m wiki_bridge.cli fig-review --draft draft.md --strict
+python -m wiki_bridge.cli deep-research --topic "..." --json papers.json
+python -m wiki_bridge.cli research-session --wiki-root ../.. --action create --topic "..." --sources-json papers.json
+python -m wiki_bridge.cli repro-check --exp-dir ../../content/exp/<exp> --init-design
+python -m wiki_bridge.cli exp-reflect --exp-dir ../../content/exp/<exp>
 python -m wiki_bridge.cli evidence-coverage --wiki-root ../.. --thread <thread_id>
 python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path llm/2025/foo
 python -m wiki_bridge.cli claim-suggest --wiki-root ../.. --path llm/2025/foo --thread <id> --apply

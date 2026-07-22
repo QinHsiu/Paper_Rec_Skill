@@ -125,8 +125,20 @@ def ground_answer(
     *,
     lang: str = "en",
     min_positive: int = 1,
+    relevance_cutoff: float = 0.0,
 ) -> dict[str, Any]:
-    """Expand E-ids; strip unknown cites; cannot-answer if empty evidence or none used."""
+    """Expand E-ids; strip unknown cites; cannot-answer if empty evidence or none used.
+
+    When evidences carry ``relevance_score``, drop those below ``relevance_cutoff``
+    (default 0 keeps all; gather_evidence typically uses 3.0).
+    """
+    if relevance_cutoff > 0:
+        evidences = [
+            e
+            for e in (evidences or [])
+            if isinstance(e, dict)
+            and float(e.get("relevance_score") if e.get("relevance_score") is not None else 10) >= relevance_cutoff
+        ]
     idx = index_evidences(evidences)
     usable = [
         r
@@ -204,6 +216,7 @@ def ground_from_files(
     evidences_path: Path,
     *,
     lang: str = "en",
+    relevance_cutoff: float = 0.0,
 ) -> dict[str, Any]:
     raw = answer_path.read_text(encoding="utf-8")
     data = json.loads(evidences_path.read_text(encoding="utf-8"))
@@ -211,4 +224,4 @@ def ground_from_files(
         evs = list(data.get("evidences") or data.get("contexts") or [])
     else:
         evs = list(data)
-    return ground_answer(raw, evs, lang=lang)
+    return ground_answer(raw, evs, lang=lang, relevance_cutoff=relevance_cutoff)
