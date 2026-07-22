@@ -87,3 +87,55 @@ Medium/polish rows below remain deferred.
 ### Saturated (little left)
 
 paper-search-pro (core retrieval), PaperPilot (filters/matrix/ledger), first-wave citation/latex ports.
+
+## Pass 4 — differentiation audit (2026-07-22)
+
+Lens: **what would a user pick THIS repo for**, and which engines are still deeper than Paper_Rec stubs — not feature-name parity.
+
+### Top 8 still worth building
+
+| # | Capability | Why it still hurts | Best source | Paper_Rec today | Pri |
+|---|------------|--------------------|-------------|-----------------|-----|
+| 1 | Results **hard gate** (registry → prose/table BLOCK) | Fake metrics still ship if writer ignores soft verify | AutoResearchClaw `verified_registry.py` + Stage20 | `number-verify` / `stats-rigor` advisory | P0 |
+| 2 | **VLM** fig↔caption↔body semantic review | Heuristic misses lying plots | AI-Scientist-v2 `perform_vlm_review.py` | `fig-review` structure + stub hook | P0 |
+| 3 | True survey: LLM outline-merge + subsection RAG + cite check | Related-work still keyword buckets | AutoSurvey `src/prompt.py` | `survey-draft` heuristic | P0 |
+| 4 | Feedback → rewrite → **re-retrieve** | Answers look grounded but drift | OpenScholar `open_scholar.py` | `posthoc-cite` / `answer-ground` one-shot | P0 |
+| 5 | Supervisor **parallel** sub-research + compress | Multi-facet topics stay serial/shallow | open_deep_research `deep_researcher.py` | `deep-research` structure-only | P0 |
+| 6 | Scientific AL + **stoppers** | 500+ screening still hand-slog | asreview `learner.py` / `stoppers.py` | `screen-next` TF-IDF toy | P0/P1 |
+| 7 | Persona-parallel questions / Co-STORM mind map | Coverage skew | storm `persona_generator.py` | none | P1 |
+| 8 | Trust layer: **retraction** + OA/S2 cite-count conflict + influCit | Bad cites / dirty rank | paper-qa retract; PSP `ss_helper.py` | none | P1 |
+
+### Per-repo differentiator (1-liner) + leftover borrow
+
+| Repo | Pick this when you want… | Still borrow (thin plugin) | Skip / different product |
+|------|--------------------------|----------------------------|--------------------------|
+| AutoResearchClaw | one-shot conference paper OS | VerifiedRegistry hard BLOCK; MetaClaw lesson→skill | 23-stage + domain sandboxes |
+| AI-Scientist | template idea→exp→write loop | multi-round harsh novelty critic | full auto discovery |
+| AI-Scientist-v2 | BFTS tree + workshop writeup | **VLM** img/cap/ref review; tree export | full BFTS writer |
+| AgentLaboratory | human-in-loop lab phases | review-score → forced revise/re-exp | AgentRxiv multi-agent store |
+| AI-Research-SKILLs | skill pack + outer/inner loops | ARA 6-dim rigor; DEEPEN/BROADEN/PIVOT | 98 domain skills wholesale |
+| PaperPilot | protocolized lit review CLI | devil’s-advocate overclaim agent | Obsidian/PDF polish |
+| paper-search-pro | multi-source Skill search + tiers | cite-count conflict; influCit; PRISMA-S log | tier UX only |
+| paper-qa | agentic paper RAG that refuses | retraction flags; multimodal fig chunks | — (RCS already ported) |
+| OpenScholar | ScholarQA-grade RAG edits | feedback→edit→re-retrieve loop | train 8B retriever |
+| asreview | Nature-grade systematic screening | querier/balancer/stopper + simulation | full Web LAB |
+| AutoSurvey | large-corpus survey generation | real outline-merge + subsection cite check | 530k local DB ops |
+| gpt-researcher | parallel web deep research SaaS | role agent_creator + parallel lanes | full frontend SaaS |
+| storm | wiki-style multi-perspective articles | persona lanes; Co-STORM mind map | pure wiki product |
+| open_deep_research | LangGraph clarify→brief→supervisor | max_concurrent ConductResearch + compress | — |
+| Curie | Docker rigorous ML experiments | patcher redo_partition; exec_validator | full Docker OS |
+| khoj | personal second brain | **apply** wiki filters (parse exists) | whole second-brain |
+| gptr-mcp | MCP deferred research write | expose research_id tools in thread-MCP | — |
+| AI-Researcher | — | empty clone; skip | — |
+
+### Extra clones (not in original 18) — quick take
+
+| Repo | Differentiator | Borrow? |
+|------|----------------|---------|
+| **PaperFlow** | daily personalized digest + interest-drift feedback loop | P1: Watch/Delta profile drift from accept/skip (thread feedback → tomorrow rank) |
+| **paperseek** | per-source query gen + intent audit + multi-recall prerank | P1: deepen `rank-intent` / reflect with on-/off-intent revision |
+| **scholar-mcp** | S2→arXiv→CORE→PubMed→GS fallback + PDF chain | P2: PDF discovery via CORE (if ingest miss rate high) |
+
+### Explicit non-goals (stay Paper_Rec)
+
+Do **not** become: 23-stage auto paper OS, AgentRxiv, Khoj second brain, Curie Docker lab suite, or OpenScholar model training stack. Keep thin plugins into threads / wiki / packs / exp-sandbox.
