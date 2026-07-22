@@ -253,6 +253,16 @@ python -m wiki_bridge.cli exp-eval-hook --exp-dir content/exp/<id> --thread <thr
 
 Report path: `content/exp/<id>/metrics/number_verify.json`. Do **not** claim Results numbers that fail this gate.
 
+7. **Repro + outer reflect** (after stable metrics):
+
+```powershell
+python -m wiki_bridge.cli repro-check --exp-dir content/exp/<id> --init-design
+python -m wiki_bridge.cli repro-check --exp-dir content/exp/<id> --run-a run1.json --run-b run2.json --metric F1 --strict
+python -m wiki_bridge.cli exp-reflect --exp-dir content/exp/<id> --hypothesis "..."
+```
+
+Writes `trace/repro_check.json`, `findings.md`, `trace/research-state.yaml`.
+
 ---
 
 ## Module E — Self-Loop (`/exp_loop`)

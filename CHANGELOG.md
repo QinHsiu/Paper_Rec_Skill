@@ -6,6 +6,37 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.35.0] — 2026-07-22
+
+### Added
+
+- **hard-gate** / `verified_registry`: Results floats must match metrics registry or BLOCK (`number-verify --hard-gate`, `latex-export --hard-gate`)
+- **fig-review** semantic offline + VLM prompt/JSON merge (`--emit-vlm-prompts`, `--vlm-json`)
+- **survey-draft** deepen: TF-IDF cluster outlines, Jaccard merge, subsection cite audit
+- **feedback-edit**: critique → rewrite markers → re-retrieve queries/docs
+
+### Notes
+
+Pass-4 P0 deepen after differentiation audit (`docs/COMPETITOR_LEARN_LOG.md`).
+
+## [2.34.0] — 2026-07-22
+
+### Added
+
+- **gather-evidence** + `answer-ground --relevance-cutoff`: chunk map-reduce relevance before grounded Q&A
+- **stats-rigor**: Results numeric claims need ±/std/CI/seeds cues
+- **survey-draft**: outline-merge + subsection RAG related-work writer
+- **novelty-check**: idea kill-switch vs local corpus (+ optional OpenAlex)
+- **fig-review**: figure/caption/ref consistency (heuristic; VLM hook stub)
+- **deep-research**: learnings → follow-up query tree (depth×breadth)
+- **research-session**: deferred gather→write_report via `research_id`
+- **exp-reflect** / **repro-check**: outer-loop findings + control/experimental double-exec
+- **screen-next**: TF-IDF hybrid active screening (replaces pure centroid toy)
+
+### Notes
+
+Patterns from Pass-3 competitor audit (`docs/COMPETITOR_LEARN_LOG.md`). Commit messages omit third-party names.
+
 ## [2.33.0] — 2026-07-22
 
 ### Added

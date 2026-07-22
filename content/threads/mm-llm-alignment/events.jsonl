@@ -25,3 +25,9 @@
 {"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-18T10:58:35Z"}
 {"kind": "paper_draft", "path": "drafts/paper_draft/", "venue": "generic", "chapters": ["abstract", "introduction", "related_work", "methodology", "experiments", "conclusion"], "ts": "2026-07-18T10:58:35Z"}
 {"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-18T10:58:36Z"}
+{"kind": "delta", "mode": "gap_focus", "added_papers": ["demo/2026/fake-paper"], "new_gaps": [], "path": "content/threads/mm-llm-alignment/deltas/2026-07-22-gap_focus.md", "ts": "2026-07-22T00:18:43Z"}
+{"kind": "delta", "mode": "diff_brief", "added_papers": [], "new_gaps": [], "path": "content/threads/mm-llm-alignment/deltas/2026-07-22-diff_brief.md", "ts": "2026-07-22T00:18:44Z"}
+{"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-22T00:18:46Z"}
+{"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-22T00:18:55Z"}
+{"kind": "related_work_outline", "path": "drafts/related_work_outline.md", "ts": "2026-07-22T00:18:57Z"}
+{"kind": "delta", "mode": "gap_focus", "added_papers": ["demo/2026/fake-paper"], "new_gaps": [], "path": "content/threads/mm-llm-alignment/deltas/2026-07-22-gap_focus.md", "ts": "2026-07-22T00:19:06Z"}
