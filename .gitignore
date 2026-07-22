@@ -26,6 +26,12 @@ content/exp/**/figures/smoke_venue_*
 content/exp/**/figures/verify_*
 content/_bot_sessions/
 
+# Promo TTS intermediates
+docs/promo/out/_tts_work/
+
+# Local uploads
+content/uploads/
+
 # Benchmark caches / full runs (keep fixtures + REPORT)
 benchmarks/litsearch/cache/
 benchmarks/litsearch/runs/

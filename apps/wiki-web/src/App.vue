@@ -6,20 +6,62 @@
         <p class="brand-sub">Research Lab</p>
       </div>
       <nav>
-        <RouterLink to="/"><span class="nav-ico">01</span>首页</RouterLink>
-        <RouterLink to="/pages"><span class="nav-ico">02</span>论文库</RouterLink>
-        <RouterLink to="/threads"><span class="nav-ico">03</span>研究主线</RouterLink>
-        <RouterLink to="/experiments"><span class="nav-ico">04</span>实验</RouterLink>
-        <RouterLink to="/search"><span class="nav-ico">05</span>搜索</RouterLink>
-        <RouterLink to="/graph"><span class="nav-ico">06</span>知识图谱</RouterLink>
-        <RouterLink to="/weekly"><span class="nav-ico">07</span>一周推荐</RouterLink>
-        <RouterLink to="/ask"><span class="nav-ico">08</span>Ask</RouterLink>
-        <RouterLink to="/skills"><span class="nav-ico">09</span>Skills</RouterLink>
+        <p class="nav-group">研读</p>
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ active: isActive('/pages', { prefix: true }) || route.name === 'page' || route.name === 'edit' }"
+          @click="go('/pages')"
+        >
+          论文库
+        </button>
+        <button type="button" class="nav-item" :class="{ active: isActive('/weekly') }" @click="go('/weekly')">
+          一周推荐
+        </button>
+        <button type="button" class="nav-item" :class="{ active: isActive('/ask') }" @click="go('/ask')">
+          智能研读
+        </button>
+
+        <p class="nav-group">研究</p>
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ active: isActive('/threads', { prefix: true }) }"
+          @click="go('/threads')"
+        >
+          研究主线
+        </button>
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ active: isActive('/experiments', { prefix: true }) }"
+          @click="go('/experiments')"
+        >
+          实验
+        </button>
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ active: isActive('/graph', { prefix: true }) || route.name === 'entity' }"
+          @click="go('/graph')"
+        >
+          知识图谱
+        </button>
+
+        <p class="nav-group">工作台</p>
+        <button type="button" class="nav-item" :class="{ active: isActive('/search') }" @click="go('/search')">
+          库内搜索
+        </button>
+        <button type="button" class="nav-item" :class="{ active: isActive('/skills') }" @click="go('/skills')">
+          Skills
+        </button>
+        <button type="button" class="nav-item" :class="{ active: isActive('/') }" @click="go('/')">
+          总览
+        </button>
       </nav>
-      <p class="sidebar-foot">Markdown · Git · Local truth</p>
     </aside>
     <main class="main">
-      <div class="main-inner" :class="{ wide: isWide }">
+      <div class="main-inner" :class="{ wide: isWide, 'full-bleed': isReading }">
         <RouterView />
       </div>
     </main>
@@ -28,12 +70,26 @@
 
 <script setup>
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
+
 const isWide = computed(() =>
-  ['pages', 'edit', 'graph', 'entity', 'experiments', 'exp-detail', 'threads', 'thread-detail'].includes(
+  ['pages', 'edit', 'graph', 'entity', 'experiments', 'exp-detail', 'threads', 'thread-detail', 'page', 'ask'].includes(
     String(route.name || ''),
   ),
 )
+const isReading = computed(() => ['page', 'ask', 'edit'].includes(String(route.name || '')))
+
+function isActive(path, { prefix = false } = {}) {
+  const current = route.path || '/'
+  if (path === '/') return current === '/'
+  if (prefix) return current === path || current.startsWith(`${path}/`)
+  return current === path
+}
+
+function go(path) {
+  if (route.path !== path) router.push(path)
+}
 </script>

@@ -7,7 +7,7 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.36.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.36.1-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
 [![paper-rec](https://img.shields.io/badge/paper--rec-v1.15.0-1A2332?style=for-the-badge)](skill/VERSION)
 [![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.10.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![multi-agent-lab](https://img.shields.io/badge/multi--agent--lab-v1.0.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-agents/VERSION)
@@ -32,6 +32,7 @@
 <br/>
 
 [快速开始](#快速开始) ·
+[演示](#演示) ·
 [闭环](#研究闭环) ·
 [能力](#核心能力) ·
 [命令](#slash-commands) ·
@@ -41,6 +42,21 @@
 [贡献](#贡献)
 
 </div>
+
+---
+
+## 演示
+
+以研究生一周工作流为主线的 Wiki 宣传片（含中文旁白）：
+
+[![Paper_Rec 研究生工作流演示](docs/promo/shots/01-home.png)](docs/promo/out/paper-rec-grad-demo.mp4)
+
+**[▶ 观看演示视频](docs/promo/out/paper-rec-grad-demo.mp4)** ·
+[双栏研读截图](docs/promo/shots/03-read-dual.png) ·
+[口播与分镜](docs/promo/GRAD_DEMO_PLAYBOOK.md) ·
+[宣传物料说明](docs/promo/README.md)
+
+检索入库 → 双栏挂证据 → 主线 Delta → 实验硬闸 → 诚信写作——本地 Git 真源可回滚。
 
 ---
 
@@ -458,6 +474,7 @@ Paper_Rec_Skill/
 | [benchmarks/litsearch/README.md](benchmarks/litsearch/README.md) | LitSearch 可复现评测 |
 | [docs/MCP_PUBLISH.md](docs/MCP_PUBLISH.md) | MCP 目录提交清单 |
 | [docs/tutorials/thread-research-memory.md](docs/tutorials/thread-research-memory.md) | 用 Thread 管研究方向（案例） |
+| [docs/promo/README.md](docs/promo/README.md) | 宣传演示视频 · 截图 · 口播分镜 |
 | [docs/GOOD_FIRST_ISSUES.md](docs/GOOD_FIRST_ISSUES.md) | 新手可领任务 |
 | [docs/MIGRATION.md](docs/MIGRATION.md) | 路径迁移 |
 | [CHANGELOG.md](CHANGELOG.md) | Workspace 版本历史 |

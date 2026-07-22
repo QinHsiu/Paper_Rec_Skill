@@ -1,29 +1,144 @@
 <template>
-  <div v-if="page">
-    <header class="card article-head">
-      <div>
-        <h1 class="page-title">{{ page.meta.title || path }}</h1>
-        <div class="meta-line">
-          <span class="badge" :class="`badge-${page.meta.status || 'todo'}`">
-            {{ page.meta.status || 'todo' }}
-          </span>
-          <span>{{ page.meta.year || '—' }}</span>
-          <span class="path-chip">{{ path }}</span>
-          <RouterLink
-            v-for="tid in threadIds"
-            :key="tid"
-            :to="`/threads/${tid}`"
-            class="path-chip"
-          >主线 · {{ tid }}</RouterLink>
+  <div v-if="page" class="read-workspace">
+    <div class="read-main">
+      <header class="read-head">
+        <div>
+          <h1 class="page-title">{{ page.meta.title || path }}</h1>
+          <div class="meta-line">
+            <span class="badge" :class="`badge-${page.meta.status || 'todo'}`">
+              {{ page.meta.status || 'todo' }}
+            </span>
+            <span>{{ page.meta.year || '—' }}</span>
+            <span class="path-chip">{{ path }}</span>
+            <RouterLink
+              v-for="tid in threadIds"
+              :key="tid"
+              :to="`/threads/${tid}`"
+              class="path-chip"
+            >主线 · {{ tid }}</RouterLink>
+          </div>
         </div>
+      </header>
+
+      <p class="read-hint muted">
+        选中正文 → 右侧「挂到主线」或「推荐证据」。上传 PDF 写入 fulltext.md。
+        <span v-if="selection">已选 {{ selection.length }} 字</span>
+        <span v-if="ingestMsg"> · {{ ingestMsg }}</span>
+        <span v-if="citeMsg"> · {{ citeMsg }}</span>
+      </p>
+
+      <div v-if="citeRefs.length" class="surface attach-panel">
+        <h2 class="rail-title">1-hop 引用扩展</h2>
+        <p class="muted" style="font-size:0.88rem;margin-top:0">
+          provider={{ citeProvider || '—' }} · 可手动对候选做 pdf-ingest
+        </p>
+        <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
+          <li v-for="(r, i) in citeRefs" :key="i" style="margin-bottom:0.45rem">
+            <strong>{{ r.title }}</strong>
+            <span class="muted" v-if="r.year"> · {{ r.year }}</span>
+            <span class="muted" v-if="r.citationCount != null"> · cites {{ r.citationCount }}</span>
+            <span v-if="r.doi"> · DOI {{ r.doi }}</span>
+            <span v-if="r.arxiv"> · arXiv {{ r.arxiv }}</span>
+            <a v-if="r.url" :href="r.url" target="_blank" rel="noopener">链接</a>
+          </li>
+        </ul>
+        <button style="margin-top:0.75rem" @click="citeRefs = []">关闭</button>
       </div>
-      <div class="row" style="flex-wrap:wrap;gap:0.4rem">
-        <button class="primary" @click="openAttach" :disabled="!selection.trim()">
-          挂到主线
-        </button>
-        <button @click="openRecommend" :disabled="!selection.trim() || !threadIds.length">
-          推荐证据
-        </button>
+
+      <article ref="articleEl" class="surface prose read-article" v-html="html" @mouseup="captureSelection"></article>
+
+      <div v-if="showAttach" class="surface attach-panel">
+        <h2 class="rail-title">挂到研究主线</h2>
+        <p class="muted" style="font-size:0.9rem;white-space:pre-wrap">「{{ selection.slice(0, 280) }}{{ selection.length > 280 ? '…' : '' }}」</p>
+        <div class="row" style="flex-wrap:wrap;gap:0.5rem;align-items:flex-end">
+          <label>
+            <span class="muted" style="font-size:0.8rem">主线</span>
+            <select v-model="form.threadId" @change="onThreadChange">
+              <option value="">选择…</option>
+              <option v-for="t in threads" :key="t.thread_id" :value="t.thread_id">
+                {{ t.title || t.thread_id }}
+              </option>
+            </select>
+          </label>
+          <label>
+            <span class="muted" style="font-size:0.8rem">Claim</span>
+            <select v-model="form.claimId">
+              <option value="">选择…</option>
+              <option v-for="c in claims" :key="c.id" :value="c.id">
+                {{ c.id }} — {{ (c.text || '').slice(0, 48) }}
+              </option>
+            </select>
+          </label>
+          <label>
+            <span class="muted" style="font-size:0.8rem">support_status</span>
+            <select v-model="form.supportStatus">
+              <option value="supports">supports</option>
+              <option value="refutes">refutes</option>
+              <option value="related">related</option>
+              <option value="insufficient">insufficient</option>
+            </select>
+          </label>
+          <label>
+            <span class="muted" style="font-size:0.8rem">confidence</span>
+            <input type="number" min="0" max="1" step="0.1" v-model.number="form.confidence" style="width:4rem" />
+          </label>
+          <label>
+            <span class="muted" style="font-size:0.8rem">CEBM</span>
+            <select v-model="form.evidenceLevel">
+              <option value="">—</option>
+              <option value="1a">1a SR of RCTs</option>
+              <option value="1b">1b RCT</option>
+              <option value="2a">2a SR cohort</option>
+              <option value="2b">2b cohort</option>
+              <option value="3a">3a SR case-control</option>
+              <option value="3b">3b case-control</option>
+              <option value="4">4 case series</option>
+              <option value="5">5 opinion / anecdote</option>
+            </select>
+          </label>
+          <button class="primary" :disabled="!canSubmit || busy" @click="submitEvidence">
+            {{ busy ? '提交中…' : '创建证据' }}
+          </button>
+          <button @click="showAttach = false">取消</button>
+        </div>
+        <p v-if="attachMsg" class="muted" style="margin:0.5rem 0 0">{{ attachMsg }}</p>
+      </div>
+
+      <div v-if="showRecommend" class="surface attach-panel">
+        <h2 class="rail-title">证据反哺推荐</h2>
+        <p class="muted" style="font-size:0.88rem">基于选中段落与关联主线（只读推荐，不自动写入）。</p>
+        <div v-if="recClaims.length">
+          <p style="margin:0.5rem 0 0.25rem;font-weight:600">Claims</p>
+          <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
+            <li v-for="c in recClaims" :key="c.id">
+              <code>{{ c.id }}</code> ({{ c.recommend_score }}) {{ c.text }}
+            </li>
+          </ul>
+        </div>
+        <div v-if="recEvs.length">
+          <p style="margin:0.75rem 0 0.25rem;font-weight:600">Evidences</p>
+          <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
+            <li v-for="e in recEvs" :key="e.evidence_id">
+              <code>{{ e.evidence_id }}</code>
+              · {{ e.support_status || e.stance }}
+              · conf {{ e.confidence ?? '—' }}
+              · score {{ e.recommend_score }}
+              — {{ (e.quote || '').slice(0, 120) }}
+            </li>
+          </ul>
+        </div>
+        <button style="margin-top:0.75rem" @click="showRecommend = false">关闭</button>
+      </div>
+    </div>
+
+    <aside class="read-rail">
+      <p class="rail-kicker">研读工具</p>
+      <h2 class="rail-title">与原文并排操作</h2>
+      <p class="rail-copy">对照阅读：左侧正文，右侧工具。先摘录再挂证据。</p>
+
+      <div class="rail-actions">
+        <button class="primary" @click="openAttach" :disabled="!selection.trim()">挂到主线</button>
+        <button @click="openRecommend" :disabled="!selection.trim() || !threadIds.length">推荐证据</button>
         <button @click="runCitationExpand" :disabled="citeBusy">
           {{ citeBusy ? '引用扩展…' : '引用扩展' }}
         </button>
@@ -32,125 +147,20 @@
         </button>
         <button @click="copyBibtex">导出 BibTeX</button>
         <button @click="copyCsl">导出 CSL-JSON</button>
-        <label class="file-btn">
+        <label class="file-btn rail-file">
           上传 PDF/TXT
           <input type="file" accept=".pdf,.txt,.md" hidden @change="onIngestFile" />
         </label>
-        <RouterLink :to="`/edit/${path}`"><button>编辑笔记</button></RouterLink>
-        <RouterLink to="/pages"><button>返回列表</button></RouterLink>
+        <RouterLink class="rail-link" :to="`/edit/${path}`">编辑笔记</RouterLink>
+        <RouterLink class="rail-link" to="/ask">智能研读 Ask</RouterLink>
+        <RouterLink class="rail-link" to="/pages">返回列表</RouterLink>
       </div>
-    </header>
 
-    <p class="muted" style="margin:0 0 0.75rem;font-size:0.88rem">
-      选中正文 →「挂到主线」或「推荐证据」。上传 PDF 会写入 fulltext.md 并可选生成 suggested claims。
-      「引用扩展」拉取 1-hop 参考文献（S2/Crossref），不自动 ingest。
-      <span v-if="selection">已选 {{ selection.length }} 字</span>
-      <span v-if="ingestMsg"> · {{ ingestMsg }}</span>
-      <span v-if="citeMsg"> · {{ citeMsg }}</span>
-    </p>
-
-    <div v-if="citeRefs.length" class="card attach-panel">
-      <h2 style="margin-top:0;font-size:1.1rem">1-hop 引用扩展</h2>
-      <p class="muted" style="font-size:0.88rem;margin-top:0">
-        provider={{ citeProvider || '—' }} · 可手动对候选做 pdf-ingest
-      </p>
-      <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
-        <li v-for="(r, i) in citeRefs" :key="i" style="margin-bottom:0.45rem">
-          <strong>{{ r.title }}</strong>
-          <span class="muted" v-if="r.year"> · {{ r.year }}</span>
-          <span class="muted" v-if="r.citationCount != null"> · cites {{ r.citationCount }}</span>
-          <span v-if="r.doi"> · DOI {{ r.doi }}</span>
-          <span v-if="r.arxiv"> · arXiv {{ r.arxiv }}</span>
-          <a v-if="r.url" :href="r.url" target="_blank" rel="noopener">链接</a>
-        </li>
-      </ul>
-      <button style="margin-top:0.75rem" @click="citeRefs = []">关闭</button>
-    </div>
-
-    <article ref="articleEl" class="card prose" v-html="html" @mouseup="captureSelection"></article>
-
-    <div v-if="showAttach" class="card attach-panel">
-      <h2 style="margin-top:0;font-size:1.1rem">挂到研究主线</h2>
-      <p class="muted" style="font-size:0.9rem;white-space:pre-wrap">「{{ selection.slice(0, 280) }}{{ selection.length > 280 ? '…' : '' }}」</p>
-      <div class="row" style="flex-wrap:wrap;gap:0.5rem;align-items:flex-end">
-        <label>
-          <span class="muted" style="font-size:0.8rem">主线</span>
-          <select v-model="form.threadId" @change="onThreadChange">
-            <option value="">选择…</option>
-            <option v-for="t in threads" :key="t.thread_id" :value="t.thread_id">
-              {{ t.title || t.thread_id }}
-            </option>
-          </select>
-        </label>
-        <label>
-          <span class="muted" style="font-size:0.8rem">Claim</span>
-          <select v-model="form.claimId">
-            <option value="">选择…</option>
-            <option v-for="c in claims" :key="c.id" :value="c.id">
-              {{ c.id }} — {{ (c.text || '').slice(0, 48) }}
-            </option>
-          </select>
-        </label>
-        <label>
-          <span class="muted" style="font-size:0.8rem">support_status</span>
-          <select v-model="form.supportStatus">
-            <option value="supports">supports</option>
-            <option value="refutes">refutes</option>
-            <option value="related">related</option>
-            <option value="insufficient">insufficient</option>
-          </select>
-        </label>
-        <label>
-          <span class="muted" style="font-size:0.8rem">confidence</span>
-          <input type="number" min="0" max="1" step="0.1" v-model.number="form.confidence" style="width:4rem" />
-        </label>
-        <label>
-          <span class="muted" style="font-size:0.8rem">CEBM</span>
-          <select v-model="form.evidenceLevel">
-            <option value="">—</option>
-            <option value="1a">1a SR of RCTs</option>
-            <option value="1b">1b RCT</option>
-            <option value="2a">2a SR cohort</option>
-            <option value="2b">2b cohort</option>
-            <option value="3a">3a SR case-control</option>
-            <option value="3b">3b case-control</option>
-            <option value="4">4 case series</option>
-            <option value="5">5 opinion / anecdote</option>
-          </select>
-        </label>
-        <button class="primary" :disabled="!canSubmit || busy" @click="submitEvidence">
-          {{ busy ? '提交中…' : '创建证据' }}
-        </button>
-        <button @click="showAttach = false">取消</button>
+      <div v-if="selection" class="rail-selection">
+        <p class="rail-kicker">当前摘录</p>
+        <p>{{ selection.slice(0, 220) }}{{ selection.length > 220 ? '…' : '' }}</p>
       </div>
-      <p v-if="attachMsg" class="muted" style="margin:0.5rem 0 0">{{ attachMsg }}</p>
-    </div>
-
-    <div v-if="showRecommend" class="card attach-panel">
-      <h2 style="margin-top:0;font-size:1.1rem">证据反哺推荐</h2>
-      <p class="muted" style="font-size:0.88rem">基于选中段落与关联主线（只读推荐，不自动写入）。</p>
-      <div v-if="recClaims.length">
-        <p style="margin:0.5rem 0 0.25rem;font-weight:600">Claims</p>
-        <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
-          <li v-for="c in recClaims" :key="c.id">
-            <code>{{ c.id }}</code> ({{ c.recommend_score }}) {{ c.text }}
-          </li>
-        </ul>
-      </div>
-      <div v-if="recEvs.length">
-        <p style="margin:0.75rem 0 0.25rem;font-weight:600">Evidences</p>
-        <ul style="margin:0;padding-left:1.1rem;font-size:0.9rem">
-          <li v-for="e in recEvs" :key="e.evidence_id">
-            <code>{{ e.evidence_id }}</code>
-            · {{ e.support_status || e.stance }}
-            · conf {{ e.confidence ?? '—' }}
-            · score {{ e.recommend_score }}
-            — {{ (e.quote || '').slice(0, 120) }}
-          </li>
-        </ul>
-      </div>
-      <button style="margin-top:0.75rem" @click="showRecommend = false">关闭</button>
-    </div>
+    </aside>
   </div>
   <p v-else class="muted">加载中…</p>
 </template>
@@ -389,10 +399,16 @@ watch(() => props.path, load)
 .file-btn {
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: var(--ink);
+}
+.rail-file {
+  box-sizing: border-box;
 }
 </style>

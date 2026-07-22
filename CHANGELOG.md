@@ -6,6 +6,16 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.36.1] — 2026-07-22
+
+### Changed
+
+- **wiki-web** (v0.2.0): Qinyan-inspired IA — grouped sidebar (研读 / 研究 / 工作台), home module tiles, dual-pane reading + Ask sources rail; cooler academic surface (keep Paper_Rec teal brand)
+
+### Added
+
+- **docs/promo**: graduate-workflow demo video (narrated MP4), screenshots, playbook; linked from root README
+
 ## [2.36.0] — 2026-07-22
 
 ### Added
