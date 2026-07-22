@@ -6,6 +6,12 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.37.0] — 2026-07-23
+
+### Added
+
+- **wiki-bridge** `arxiv-watch`: multi-category arXiv Atom harvest → day-partitioned `Metadata/`+`Link/`, persisted watermark in `content/arxiv_watch/state.json`; optional `--ingest` writes wiki stubs then `pdf-fetch`→ingest; cross-cat merge + wiki skip via RRF/`normalize_arxiv_id`
+
 ## [2.36.1] — 2026-07-22
 
 ### Changed

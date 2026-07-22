@@ -589,6 +589,7 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki discovery-curve` | Advisory retrieval saturation |
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
 | `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
+| `/wiki arxiv-watch` | Multi-cat arXiv harvest → day JSON + watermark; optional ingest |
 | `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
 
 Writing checklist: [`references/writing-gates.md`](references/writing-gates.md) (contribution → Figure 1 → SEARCH→VERIFY cites).  
@@ -631,6 +632,7 @@ python -m wiki_bridge.cli pdf-ingest --wiki-root ../.. --pdf sample.pdf --path l
 python -m wiki_bridge.cli claim-suggest --wiki-root ../.. --path llm/2025/foo --thread <id> --apply
 python -m wiki_bridge.cli citation-expand --wiki-root ../.. --path llm/2025/foo --top-k 5
 python -m wiki_bridge.cli pdf-fetch --wiki-root ../.. --path llm/2025/foo
+python -m wiki_bridge.cli arxiv-watch --wiki-root ../.. --cats cs.IR,cs.CL,cs.LG --ingest
 python -m wiki_bridge.cli rrf-fuse --json lanes.json --out fused.json
 python -m wiki_bridge.cli thread-feedback --wiki-root ../.. --thread <id> --action pin --path llm/2025/foo
 python -m wiki_bridge.cli csl-json-export --wiki-root ../.. --thread <id> --out refs.json

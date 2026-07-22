@@ -1,0 +1,8 @@
+{
+  "cats": ["cs.IR", "cs.CL", "cs.LG"],
+  "max_per_cat": 100,
+  "page_size": 50,
+  "wait_time": 3,
+  "time_gap": 5,
+  "keyword": "arxiv-watch"
+}

@@ -42,9 +42,15 @@ python -m wiki_bridge.cli thread-template-import --wiki-root ../.. --template ra
 python -m wiki_bridge.cli thread-template-export --wiki-root ../.. --thread mm-llm-alignment
 
 python -m wiki_bridge.cli rebuild-index --wiki-root ../..
+
+# arXiv category watch (day JSON + watermark; optional ingest)
+python -m wiki_bridge.cli arxiv-watch --wiki-root ../.. --cats cs.IR,cs.CL --dry-run
+python -m wiki_bridge.cli arxiv-watch --wiki-root ../.. --config ./examples/arxiv_watch_config.json --ingest
 ```
 
 `--wiki-root` may be the workspace root (`Paper_Rec_Skill`), `content/`, or `content/wiki/pages`.
+
+`arxiv-watch` writes under `content/arxiv_watch/` (`state.json`, `Metadata/YYYY-MM-DD.json`, `Link/YYYY-MM-DD.txt`). `--ingest` creates wiki stubs then runs legal OA `pdf-fetch`→ingest; duplicates skipped via normalized arXiv id / RRF keys.
 
 `sync-report --thread` scores papers into the cognitive ledger (`gate: suggested` by default). Add `--auto-link` to accept membership when `R ≥ --auto-link-threshold` (default 0.75).
 
@@ -54,6 +60,7 @@ python -m wiki_bridge.cli rebuild-index --wiki-root ../..
 - Experiments: `content/exp/<id>/` + `pages/_exp/<id>/`
 - Threads: `content/threads/<id>/thread.json` + `events.jsonl`
 - Templates: `content/thread-templates/<id>/` (`template.json` + `thread.json`)
+- arXiv watch: `content/arxiv_watch/` (`state.json`, `Metadata/`, `Link/`)
 
 Contract: [`docs/THREAD_DESIGN.md`](../../docs/THREAD_DESIGN.md).  
 Bots (Feishu / Telegram / WeCom / QQ): [`docs/BOTS.md`](../../docs/BOTS.md).

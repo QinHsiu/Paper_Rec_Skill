@@ -1216,6 +1216,30 @@ def cmd_pdf_fetch(args: argparse.Namespace) -> int:
     return 0 if out.get("fetch", {}).get("success") else 1
 
 
+def cmd_arxiv_watch(args: argparse.Namespace) -> int:
+    from .arxiv_watch import run_arxiv_watch
+
+    cats = [c.strip() for c in (args.cats or "").split(",") if c.strip()] or None
+    out = run_arxiv_watch(
+        Path(args.wiki_root),
+        cats=cats,
+        config_path=Path(args.config) if args.config else None,
+        state_dir=Path(args.state_dir) if args.state_dir else None,
+        last_update_date=args.since if args.since else None,
+        max_per_cat=args.max_per_cat,
+        page_size=args.page_size,
+        wait_time=args.wait_time,
+        time_gap=args.time_gap,
+        keyword=args.keyword,
+        ingest=args.ingest,
+        fetch_pdf=not args.no_fetch,
+        dry_run=args.dry_run,
+        keep_pdf=not args.no_keep,
+    )
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0 if out.get("ok") else 1
+
+
 def cmd_rrf_fuse(args: argparse.Namespace) -> int:
     from .rrf import rrf_fuse_from_payload
 
@@ -1886,6 +1910,26 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--path", required=True, help="wiki paper path")
     s.add_argument("--no-keep", action="store_true", help="do not keep PDF under _pdf/")
     s.set_defaults(func=cmd_pdf_fetch)
+
+    s = sub.add_parser(
+        "arxiv-watch",
+        help="Multi-cat arXiv harvest → day JSON + watermark; optional wiki stub + pdf-fetch",
+    )
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--cats", default="", help="comma-separated, e.g. cs.IR,cs.CL,cs.LG")
+    s.add_argument("--config", default="", help="JSON config (cats, wait_time, keyword, …)")
+    s.add_argument("--state-dir", default="", help="default: content/arxiv_watch")
+    s.add_argument("--since", default="", help="watermark override YYYY-MM-DD (published > since)")
+    s.add_argument("--max-per-cat", type=int, default=100)
+    s.add_argument("--page-size", type=int, default=50)
+    s.add_argument("--wait-time", type=float, default=3.0, help="seconds between API pages/cats")
+    s.add_argument("--time-gap", type=float, default=5.0, help="seconds between PDF fetches")
+    s.add_argument("--keyword", default="arxiv-watch", help="wiki keyword folder for new stubs")
+    s.add_argument("--ingest", action="store_true", help="write wiki stubs (+ pdf-fetch unless --no-fetch)")
+    s.add_argument("--no-fetch", action="store_true", help="with --ingest: stubs only, skip PDF")
+    s.add_argument("--no-keep", action="store_true", help="do not keep PDF under _pdf/")
+    s.add_argument("--dry-run", action="store_true", help="harvest only; no files/state/ingest")
+    s.set_defaults(func=cmd_arxiv_watch)
 
     s = sub.add_parser("rrf-fuse", help="Reciprocal Rank Fusion across lanes/sources")
     s.add_argument("--json", required=True, help="{lanes:{...}} or list with source field")
