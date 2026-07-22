@@ -6,6 +6,19 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.35.0] — 2026-07-22
+
+### Added
+
+- **hard-gate** / `verified_registry`: Results floats must match metrics registry or BLOCK (`number-verify --hard-gate`, `latex-export --hard-gate`)
+- **fig-review** semantic offline + VLM prompt/JSON merge (`--emit-vlm-prompts`, `--vlm-json`)
+- **survey-draft** deepen: TF-IDF cluster outlines, Jaccard merge, subsection cite audit
+- **feedback-edit**: critique → rewrite markers → re-retrieve queries/docs
+
+### Notes
+
+Pass-4 P0 deepen after differentiation audit (`docs/COMPETITOR_LEARN_LOG.md`).
+
 ## [2.34.0] — 2026-07-22
 
 ### Added

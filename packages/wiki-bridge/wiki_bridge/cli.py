@@ -407,6 +407,20 @@ def cmd_latex_export(args: argparse.Namespace) -> int:
         from . import thread_store as ts
 
         draft = ts.thread_dir(Path(args.wiki_root), args.thread) / "drafts" / "paper_draft"
+    if getattr(args, "hard_gate", False) and args.exp_dir:
+        from .number_verify import discover_exp_metrics, load_registry
+        from .verified_registry import hard_gate
+
+        chunks = []
+        if draft.is_dir():
+            for p in sorted(draft.glob("*.md")):
+                chunks.append(p.read_text(encoding="utf-8"))
+        metrics = discover_exp_metrics(Path(args.exp_dir))
+        reg = load_registry(metrics)["values"]
+        gate = hard_gate("\n".join(chunks), reg)
+        if gate.get("blocked"):
+            print(json.dumps({"blocked": True, "hard_gate": gate}, ensure_ascii=False, indent=2))
+            return 1
     out = export_latex_pack(
         draft,
         venue=args.venue,
@@ -588,7 +602,8 @@ def cmd_answer_ground(args: argparse.Namespace) -> int:
 
 
 def cmd_number_verify(args: argparse.Namespace) -> int:
-    from .number_verify import discover_exp_metrics, verify_paths
+    from .number_verify import discover_exp_metrics, load_registry, verify_paths
+    from .verified_registry import hard_gate, persist_registry
 
     drafts: list[Path] = []
     if args.draft:
@@ -611,11 +626,21 @@ def cmd_number_verify(args: argparse.Namespace) -> int:
         metrics.extend(Path(p) for p in _split_csv(args.metrics))
     if args.exp_dir:
         metrics.extend(discover_exp_metrics(Path(args.exp_dir)))
+        if getattr(args, "write_registry", False) or getattr(args, "hard_gate", False):
+            persist_registry(Path(args.exp_dir), metrics)
     out = verify_paths(drafts, metrics, tolerance=args.tolerance)
+    if getattr(args, "hard_gate", False):
+        reg = load_registry(metrics)["values"]
+        text = "\n".join(p.read_text(encoding="utf-8") for p in drafts if p.is_file())
+        gate = hard_gate(text, reg, tolerance=args.tolerance)
+        out["hard_gate"] = gate
+        out["ok"] = bool(gate.get("ok"))
+        out["blocked"] = bool(gate.get("blocked"))
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({k: out[k] for k in ("ok", "verified_n", "unverified_n", "unverified", "registry_n", "metrics_sources") if k in out}, ensure_ascii=False, indent=2))
-    return 0 if out.get("ok") else (1 if args.strict else 0)
+    keys = ("ok", "verified_n", "unverified_n", "unverified", "registry_n", "metrics_sources", "blocked", "hard_gate")
+    print(json.dumps({k: out[k] for k in keys if k in out}, ensure_ascii=False, indent=2))
+    return 0 if out.get("ok") else (1 if args.strict or getattr(args, "hard_gate", False) else 0)
 
 
 def cmd_exp_eval_hook(args: argparse.Namespace) -> int:
@@ -788,13 +813,29 @@ def cmd_survey_draft(args: argparse.Namespace) -> int:
     papers = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
     if isinstance(papers, dict):
         papers = list(papers.get("papers") or papers.get("documents") or [])
-    out = build_survey_draft(papers, chunk_size=args.chunk_size, rag_k=args.rag_k)
+    out = build_survey_draft(
+        papers,
+        chunk_size=args.chunk_size,
+        rag_k=args.rag_k,
+        topic=getattr(args, "topic", "") or "",
+    )
     if args.out:
         Path(args.out).write_text(out["markdown"], encoding="utf-8")
     if args.json_out:
         Path(args.json_out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"section_n": out["section_n"], "outline_chunks": out["outline_chunks"], "out": args.out or None}, ensure_ascii=False, indent=2))
-    return 0
+    print(
+        json.dumps(
+            {
+                "section_n": out["section_n"],
+                "outline_chunks": out["outline_chunks"],
+                "cite_ok": (out.get("cite_audit") or {}).get("ok"),
+                "out": args.out or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0 if out.get("ok", True) else (1 if getattr(args, "strict", False) else 0)
 
 
 def cmd_novelty_check(args: argparse.Namespace) -> int:
@@ -812,14 +853,54 @@ def cmd_novelty_check(args: argparse.Namespace) -> int:
 
 
 def cmd_fig_review(args: argparse.Namespace) -> int:
-    from .fig_review import review_figures
+    from .fig_review import load_vlm_reviews_file, review_figures
 
     text = Path(args.draft).read_text(encoding="utf-8") if args.draft else ""
     paths = _split_csv(args.figure_paths) if args.figure_paths else []
-    out = review_figures(text, figure_paths=paths or None)
+    vlm = load_vlm_reviews_file(Path(args.vlm_json)) if getattr(args, "vlm_json", "") and args.vlm_json else None
+    out = review_figures(
+        text,
+        figure_paths=paths or None,
+        abstract=getattr(args, "abstract", "") or "",
+        vlm_reviews=vlm,
+        emit_vlm_prompts=bool(getattr(args, "emit_vlm_prompts", False)),
+    )
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({k: out[k] for k in ("ok", "figure_n", "ref_n", "issue_n")}, ensure_ascii=False, indent=2))
+    print(json.dumps({k: out[k] for k in ("ok", "figure_n", "ref_n", "issue_n", "vlm_applied") if k in out}, ensure_ascii=False, indent=2))
+    return 0 if out.get("ok") else (1 if args.strict else 0)
+
+
+def cmd_feedback_edit(args: argparse.Namespace) -> int:
+    from .feedback_edit import feedback_edit_loop
+
+    answer = args.answer or ""
+    if args.answer_file:
+        answer = Path(args.answer_file).read_text(encoding="utf-8")
+    evs = json.loads(Path(args.evidences_json).read_text(encoding="utf-8-sig"))
+    if isinstance(evs, dict):
+        evs = list(evs.get("evidences") or evs.get("contexts") or [])
+    cands = []
+    if args.candidates_json:
+        raw = json.loads(Path(args.candidates_json).read_text(encoding="utf-8-sig"))
+        cands = raw if isinstance(raw, list) else list(raw.get("papers") or raw.get("documents") or [])
+    out = feedback_edit_loop(args.question, answer, evs, candidate_docs=cands, lang=args.lang)
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(
+        json.dumps(
+            {
+                "ok": out["ok"],
+                "feedback_n": out["feedback_n"],
+                "needs_retrieve": out["needs_retrieve"],
+                "followup_queries": out["followup_queries"],
+                "new_evidence_n": out["new_evidence_n"],
+                "out": args.out or None,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0 if out.get("ok") else (1 if args.strict else 0)
 
 
@@ -1557,6 +1638,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--metrics", default="", help="comma-separated metric JSON paths")
     s.add_argument("--tolerance", type=float, default=0.011)
     s.add_argument("--strict", action="store_true", help="exit 1 if any unverified float")
+    s.add_argument("--hard-gate", action="store_true", help="BLOCK on unverified Results floats / empty registry")
+    s.add_argument("--write-registry", action="store_true", help="persist metrics/verified_registry.json under --exp-dir")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_number_verify)
 
@@ -1612,10 +1695,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("survey-draft", help="Outline-merge + subsection RAG related-work draft")
     s.add_argument("--json", required=True, help="papers JSON")
+    s.add_argument("--topic", default="")
     s.add_argument("--chunk-size", type=int, default=8)
     s.add_argument("--rag-k", type=int, default=5)
     s.add_argument("--out", default="", help="markdown path")
     s.add_argument("--json-out", default="")
+    s.add_argument("--strict", action="store_true", help="exit 1 if cite audit fails")
     s.set_defaults(func=cmd_survey_draft)
 
     s = sub.add_parser("novelty-check", help="Idea novelty vs local corpus (+ optional OpenAlex)")
@@ -1627,12 +1712,26 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_novelty_check)
 
-    s = sub.add_parser("fig-review", help="Figure/caption/ref consistency (heuristic)")
+    s = sub.add_parser("fig-review", help="Figure/caption/ref consistency (+ optional VLM JSON)")
     s.add_argument("--draft", required=True)
     s.add_argument("--figure-paths", default="")
+    s.add_argument("--abstract", default="")
+    s.add_argument("--vlm-json", default="", help="precomputed VLM review JSON list")
+    s.add_argument("--emit-vlm-prompts", action="store_true", help="include prompt bundles for a vision model")
     s.add_argument("--strict", action="store_true")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_fig_review)
+
+    s = sub.add_parser("feedback-edit", help="Critique answer → rewrite markers → re-retrieve queries")
+    s.add_argument("--question", required=True)
+    s.add_argument("--answer", default="")
+    s.add_argument("--answer-file", default="")
+    s.add_argument("--evidences-json", required=True)
+    s.add_argument("--candidates-json", default="", help="extra docs for re-retrieve")
+    s.add_argument("--lang", default="en")
+    s.add_argument("--strict", action="store_true")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_feedback_edit)
 
     s = sub.add_parser("deep-research", help="Learnings tree → follow-up queries (depth×breadth)")
     s.add_argument("--topic", required=True)
@@ -1739,6 +1838,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--venue", default="generic", help="neurips|icml|iclr|cvpr|acl|generic")
     s.add_argument("--title", default="")
     s.add_argument("--bib", default="", help="optional references.bib path")
+    s.add_argument("--exp-dir", default="", help="with --hard-gate: metrics for Results BLOCK")
+    s.add_argument("--hard-gate", action="store_true", help="refuse export if Results floats fail verified registry")
     s.set_defaults(func=cmd_latex_export)
 
     s = sub.add_parser("related-work", help="Write Related Work outline from thread")

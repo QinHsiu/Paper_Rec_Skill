@@ -4,6 +4,13 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.15.0] — 2026-07-22
+
+### Added
+
+- Writing hard-gate (`number-verify`/`latex-export --hard-gate`)
+- fig-review VLM prompt bundle + JSON merge; survey cite audit; `feedback-edit` loop
+
 ## [1.14.0] — 2026-07-22
 
 ### Added

@@ -139,3 +139,12 @@ Lens: **what would a user pick THIS repo for**, and which engines are still deep
 ### Explicit non-goals (stay Paper_Rec)
 
 Do **not** become: 23-stage auto paper OS, AgentRxiv, Khoj second brain, Curie Docker lab suite, or OpenScholar model training stack. Keep thin plugins into threads / wiki / packs / exp-sandbox.
+
+### Pass 4 P0 — shipped (2026-07-22, workspace 2.35.0)
+
+| # | Engine | CLI / artifact |
+|---|--------|----------------|
+| 1 | Results hard gate | `number-verify --hard-gate --write-registry`; `latex-export --hard-gate`; `metrics/verified_registry.json` |
+| 2 | Fig semantic + VLM hook | `fig-review --emit-vlm-prompts` / `--vlm-json` |
+| 3 | True-er survey | `survey-draft` TF-IDF clusters + cite audit (`--strict`) |
+| 4 | Feedback → rewrite → re-retrieve | `feedback-edit` |

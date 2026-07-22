@@ -570,6 +570,8 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki answer-ground` | Expand `(E12)` → References; cannot-answer if no evidence |
 | `/wiki gather-evidence` | Chunk docs, score relevance 0–10, keep above cutoff |
 | `/wiki number-verify` | Draft/LaTeX floats must appear in exp metrics whitelist |
+| `/wiki number-verify --hard-gate` | BLOCK Results floats not in verified registry |
+| `/wiki feedback-edit` | Critique → rewrite markers → re-retrieve queries |
 | `/wiki stats-rigor` | Results claims need ±/std/CI/seeds cues |
 | `/wiki survey-draft` | Outline-merge + subsection RAG related-work draft |
 | `/wiki novelty-check` | Idea novelty vs local corpus (+ optional OpenAlex) |
