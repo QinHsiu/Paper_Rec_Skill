@@ -31,6 +31,14 @@
 
 <br/>
 
+<img src="docs/assets/tecience/banner.png" alt="From Tecience" width="720" />
+
+<br/>
+
+[![Tecience](https://img.shields.io/badge/From-Tecience_公众号-0B3D2E?style=for-the-badge&labelColor=1A2332)](#tecience-公众号--来源与关注)
+
+<br/>
+
 [快速开始](#快速开始) ·
 [演示](#演示) ·
 [闭环](#研究闭环) ·
@@ -487,6 +495,21 @@ Paper_Rec_Skill/
 | [docs/MIGRATION.md](docs/MIGRATION.md) | 路径迁移 |
 | [CHANGELOG.md](CHANGELOG.md) | Workspace 版本历史 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 环境 · PR 清单 · Skill 改法 |
+
+---
+
+## Tecience 公众号 · 来源与关注
+
+本仓库由微信公众号 **Tecience** 开源维护。扫码关注 / 打开仓库：
+
+| 微信扫码关注 Tecience | 本仓库 GitHub | 作者主页 |
+|:---:|:---:|:---:|
+| <img src="docs/assets/tecience/qr-wechat.png" width="180" alt="Tecience WeChat OA" /> | <img src="docs/assets/tecience/qr-repo.png" width="180" alt="Paper_Rec_Skill" /> | <img src="docs/assets/tecience/qr-github.png" width="180" alt="QinHsiu" /> |
+
+- **关注：** 微信扫一扫上方公众号码，或搜一搜 **Tecience**  
+- **关键词：** 回复 `PAPER` 获取文献 / Wiki / 实验沙箱相关说明与更新  
+
+官方码原图：`docs/assets/tecience/qr-wechat-oa.png`
 
 ---
 
