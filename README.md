@@ -7,8 +7,8 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.36.1-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
-[![paper-rec](https://img.shields.io/badge/paper--rec-v1.15.0-1A2332?style=for-the-badge)](skill/VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.39.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![paper-rec](https://img.shields.io/badge/paper--rec-v1.17.0-1A2332?style=for-the-badge)](skill/VERSION)
 [![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.10.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![multi-agent-lab](https://img.shields.io/badge/multi--agent--lab-v1.0.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-agents/VERSION)
 [![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.1-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
@@ -84,12 +84,12 @@ GitHub README **不能**直接播放仓库内相对路径的 MP4，因此这里�
 flowchart LR
   A["/query_*<br/>多源检索"] --> T["Thread<br/>关联 · brief"]
   T --> B["sync-report --thread<br/>入库 Wiki"]
-  B --> C["阅读 · screen-next<br/>claim / evidence"]
+  B --> C["阅读 · /ppt · screen-next<br/>claim / evidence"]
   C --> D["/exp_* · exp-tree<br/>分析 · 训练 · 评估"]
   D --> G["/draw · fig-review<br/>论文级图表"]
   D --> V["number-verify<br/>hard-gate · stats"]
   G --> V
-  V --> E["sync-exp · latex-export<br/>指标 · 草稿回写"]
+  V --> E["sync-exp · latex-export<br/>/rebuttal · 草稿回写"]
   E --> F["Wiki · 主线<br/>可追溯产物"]
 ```
 
@@ -111,9 +111,10 @@ flowchart LR
 <td width="25%" valign="top">
 
 ### Literature Skill
-**paper-rec · v1.15**
+**paper-rec · v1.17**
 
 - `/query_english` · `/query_chinese` · `/query_other`
+- `/ppt` 精读→组会PPT（三层 QA · Thread 挂钩）· `/rebuttal`（venue 族 · 实验分诊 · 硬闸）
 - Module 0 clarify · research-brief · 1.5 / 2.5 主线注入
 - arXiv · OpenAlex · HF · GitHub · PwC · CCF…
 - 覆盖反思 · 发现饱和 · 主动筛选 · 新颖性熔断
@@ -173,6 +174,8 @@ flowchart LR
 | `/query_english` | 全英文报告 |
 | `/query_chinese` | 全中文报告 |
 | `/query_other` | 随输入语言自适应 |
+| `/ppt` · `/ppt slides+fig` | 精读 → 组会 Marp/PPTX（三层 QA · 讲稿） |
+| `/rebuttal` · `venue:` | 审稿回复（venue 族 · 实验分诊 · SAFETY_GATE） |
 | `/wiki` · `/wiki week` · `/wiki start` | 库内列表 / 本周 / 启动 UI |
 | `/wiki thread` · `/wiki thread <id>` · `/wiki thread delta` | 研究主线列表 / 详情 / Delta |
 | `/draft` · `/wiki thread draft` | 多章 Markdown 草稿包 |
@@ -470,7 +473,9 @@ Paper_Rec_Skill/
 | Doc | Audience |
 |:----|:---------|
 | [skill/README.md](skill/README.md) | 文献 Skill 中英入口 |
-| [skill/SKILL.md](skill/SKILL.md) | 完整 Module 与 `/wiki` CLI 表 |
+| [skill/SKILL.md](skill/SKILL.md) | 完整 Module 与 `/wiki` · `/ppt` · `/rebuttal` |
+| [skill/references/paper-ppt.md](skill/references/paper-ppt.md) | 精读 → 组会 PPT 契约 |
+| [skill/references/rebuttal.md](skill/references/rebuttal.md) | 审稿回复模板 |
 | [skill/references/writing-gates.md](skill/references/writing-gates.md) | 写作 / 引用 / 硬闸清单 |
 | [skill/references/neurips-review-gate.md](skill/references/neurips-review-gate.md) | 草稿审稿维度 |
 | [skill-exp/README.md](skill-exp/README.md) | 实验 Skill · 借鉴说明 |

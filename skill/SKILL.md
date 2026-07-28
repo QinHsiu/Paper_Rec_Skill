@@ -1,13 +1,15 @@
 ---
 name: paper-rec
-version: 1.12.2
+version: 1.17.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
-  /query_chinese, /query_other, or /wiki. Use when the user asks for paper
-  recommendations, literature search, related work, OpenAlex/arXiv/HuggingFace/GitHub
-  paper discovery, query改写/论文检索/论文推荐, wiki library status / start wiki UI,
-  or research thread / 研究主线 association.
+  /query_chinese, /query_other, /wiki, /ppt, or /rebuttal. Use when the user asks
+  for paper recommendations, literature search, related work,
+  OpenAlex/arXiv/HuggingFace/GitHub paper discovery, query改写/论文检索/论文推荐,
+  wiki library status / start wiki UI, research thread / 研究主线 association,
+  paper deep-read / 精读 / group-meeting PPT / 组会PPT / slides / three-layer QA,
+  peer-review rebuttal / 审稿回复 / author response / OpenReview / CVPR rebuttal.
 ---
 
 # Paper Recommendation Skill / 论文推荐技能
@@ -28,9 +30,11 @@ Task Progress:
 - [ ] Module 3: Output — structured report (≤2 sentences per field)
 - [ ] Module 4 (optional): Persist selected papers to Wiki (`content/wiki/pages`)
 - [ ] Module 5 (`/wiki`): List library papers and/or launch Wiki UI / threads
+- [ ] Module 6 (`/ppt`): Deep-read paper → group-meeting slides / PPTX
+- [ ] Module 7 (`/rebuttal`): Point-by-point peer-review rebuttal pack
 ```
 
-**Trigger**: User provides a research topic, question, or long description and wants relevant papers.
+**Trigger**: User provides a research topic, question, or long description and wants relevant papers; **or** asks to deep-read a paper into a group PPT; **or** asks to draft a rebuttal.
 
 ---
 
@@ -44,6 +48,8 @@ After installing this skill, the user **must** prefix the query with one of thre
 | `/query_chinese` | Chinese | All headings, labels, summaries, and field content in **Chinese** |
 | `/query_other` | Adaptive | Detect input language and match output (see rules below) |
 | `/wiki` | Wiki ops | List library papers / start Wiki UI (language follows user) |
+| `/ppt` | Deep-read → PPT | Language follows user (or paper venue); see Module 6 |
+| `/rebuttal` | Author response | Match review language (usually English); see Module 7 |
 
 ### Usage format / 使用格式
 
@@ -54,9 +60,13 @@ After installing this skill, the user **must** prefix the query with one of thre
 /wiki
 /wiki 现在库里有哪些论文
 /wiki start
+/ppt slides+fig meeting thread:mm-align https://arxiv.org/abs/2401.00001
+/ppt 组会PPT content/wiki/pages/llm/2024/foo
+/rebuttal venue:iclr thread:mm-align reviews.txt
+/rebuttal venue:cvpr round:1 --reviews path/to/reviews.md --draft content/threads/x/drafts/paper_draft
 ```
 
-The slash command is stripped before processing; the remaining text is the research query.
+The slash command is stripped before processing; the remaining text is the research query (or paper / review payload for `/ppt` / `/rebuttal`).
 
 ### Mode persistence / 模式持久性
 
@@ -675,6 +685,75 @@ If ports are already in use, just open http://127.0.0.1:5173/ and confirm `/api/
 
 ---
 
+## Module 6: `/ppt` — Deep-read → group-meeting PPT / 精读转组会 PPT
+
+**When**: User sends `/ppt`, or asks for 精读 / deep read / 组会PPT / paper → slides / presentation deck for one paper.
+
+**Spec**: [`references/paper-ppt.md`](references/paper-ppt.md)
+
+**Differentiation**: Three-layer QA + Wiki/Thread/claim hooks + speaker notes/PPTX — not outline-only and not a disconnected slide app.
+
+### Modes & presets
+
+| Token | Behavior |
+|-------|----------|
+| `quick` | Meta + 3 contributions + 1 limit (chat) |
+| `standard` | Deep-read note + evidence tags |
+| `extended` | `standard` + prior-work map from **this** PDF only |
+| `slides` (default for 组会/PPT) | + Marp + SPEAKER notes + QA + optional PPTX |
+| `slides+fig` | + figure inventory / extract when feasible |
+| `meeting` / `club` / `spotlight` / `oral` | Duration → slide budget (see spec) |
+
+### Steps (Gather → Act → Verify)
+
+1. **Resolve source** + closed-loop Gather: wiki `fulltext` / PDF (`pdf-fetch`), optional `thread:<id>` gaps/claims.
+2. **Classify** type; write `deep_read.md` with `[原文]` / `[归纳]` / `[未找到]` (no fabricated metrics).
+3. If `slides*`: write Marp `slides.md` with `SPEAKER:` notes; for `slides+fig` write `figures/inventory.md`.
+4. **Persist** under `…/slides/` (wiki path) or `content/presentations/<slug>/` + `asset_manifest.json`.
+5. **Three-layer QA** → `qa_report.md` (content / structural / visual). Failures block “done” unless user waives.
+6. **Optional PPTX** (notes preserved):
+
+```bash
+python skill/scripts/md_slides_to_pptx.py \
+  --input <dir>/slides.md \
+  --out <dir>/deck.pptx
+```
+
+7. **Verify** + return paths; offer thread evidence / gap update (do not auto-write).
+
+### Notes
+
+- Topic-only asks → run `/query_*` (+ Module 4) first, then `/ppt` on a chosen paper.
+- Tie takeaways to active thread when present.
+
+---
+
+## Module 7: `/rebuttal` — Peer-review author response / 审稿回复
+
+**When**: User sends `/rebuttal`, or asks for 审稿回复 / author response / point-by-point rebuttal / revision letter.
+
+**Spec**: [`references/rebuttal.md`](references/rebuttal.md) · venues: [`references/rebuttal-venues.md`](references/rebuttal-venues.md) · self-review: [`references/neurips-review-gate.md`](references/neurips-review-gate.md)
+
+**Differentiation**: Venue families **plus** Thread/claim-ledger/number-verify/`/exp_*` grounding — promises cannot cite unverified numbers.
+
+### Steps (Gather → Act → Verify)
+
+1. **Venue lock** (`venue:` / family); confirm char/word budget (mark `unverified` until checked).
+2. **Gather**: reviews (required), draft/paper, optional `thread:<id>`, `round:n`, meta-review.
+3. **Parse** → `ISSUE_BOARD.md` (🔴🟠🟡🟢) + `comment_map.json` atoms `R{k}-C{n}`.
+4. **Map** to draft / claims (`claim-ledger` when thread set).
+5. **Exp triage** → `EXPERIMENT_PLAN.md` (`run`|`reanalyze`|`clarify`|`defer`); `run`/`reanalyze` need user OK; cite metrics only after `number-verify` / registry.
+6. **Draft** `responses.md` + family artifacts (`PASTE_READY_Rk.txt` / `rebuttal.tex` / cover letter).
+7. **SAFETY_GATE.md** (anti-fabricate, coverage, budget count, optional rehearsal).
+8. **Persist** under `content/threads/<id>/drafts/rebuttal/` or `content/rebuttal/<slug>/` (`rounds/r<n>/` for follow-ups).
+
+### Notes
+
+- Missing reviews → ask once; never invent reviewer text.
+- Follow-ups (`round:≥2`): delta-only; update Issue Board tracker.
+
+---
+
 ## Workflow Example / 工作流示例
 
 See [examples.md](examples.md) for a full walkthrough.
@@ -695,5 +774,9 @@ See [examples.md](examples.md) for a full walkthrough.
 - Retrieval sources & CCF venues: [sources-reference.md](sources-reference.md)
 - Output template: [output-template.md](output-template.md)
 - Walkthrough examples: [examples.md](examples.md)
+- Deep-read → PPT: [references/paper-ppt.md](references/paper-ppt.md)
+- Rebuttal pack: [references/rebuttal.md](references/rebuttal.md)
+- Rebuttal venues: [references/rebuttal-venues.md](references/rebuttal-venues.md)
+- PPTX helper: [scripts/md_slides_to_pptx.py](scripts/md_slides_to_pptx.py)
 - Self-hosted Wiki + bridge: `../apps/wiki-api/`, `../apps/wiki-web/`, `../packages/wiki-bridge/`, `../content/`
 - Workspace architecture: `../docs/ARCHITECTURE.md`

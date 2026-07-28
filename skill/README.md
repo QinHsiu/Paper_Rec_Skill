@@ -99,12 +99,16 @@ Prefix every query with a language command (`/query_*` 必须写入本目录 REA
 | `/query_english` | English | Full English report |
 | `/query_chinese` | Chinese | 全中文报告 |
 | `/query_other` | Adaptive | 自适应输入语言 |
+| `/ppt` | Deep-read → PPT | 精读笔记 + 组会 Marp/PPTX |
+| `/rebuttal` | Rebuttal | 审稿逐条回复包 |
 | `/wiki` | Wiki ops | 查库 / 本周 / 启动界面 |
 
 ```
 /query_english Find papers on efficient LLM fine-tuning with LoRA
 /query_chinese 帮我找2024年后多模态大模型对齐的最新论文
 /query_other  最新の物体検出モデルに関する論文を探して
+/ppt slides https://arxiv.org/abs/2106.09685
+/rebuttal thread:mm-align reviews.txt
 /wiki
 /wiki start
 ```

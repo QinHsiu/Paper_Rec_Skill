@@ -194,3 +194,37 @@ python -m wiki_bridge.cli sync-report \
 3. Open http://127.0.0.1:5173/ → 论文库 / `_meta/Reading_Index` / `content/wiki/pages/...`
 
 Do **not** persist unless the user asks.
+
+---
+
+## Example 5: `/ppt` deep-read → slides / 精读转组会 PPT
+
+**Input**:
+```
+/ppt slides+fig meeting thread:mm-align https://arxiv.org/abs/2106.09685
+```
+
+### Module 6
+
+1. Prefer wiki `fulltext` / PDF; inject thread gaps into takeaways.
+2. `deep_read.md` + `figures/inventory.md` + Marp `slides.md` with `SPEAKER:` notes.
+3. `qa_report.md` (content/structural/visual) must pass.
+4. Optional PPTX via `md_slides_to_pptx.py` (notes → PowerPoint notes).
+5. Persist `asset_manifest.json` under `slides/` or `content/presentations/`.
+
+---
+
+## Example 6: `/rebuttal` / 审稿回复
+
+**Input**:
+```
+/rebuttal venue:iclr thread:mm-align round:1 --reviews reviews_round1.md
+```
+
+### Module 7
+
+1. Lock `THREADED_DISCUSSION`; verify char budget (or mark unverified).
+2. `ISSUE_BOARD.md` + `comment_map.json`; map to claim-ledger when possible.
+3. `EXPERIMENT_PLAN.md` for needs_new_exp; cite numbers only after number-verify.
+4. `responses.md` + `PASTE_READY_Rk.txt` + `SAFETY_GATE.md`.
+5. Persist under `content/threads/mm-align/drafts/rebuttal/`.

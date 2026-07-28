@@ -12,6 +12,7 @@ An **Agent Skill** for academic paper recommendation. It runs an end-to-end work
 - **Structured reports**: Title, authors, core idea, contribution, metrics, reference value, strengths, and weaknesses (≤2 sentences per field)
 - **Three language modes**: English, Chinese, and adaptive
 - **Wiki / threads**: `/wiki` · `/wiki thread` · `/wiki thread delta`
+- **Deep-read PPT**: `/ppt` · **Rebuttal**: `/rebuttal`
 
 ---
 
@@ -57,6 +58,8 @@ Every query **must** start with one of these commands (documented in this README
 | `/query_english` | English | All summaries, labels, and report content in **English** |
 | `/query_chinese` | Chinese | All summaries, labels, and report content in **Chinese** |
 | `/query_other` | Adaptive | Output language matches the detected input language |
+| `/ppt` | Deep-read → PPT | Single-paper note + group-meeting Marp/PPTX |
+| `/rebuttal` | Author response | Point-by-point rebuttal pack |
 | `/wiki` | Wiki ops | List library / this week / start Wiki UI |
 
 ### Examples
@@ -67,6 +70,9 @@ Every query **must** start with one of these commands (documented in this README
 /query_chinese 帮我找2024年后多模态大模型对齐的最新论文
 
 /query_other What are the latest efficient object detection models for edge devices?
+
+/ppt slides https://arxiv.org/abs/2106.09685
+/rebuttal thread:mm-align reviews.txt
 
 /wiki
 /wiki start

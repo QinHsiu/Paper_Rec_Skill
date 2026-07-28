@@ -10,6 +10,8 @@
 - **多源检索**：arXiv、Hugging Face Papers、GitHub、Papers With Code、CCF 顶会及大厂补充来源
 - **智能排序**：按相似性、相关性、重要性三维打分，保留 Top 50；可按 `thread:<id>` 做主线关联
 - **结构化报告**：论文题目、发表信息、核心观点、核心贡献、指标、参考价值、强项、不足（每字段最多 2 句话）
+- **精读 → PPT**：`/ppt` 深读笔记 + 组会 Marp/PPTX（证据标签防幻觉）
+- **审稿回复**：`/rebuttal` 逐条 stance + 修改清单
 - **三种语言模式**：英文、中文、自适应
 - **Wiki / 主线**：`/wiki` · `/wiki thread` · `/wiki thread delta`
 
@@ -57,6 +59,8 @@ cp -r ./* .agents/skills/paper-rec/
 | `/query_english` | 英语模式 | 摘要、标签、报告正文 — **全英文** |
 | `/query_chinese` | 中文模式 | 摘要、标签、报告正文 — **全中文** |
 | `/query_other` | 自适应模式 | **根据输入语言自动匹配**输出语言 |
+| `/ppt` | 精读 → PPT | 单篇深读 + 组会 Marp/PPTX |
+| `/rebuttal` | 审稿回复 | 逐条 rebuttal 包 |
 | `/wiki` | 阅读库 | 列出论文 / 本周推荐 / 启动 Wiki UI |
 
 ### 使用示例
@@ -67,6 +71,11 @@ cp -r ./* .agents/skills/paper-rec/
 /query_chinese 帮我找2024年后多模态大模型对齐的最新论文
 
 /query_other 帮我 find efficient object detection papers for edge devices
+
+/ppt slides https://arxiv.org/abs/2106.09685
+/ppt 组会PPT content/wiki/pages/llm/2024/foo
+
+/rebuttal thread:mm-align reviews.txt
 
 /wiki
 /wiki start

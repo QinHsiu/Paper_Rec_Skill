@@ -6,6 +6,18 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.39.0] — 2026-07-28
+
+### Changed
+
+- **paper-rec** v1.17.0: `/ppt` three-layer QA + Thread hooks; `/rebuttal` venue families + exp triage + safety gate (competitor parity with closed-loop differentiation)
+
+## [2.38.0] — 2026-07-28
+
+### Added
+
+- **paper-rec** v1.16.0: Module 6 `/ppt` (deep-read → Marp/PPTX), Module 7 `/rebuttal` (point-by-point author response)
+
 ## [2.37.0] — 2026-07-23
 
 ### Added

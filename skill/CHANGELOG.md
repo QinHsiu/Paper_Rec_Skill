@@ -4,6 +4,24 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.17.0] — 2026-07-28
+
+### Changed
+
+- `/ppt`: absorb competitor strengths — duration presets, `extended` prior-work, speaker notes, figure inventory, **three-layer QA**, `asset_manifest`, Wiki/Thread closed-loop hooks; PPTX script exports `SPEAKER:` notes
+- `/rebuttal`: absorb venue families, Issue Board severity, `EXPERIMENT_PLAN` triage, char budget gate, SAFETY_GATE, multi-round `rounds/r<n>/`; bind claims via claim-ledger + number-verify + `/exp_*` (它无我有)
+
+### Added
+
+- `references/rebuttal-venues.md` (ONE_PAGE_PDF / THREADED / PER_REVIEW / JOURNAL / ROLLING)
+
+## [1.16.0] — 2026-07-28
+
+### Added
+
+- Module 6 `/ppt`: paper deep-read → group-meeting Marp slides + optional PPTX (`references/paper-ppt.md`, `scripts/md_slides_to_pptx.py`)
+- Module 7 `/rebuttal`: point-by-point peer-review author response pack (`references/rebuttal.md`)
+
 ## [1.15.0] — 2026-07-22
 
 ### Added
