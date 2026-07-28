@@ -952,6 +952,58 @@ def cmd_exp_reflect(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_labnote(args: argparse.Namespace) -> int:
+    skill_exp = workspace_root_from_here() / "skill-exp"
+    if str(skill_exp) not in sys.path:
+        sys.path.insert(0, str(skill_exp))
+    from reference import labnote_loop as ln  # type: ignore
+
+    exp_dir = Path(args.exp_dir)
+    action = args.action
+    if action == "init":
+        target = {}
+        if args.target_json:
+            target = json.loads(Path(args.target_json).read_text(encoding="utf-8-sig"))
+        elif args.target_score:
+            target = json.loads(args.target_score)
+        bars = [b for b in (args.bar or []) if b]
+        out = ln.init_labbook(
+            exp_dir,
+            hypothesis=args.hypothesis or "",
+            target_score=target,
+            bars=bars or None,
+            thread_id=args.thread or "",
+        )
+    elif action == "append":
+        out = ln.append_entry(
+            exp_dir,
+            title=args.title or "",
+            hypothesis=args.hypothesis or "",
+            plan_id=args.plan_id or "",
+            change=args.change or "",
+            decision=args.decision or "continue",
+        )
+    elif action == "verify":
+        if not args.entry:
+            print(json.dumps({"error": "--entry required for verify"}, ensure_ascii=False))
+            return 1
+        out = ln.verify_entry(exp_dir, args.entry, auto_mark=not args.no_auto_mark)
+    elif action == "synthesize":
+        out = ln.synthesize(exp_dir, hypothesis=args.hypothesis or "")
+    elif action == "status":
+        out = ln.status(exp_dir)
+    elif action == "research":
+        out = ln.research_signals(exp_dir)
+    else:
+        out = {"error": f"unknown action {action}"}
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+        return 1
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    if action == "verify":
+        return 0 if out.get("ok") else (1 if args.strict else 0)
+    return 0 if "error" not in out else 1
+
+
 def cmd_repro_check(args: argparse.Namespace) -> int:
     skill_exp = workspace_root_from_here() / "skill-exp"
     if str(skill_exp) not in sys.path:
@@ -1779,6 +1831,30 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--exp-dir", required=True)
     s.add_argument("--hypothesis", default="")
     s.set_defaults(func=cmd_exp_reflect)
+
+    s = sub.add_parser(
+        "labnote",
+        help="Smart experiment lab notebook (H→E→F, mechanical bars, /labnote_loop)",
+    )
+    s.add_argument("--exp-dir", required=True)
+    s.add_argument(
+        "--action",
+        required=True,
+        choices=["init", "append", "verify", "synthesize", "status", "research"],
+    )
+    s.add_argument("--hypothesis", default="")
+    s.add_argument("--thread", default="")
+    s.add_argument("--title", default="")
+    s.add_argument("--plan-id", default="")
+    s.add_argument("--change", default="")
+    s.add_argument("--decision", default="continue")
+    s.add_argument("--entry", default="", help="E0001 for verify")
+    s.add_argument("--target-json", default="", help="path to target_score JSON")
+    s.add_argument("--target-score", default="", help="inline target_score JSON")
+    s.add_argument("--bar", action="append", default=[], help="pre-locked bar text (repeatable)")
+    s.add_argument("--no-auto-mark", action="store_true", help="do not tick bars from metrics")
+    s.add_argument("--strict", action="store_true", help="verify: exit 1 unless supported")
+    s.set_defaults(func=cmd_labnote)
 
     s = sub.add_parser("repro-check", help="Control/experimental design + double-exec gate")
     s.add_argument("--exp-dir", required=True)

@@ -9,7 +9,7 @@
 [![Agents](https://img.shields.io/badge/Agents-Claude%20·%20Codex%20·%20OpenClaw%20·%20more-3D5A80?style=flat)](SKILL.md)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-green.svg)](https://semver.org/)
 
-*Analysis · Multi-plan · Mini-verify · Train · Eval · Loop · `/draw` figures · Thread link*
+*Analysis · Multi-plan · Mini-verify · Train · Eval · Loop · Labnote · `/draw` figures · Thread link*
 
 [English](README.en.md) · [中文](README.zh-CN.md) · [Changelog](CHANGELOG.md)
 
@@ -37,6 +37,8 @@ Companion to [Paper_Rec](../skill/) (literature), Cognitive Threads (`content/th
 | `/exp_training` | Launch & monitor training |
 | `/exp_eval` | Metrics vs `target_score` |
 | `/exp_loop` | Full iterate loop |
+| `/labnote` | Smart H→E→F lab notebook (init/append/verify/synthesize) |
+| `/labnote_loop` | Autonomous Research→Decide→Verify→Reflect notebook loop |
 
 Loop skeleton:
 

@@ -1,12 +1,14 @@
 ---
 name: exp-sandbox
-version: 1.10.1
+version: 1.11.0
 description: >-
-  Automated experiment sandbox: dataset analysis, training, evaluation, and a
+  Automated experiment sandbox: dataset analysis, training, evaluation, a
   self-improving loop (analyze → multi-plan → mini-verify → train → eval →
-  iterate). Activated by /exp_analysis, /exp_training, /exp_eval, or /exp_loop.
-  Use for ML experiment orchestration, badcase clustering, data/label cleaning
-  plans, training monitors, target_score chasing, 实验沙箱/训练分析/评估迭代.
+  iterate), and an autonomous smart lab notebook (/labnote, /labnote_loop).
+  Activated by /exp_analysis, /exp_training, /exp_eval, /exp_loop, /labnote,
+  or /labnote_loop. Use for ML experiment orchestration, badcase clustering,
+  data/label cleaning plans, training monitors, target_score chasing,
+  实验沙箱/训练分析/评估迭代/智能实验笔记/lab notebook/H→E→F findings.
   Plans use three-pillar template (data/model/train). Figures via /draw.
   Bundled tricks + model leaderboards in reference/.
 ---
@@ -24,8 +26,9 @@ Orchestrate **analysis → plan → mini-validation → training → evaluation 
 ```
 Task Progress:
 - [ ] Collect run context (target_score, tools, data access, analysis tools)
-- [ ] Mode branch: analysis | training | eval | loop
+- [ ] Mode branch: analysis | training | eval | loop | labnote | labnote_loop
 - [ ] Persist plans & results under content/exp/ (or user-specified path)
+- [ ] Labnote: Research → Decide → Verify → Reflect (bars locked; registry-only numbers)
 - [ ] Stop when target_score met OR no better plan remains → final report
 ```
 
@@ -43,6 +46,8 @@ Task Progress:
 | `/exp_training` | Training | Launch / monitor training with loss & val curves |
 | `/exp_eval` | Evaluation | Run evaluation and report metrics vs `target_score` |
 | `/exp_loop` | Self-loop | Full iterate until target or exhaustion |
+| `/labnote` | Lab notebook | Init / append / verify / synthesize H→E→F notebook |
+| `/labnote_loop` | Notebook self-loop | Research→Decide→Verify→Reflect until stop |
 
 ### Usage format / 使用格式
 
@@ -51,18 +56,19 @@ Task Progress:
 target_score: OCR F1 >= 0.92 on test_handwriting_v2
 tool/function: [train_server=..., data_path=..., open_model=...]
 
-/exp_analysis eval
-（对当前模型在测试集上的 badcase 做聚类与方案）
-
-/exp_training
-（启动训练并监控）
-
-/exp_eval
-（输出指标表与是否达标）
-
 /exp_loop
 target_score: ...
 tool/function: ...
+
+/labnote init
+exp: content/exp/<id>
+hypothesis: LoRA rank 16 beats full FT under same steps
+target_score: {metric: F1, threshold: 0.92, eval_set: test_v2}
+
+/labnote_loop
+exp: content/exp/<id>
+max_rounds: 8
+thread: <optional>
 ```
 
 Strip the slash command; remaining text + structured fields are the run context.
@@ -332,6 +338,51 @@ After `/exp_eval`, check plan §6: every open thread claim referenced by the run
 
 ---
 
+## Module F — Smart Lab Notebook (`/labnote` · `/labnote_loop`)
+
+**Spec**: [`reference/labnote.md`](reference/labnote.md) · code: [`reference/labnote_loop.py`](reference/labnote_loop.py)
+
+Peer of `/exp_loop`: **自行调研 → 自行决策 → 自行验证 → 反思**. Goal: strongest lab notebook vs W&B-only trackers, labcoat/crux/aexp, and Notion diaries — by binding H→E→F to **pre-locked bars + number-verify + dead_ends + Thread**.
+
+### `/labnote` one-shot
+
+1. Resolve `content/exp/<id>` (ask if missing).
+2. `init` if no `labbook/config.md` — lock bars from `target_score` (immutable thresholds).
+3. After a run: `append` H→E→F card (git snapshot, plan id, evidence paths).
+4. `verify` — mechanical verdict from checkboxes; flag Finding numbers without metrics locus.
+5. `synthesize` — INDEX + `findings.md` + research-state labbook section.
+
+```powershell
+python -m wiki_bridge.cli labnote --exp-dir content/exp/<id> --action init --hypothesis "..." --bar "F1 >= 0.92 on test_v2"
+python -m wiki_bridge.cli labnote --exp-dir content/exp/<id> --action append --title "..." --hypothesis "..." --plan-id P2
+python -m wiki_bridge.cli labnote --exp-dir content/exp/<id> --action verify --entry E0001
+python -m wiki_bridge.cli labnote --exp-dir content/exp/<id> --action synthesize
+python -m wiki_bridge.cli number-verify --wiki-root . --exp-dir content/exp/<id> --thread <id> --strict
+```
+
+### `/labnote_loop` autonomy
+
+```text
+RESEARCH → DECIDE (≥2 hypotheses, c=0.7) → ACT (append ± /exp_* slice)
+        → VERIFY (bars + registry) → REFLECT (INDEX/findings/dead_ends) → stop?
+```
+
+**Stop when**: target met with a `verified` entry, **or** no positive-EV action left, **or** `max_rounds` (default 8), **or** user abort.
+
+**Hard rules**
+
+- Lock bars **before** interpreting new metrics (no goalpost moves).
+- Never invent metrics; cite only `metrics/` or verified registry.
+- Read dead_ends every Decide; write dead_end leaf on failure before next round.
+- May call `/exp_training` / `/exp_eval` / mini `/exp_loop` when Decide needs a new run — then return to VERIFY.
+- Optional lit via `/query_*` only for method ideas; store `paper_refs`, no fake papers.
+
+### Mode playbook
+
+Ask only for missing `exp-dir` / `target_score` / dangerous actions. Otherwise run the loop and report paths: `labbook/INDEX.md`, latest `entries/E*.md`, `verify/*.json`, `findings.md`.
+
+---
+
 ## Mode Playbooks / 各模式剧本
 
 ### `/exp_analysis` (+ train | eval)
@@ -356,6 +407,10 @@ Compare methods with `/draw multi_bar` or `bar_line` when multiple runs exist.
 
 Execute Module E end-to-end; ask only for missing critical context or dangerous actions (delete large data, spend money, overwrite prod).
 
+### `/labnote` · `/labnote_loop`
+
+Execute Module F; prefer `/labnote_loop` when the user wants autonomous notebook research like `/exp_loop`. Pair with `/exp_*` for actual training; notebook owns narrative + gates.
+
 ---
 
 ## Persistence / 结果落盘
@@ -369,6 +424,8 @@ content/exp/<experiment_id>/
   plans/P*.md               # solution plans
   analysis/                 # cluster reports
   metrics/                  # summary.json + curves.json
+  labbook/                  # /labnote H→E→F notebook
+  findings.md               # outer reflect + labbook digest
   final_report.md           # stop condition report
 ```
 

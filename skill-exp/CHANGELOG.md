@@ -1,5 +1,14 @@
 # Changelog — exp-sandbox
 
+## [1.11.0] — 2026-07-28
+
+### Added
+
+- **`/labnote` · `/labnote_loop`** (Module F): autonomous Research→Decide→Verify→Reflect lab notebook
+- `reference/labnote.md` positioning vs W&B / labcoat / crux / aexp; H→E→F + pre-locked bars
+- `reference/labnote_loop.py` + wiki-bridge CLI `labnote` (init/append/verify/synthesize/status/research)
+- Mechanical verdict + metrics-locus gate; synthesizes into `findings.md` / research-state
+
 ## [1.10.1] — 2026-07-23
 
 ### Added

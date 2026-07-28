@@ -589,6 +589,7 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki deep-research` | Learnings tree → follow-up queries (depth×breadth) |
 | `/wiki research-session` | Deferred gather→write_report session (`research_id`) |
 | `/wiki exp-reflect` | Outer-loop `findings.md` + research-state from exp dir |
+| `/wiki labnote` | Smart lab notebook CLI mirror (`labnote` actions; prefer `/labnote`) |
 | `/wiki repro-check` | Control/experimental design + double-exec gate |
 | `/wiki exp-eval-hook` | Persist `/exp_eval` metrics then optional number-verify |
 | `/wiki exp-tree` | Experiment tree show/add/buggy/ready |

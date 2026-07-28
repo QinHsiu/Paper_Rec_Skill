@@ -6,6 +6,12 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.40.0] — 2026-07-28
+
+### Added
+
+- **exp-sandbox** v1.11.0: `/labnote` + `/labnote_loop` smart experiment notebook (H→E→F, mechanical bars, registry gates) — peer of `/exp_loop`
+
 ## [2.39.0] — 2026-07-28
 
 ### Changed

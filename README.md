@@ -7,9 +7,9 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.39.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.40.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
 [![paper-rec](https://img.shields.io/badge/paper--rec-v1.17.0-1A2332?style=for-the-badge)](skill/VERSION)
-[![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.10.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
+[![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.11.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![multi-agent-lab](https://img.shields.io/badge/multi--agent--lab-v1.0.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-agents/VERSION)
 [![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.1-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
 [![MCP](https://img.shields.io/badge/MCP-Thread%20Memory-0F766E?style=for-the-badge&labelColor=1A2332)](docs/MCP.md)
@@ -127,7 +127,7 @@ flowchart LR
 ### Experiment + Draw + Lab
 **exp-sandbox · plot-draw · multi-agent-lab**
 
-- `/exp_*` 沙箱闭环 · `/draw` 出图
+- `/exp_*` 沙箱闭环 · `/labnote*` 智能实验笔记 · `/draw` 出图
 - `/lab` · `/lab_run` · `/lab_status` 多 Agent 编排
 - Brain 分发 + fast/standard/deep 模型分级
 - Accept 硬闸后再写作
@@ -191,8 +191,9 @@ Query 可加前缀：`thread:<id> ...`；全自动检索可用 `/query_* auto`�
 | `/exp_training` | 训练监控；曲线按 `/draw` 规范导出 |
 | `/exp_eval` | 指标对照 `target_score` + 对比图；写 `metrics/summary.json` |
 | `/exp_loop` | 分析 → 方案 → 清洗验证 → 训练 → 评估 → 迭代（更新 `exp-tree`） |
+| `/labnote` · `/labnote_loop` | 智能实验笔记：调研→决策→验证（H→E→F · 预锁判定条 · 硬闸） |
 
-配套 CLI：`exp-eval-hook` · `exp-tree` · `repro-check` · `exp-reflect`（经 `wiki_bridge`）。
+配套 CLI：`exp-eval-hook` · `exp-tree` · `repro-check` · `exp-reflect` · `labnote`（经 `wiki_bridge`）。
 
 ### plot-draw
 
@@ -478,7 +479,8 @@ Paper_Rec_Skill/
 | [skill/references/rebuttal.md](skill/references/rebuttal.md) | 审稿回复模板 |
 | [skill/references/writing-gates.md](skill/references/writing-gates.md) | 写作 / 引用 / 硬闸清单 |
 | [skill/references/neurips-review-gate.md](skill/references/neurips-review-gate.md) | 草稿审稿维度 |
-| [skill-exp/README.md](skill-exp/README.md) | 实验 Skill · 借鉴说明 |
+| [skill-exp/README.md](skill-exp/README.md) | 实验 Skill · `/labnote*` 智能笔记 |
+| [skill-exp/reference/labnote.md](skill-exp/reference/labnote.md) | Lab notebook 契约与竞品打法 |
 | [skill-agents/README.md](skill-agents/README.md) | 多 Agent 实验实验室 · 模型分级 |
 | [skill-draw/README.md](skill-draw/README.md) | `/draw` 出图 · venue 预设 |
 | [packages/wiki-bridge/README.md](packages/wiki-bridge/README.md) | sync + thread + integrity CLI |
