@@ -4,6 +4,12 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.18.0] — 2026-07-30
+
+### Changed
+
+- **Scope**: WeChat 公众号草稿发布移至独立模块 [`../skill-wxmp/`](../skill-wxmp/)（`/wxmp`）；`skill/` 仅保留检索 · Wiki · `/ppt` · `/rebuttal`
+
 ## [1.17.0] — 2026-07-28
 
 ### Changed

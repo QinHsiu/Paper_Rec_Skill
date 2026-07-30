@@ -5,7 +5,7 @@
 **Intelligent Literature Retrieval · Agent Skill**  
 **智能文献检索 · Agent 技能（跨平台）**
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-1.18.0-blue.svg)](VERSION)
 [![Agents](https://img.shields.io/badge/Agents-Claude%20·%20Codex%20·%20OpenClaw%20·%20more-3D5A80?style=flat)](SKILL.md)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-green.svg)](https://semver.org/)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](#license)

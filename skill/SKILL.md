@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.17.0
+version: 1.18.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -10,6 +10,7 @@ description: >-
   wiki library status / start wiki UI, research thread / 研究主线 association,
   paper deep-read / 精读 / group-meeting PPT / 组会PPT / slides / three-layer QA,
   peer-review rebuttal / 审稿回复 / author response / OpenReview / CVPR rebuttal.
+  WeChat 公众号发布 belongs to sibling skill-wxmp (/wxmp), not this skill.
 ---
 
 # Paper Recommendation Skill / 论文推荐技能
@@ -35,6 +36,8 @@ Task Progress:
 ```
 
 **Trigger**: User provides a research topic, question, or long description and wants relevant papers; **or** asks to deep-read a paper into a group PPT; **or** asks to draft a rebuttal.
+
+> WeChat 公众号草稿 → use sibling **`skill-wxmp`** (`/wxmp`), not paper-rec.
 
 ---
 
@@ -779,5 +782,6 @@ See [examples.md](examples.md) for a full walkthrough.
 - Rebuttal pack: [references/rebuttal.md](references/rebuttal.md)
 - Rebuttal venues: [references/rebuttal-venues.md](references/rebuttal-venues.md)
 - PPTX helper: [scripts/md_slides_to_pptx.py](scripts/md_slides_to_pptx.py)
+- WeChat 公众号草稿（独立模块）: [`../skill-wxmp/`](../skill-wxmp/) · `/wxmp`
 - Self-hosted Wiki + bridge: `../apps/wiki-api/`, `../apps/wiki-web/`, `../packages/wiki-bridge/`, `../content/`
 - Workspace architecture: `../docs/ARCHITECTURE.md`

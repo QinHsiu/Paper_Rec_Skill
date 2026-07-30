@@ -1,0 +1,11 @@
+{
+  "default_account": "main",
+  "accounts": {
+    "main": {
+      "app_id": "your_app_id",
+      "app_secret": "your_app_secret",
+      "description": "论文读书笔记公众号",
+      "modelscope_api_key": null
+    }
+  }
+}

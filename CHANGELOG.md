@@ -2,9 +2,19 @@
 
 All notable changes to the **Paper_Rec Workspace** follow [Semantic Versioning](https://semver.org/).
 
-Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/CHANGELOG.md`](skill-exp/CHANGELOG.md), [`skill-agents/CHANGELOG.md`](skill-agents/CHANGELOG.md), [`skill-draw/CHANGELOG.md`](skill-draw/CHANGELOG.md).
+Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/CHANGELOG.md`](skill-exp/CHANGELOG.md), [`skill-agents/CHANGELOG.md`](skill-agents/CHANGELOG.md), [`skill-draw/CHANGELOG.md`](skill-draw/CHANGELOG.md), [`skill-wxmp/CHANGELOG.md`](skill-wxmp/CHANGELOG.md).
 
 ---
+
+## [2.41.0] — 2026-07-30
+
+### Added
+
+- **skill-wxmp** v1.1.0 (`wxmp-draft`): `/wxmp` 微信公众号草稿箱（Paper_Rec 发布侧独立模块）
+
+### Changed
+
+- **paper-rec** v1.18.0: 明确边界——检索/解读/PPT/rebuttal only；公众号发布迁至 `skill-wxmp/`
 
 ## [2.40.0] — 2026-07-28
 

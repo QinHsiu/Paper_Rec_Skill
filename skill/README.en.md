@@ -14,6 +14,8 @@ An **Agent Skill** for academic paper recommendation. It runs an end-to-end work
 - **Wiki / threads**: `/wiki` · `/wiki thread` · `/wiki thread delta`
 - **Deep-read PPT**: `/ppt` · **Rebuttal**: `/rebuttal`
 
+> WeChat Official Account drafts: sibling [`../skill-wxmp/`](../skill-wxmp/) (`/wxmp`), not this skill.
+
 ---
 
 ## Directory Structure

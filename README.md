@@ -7,11 +7,12 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.40.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
-[![paper-rec](https://img.shields.io/badge/paper--rec-v1.17.0-1A2332?style=for-the-badge)](skill/VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.41.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![paper-rec](https://img.shields.io/badge/paper--rec-v1.18.0-1A2332?style=for-the-badge)](skill/VERSION)
 [![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.11.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![multi-agent-lab](https://img.shields.io/badge/multi--agent--lab-v1.0.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-agents/VERSION)
 [![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.1-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
+[![wxmp-draft](https://img.shields.io/badge/wxmp--draft-v1.2.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-wxmp/VERSION)
 [![MCP](https://img.shields.io/badge/MCP-Thread%20Memory-0F766E?style=for-the-badge&labelColor=1A2332)](docs/MCP.md)
 [![License](https://img.shields.io/badge/license-MIT-5C6B7A?style=for-the-badge&labelColor=1A2332)](LICENSE)
 
@@ -111,13 +112,14 @@ flowchart LR
 <td width="25%" valign="top">
 
 ### Literature Skill
-**paper-rec · v1.17**
+**paper-rec · v1.18**
 
 - `/query_english` · `/query_chinese` · `/query_other`
 - `/ppt` 精读→组会PPT（三层 QA · Thread 挂钩）· `/rebuttal`（venue 族 · 实验分诊 · 硬闸）
 - Module 0 clarify · research-brief · 1.5 / 2.5 主线注入
 - arXiv · OpenAlex · HF · GitHub · PwC · CCF…
 - 覆盖反思 · 发现饱和 · 主动筛选 · 新颖性熔断
+- 公众号发布 → 独立模块 [`skill-wxmp`](skill-wxmp/README.md) `/wxmp`
 
 [skill/README.md](skill/README.md)
 
@@ -132,7 +134,7 @@ flowchart LR
 - Brain 分发 + fast/standard/deep 模型分级
 - Accept 硬闸后再写作
 
-[skill-exp](skill-exp/README.md) · [skill-draw](skill-draw/README.md) · [skill-agents](skill-agents/README.md)
+[skill-exp](skill-exp/README.md) · [skill-draw](skill-draw/README.md) · [skill-agents](skill-agents/README.md) · [skill-wxmp](skill-wxmp/README.md)
 
 </td>
 <td width="25%" valign="top">
@@ -182,6 +184,15 @@ flowchart LR
 | `/wiki` + bridge CLI | 见下「写作与诚信闸门」与 Skill 全表 |
 
 Query 可加前缀：`thread:<id> ...`；全自动检索可用 `/query_* auto`。
+
+### wxmp-draft（独立 · 非 paper-rec）
+
+| Command | Role |
+|:--------|:-----|
+| `/wxmp note` · `/wxmp draft` | 读书笔记 → 微信公众号**草稿箱** |
+| `/wxmp publish` | 正式发布（慎用；默认人工后台点发） |
+
+详见 [`skill-wxmp/README.md`](skill-wxmp/README.md)。
 
 ### exp-sandbox
 
@@ -301,11 +312,12 @@ powershell -ExecutionPolicy Bypass -File scripts/configure-mcp.ps1 -Apply
 ### ② 安装 Skills（跨平台）
 
 ```bash
-mkdir -p .agents/skills/paper-rec .agents/skills/exp-sandbox .agents/skills/plot-draw .agents/skills/multi-agent-lab
+mkdir -p .agents/skills/paper-rec .agents/skills/exp-sandbox .agents/skills/plot-draw .agents/skills/multi-agent-lab .agents/skills/wxmp-draft
 cp -r skill/* .agents/skills/paper-rec/
 cp -r skill-exp/* .agents/skills/exp-sandbox/
 cp -r skill-draw/* .agents/skills/plot-draw/
 cp -r skill-agents/* .agents/skills/multi-agent-lab/
+cp -r skill-wxmp/* .agents/skills/wxmp-draft/
 ```
 
 ```text
@@ -410,6 +422,7 @@ Paper_Rec_Skill/
 ├── skill-exp/                  # exp-sandbox · 实验沙箱 + eval_hook / exp_tree / repro
 ├── skill-agents/               # multi-agent-lab · Brain 编排 + 模型分级
 ├── skill-draw/                 # plot-draw · /draw + lib/venues.py
+├── skill-wxmp/                 # wxmp-draft · /wxmp 公众号草稿箱（独立于 paper-rec）
 ├── apps/
 │   ├── wiki-api/               # FastAPI  :8787  (/api/threads · /api/exp)
 │   ├── wiki-web/               # Vue3 SPA :5173  (/threads · /experiments)
@@ -440,10 +453,11 @@ Paper_Rec_Skill/
 
 | Layer | Owns |
 |:------|:-----|
-| **skill/** | 检索流水线、主线注入/重排、`/wiki*`、写作闸门协议 |
+| **skill/** | 检索流水线、主线注入/重排、`/wiki*`、写作闸门协议（不含公众号发布） |
 | **skill-exp/** | 实验闭环；`eval_hook` / `exp_tree` / `repro_design` / `exp_reflect` |
 | **skill-agents/** | 多 Agent 编排；Brain 分发；fast/standard/deep 路由 |
 | **skill-draw/** | `/draw` + venue 顶会风格 |
+| **skill-wxmp/** | `/wxmp` 微信草稿箱；与 paper-rec 解耦 |
 | **wiki-api / wiki-web** | 阅读、主线、实验看板、图谱 |
 | **wiki-bridge** | 结构化报告 ↔ Git Markdown / Threads / 诚信 CLI |
 | **thread-mcp** | MCP 暴露主线记忆工具 |
@@ -479,6 +493,7 @@ Paper_Rec_Skill/
 | [skill/references/rebuttal.md](skill/references/rebuttal.md) | 审稿回复模板 |
 | [skill/references/writing-gates.md](skill/references/writing-gates.md) | 写作 / 引用 / 硬闸清单 |
 | [skill/references/neurips-review-gate.md](skill/references/neurips-review-gate.md) | 草稿审稿维度 |
+| [skill-wxmp/README.md](skill-wxmp/README.md) | `/wxmp` 公众号草稿 · 独立模块 |
 | [skill-exp/README.md](skill-exp/README.md) | 实验 Skill · `/labnote*` 智能笔记 |
 | [skill-exp/reference/labnote.md](skill-exp/reference/labnote.md) | Lab notebook 契约与竞品打法 |
 | [skill-agents/README.md](skill-agents/README.md) | 多 Agent 实验实验室 · 模型分级 |

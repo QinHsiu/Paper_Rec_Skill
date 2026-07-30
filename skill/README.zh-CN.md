@@ -15,6 +15,8 @@
 - **三种语言模式**：英文、中文、自适应
 - **Wiki / 主线**：`/wiki` · `/wiki thread` · `/wiki thread delta`
 
+> 微信公众号草稿请用独立模块 [`../skill-wxmp/`](../skill-wxmp/)（`/wxmp`），不在本 skill。
+
 ---
 
 ## 目录结构

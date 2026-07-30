@@ -1,0 +1,8 @@
+# WeChat Official Account secrets
+scripts/wxmp_accounts.json
+**/wxmp_accounts.json
+.env
+*.key
+temp_cover_*.jpg
+__pycache__/
+*.pyc

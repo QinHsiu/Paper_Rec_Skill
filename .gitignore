@@ -36,3 +36,8 @@ content/uploads/
 benchmarks/litsearch/cache/
 benchmarks/litsearch/runs/
 benchmarks/**/last_run.json
+
+# WeChat Official Account secrets (skill-wxmp /wxmp)
+skill-wxmp/scripts/wxmp_accounts.json
+**/wxmp_accounts.json
+temp_cover_*.jpg

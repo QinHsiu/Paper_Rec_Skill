@@ -7,6 +7,7 @@ flowchart TB
   subgraph agent [Agent Runtime]
     Skill[skill-paper-rec]
     Exp[skill-exp-sandbox]
+    Wxmp[skill-wxmp-draft]
   end
   subgraph bridge [wiki-bridge]
     Sync[sync-report]
@@ -29,8 +30,10 @@ flowchart TB
   subgraph expstore [Experiments]
     EX[content/exp]
   end
-  User -->|query| Skill
+  User -->|query / ppt / rebuttal| Skill
   User -->|exp| Exp
+  User -->|wxmp draft| Wxmp
+  Skill -->|optional note md| Wxmp
   Skill --> Sync --> MD
   Exp --> EX
   Exp --> SyncExp
@@ -47,7 +50,9 @@ flowchart TB
 
 | Module | Path | Owns | Does not own |
 |--------|------|------|--------------|
-| **skill-paper-rec** | `skill/` | Query rewrite, retrieval, scoring, `/wiki` | Training execution |
+| **skill-paper-rec** | `skill/` | Query rewrite, retrieval, scoring, `/wiki`, `/ppt`, `/rebuttal` | Training execution; WeChat publish |
+| **skill-exp-sandbox** | `skill-exp/` | `/exp_*` + `reference/` + sync-exp → Wiki 实验 | Replacing Wiki UI |
+| **skill-wxmp-draft** | `skill-wxmp/` | `/wxmp` 公众号草稿箱 | Literature retrieval |
 | **skill-exp-sandbox** | `skill-exp/` | `/exp_*` + `reference/` + sync-exp → Wiki 实验 | Replacing Wiki UI |
 | **wiki-api** | `apps/wiki-api/` | Papers + `/api/exp` + weekly + graph + **templates** | Retrieval / training |
 | **wiki-web** | `apps/wiki-web/` | Vue SPA（含主线模板市场） | Persistence format |
