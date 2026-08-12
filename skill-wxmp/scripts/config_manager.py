@@ -179,10 +179,6 @@ if __name__ == "__main__":
         print("  删除账号: python config_manager.py delete <名称>")
         print("  设置默认: python config_manager.py set_default <名称>")
         print("  创建示例: python config_manager.py create_example")
-        print("\n示例:")
-        print("  python config_manager.py add myaccount wx1234567890abcdef my-secret '我的公众号'")
-        print("  python config_manager.py list")
-        print("  python config_manager.py set_default myaccount")
         sys.exit(1)
 
     command = sys.argv[1]
