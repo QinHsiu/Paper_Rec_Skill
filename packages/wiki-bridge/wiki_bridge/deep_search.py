@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import time
 import urllib.parse
 from pathlib import Path
 from typing import Any, Protocol, TypedDict
@@ -20,13 +21,19 @@ def arxiv_search_url(query: str, *, limit: int = 8) -> str:
 
 
 class ArxivQuerySearcher:
-    def __init__(self, fetch_bytes=None):
+    def __init__(self, fetch_bytes=None, *, wait_time: float = 3.0, sleep=None):
         if fetch_bytes is None:
             from .arxiv_watch import _http_get as fetch_bytes  # production only
         self.fetch_bytes = fetch_bytes
+        self.wait_time = float(wait_time)
+        self.sleep = sleep or time.sleep
+        self._has_searched = False
 
     def search(self, query: str, *, limit: int = 8) -> list[dict[str, Any]]:
+        if self._has_searched and self.wait_time > 0:
+            self.sleep(self.wait_time)
         raw = self.fetch_bytes(arxiv_search_url(query, limit=limit))
+        self._has_searched = True
         if not raw:
             return []
         docs = parse_atom_feed(raw, source_cat="search")
@@ -289,6 +296,7 @@ def persist_deep_search(
     wiki_root = Path(wiki_root)
     day = ts.utc_now_iso()[:10]
     if thread_id:
+        ts.load_thread(wiki_root, thread_id)
         out_dir = ts.thread_dir(wiki_root, thread_id) / "drafts"
     else:
         out_dir = ts.workspace_from_wiki_root(wiki_root) / "content" / "deep_search"

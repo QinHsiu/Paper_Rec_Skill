@@ -929,13 +929,25 @@ def cmd_deep_search(args: argparse.Namespace) -> int:
     searcher: object
     if args.json:
         raw = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
-        if isinstance(raw, dict) and any(isinstance(v, list) for v in raw.values()):
+        if isinstance(raw, list):
+            searcher = FakeSearcher({args.topic: raw})
+        elif isinstance(raw, dict) and (
+            isinstance(raw.get("papers"), list) or isinstance(raw.get("documents"), list)
+        ):
+            seed_hits = raw["papers"] if isinstance(raw.get("papers"), list) else raw["documents"]
+            searcher = FakeSearcher({args.topic: seed_hits})
+        elif isinstance(raw, dict):
             searcher = FakeSearcher({k: v for k, v in raw.items() if isinstance(v, list)})
         else:
-            papers = raw if isinstance(raw, list) else list(raw.get("papers") or [])
-            searcher = FakeSearcher({args.topic: papers})
+            searcher = FakeSearcher({args.topic: []})
     else:
         searcher = ArxivQuerySearcher()
+    if args.thread:
+        try:
+            thread_store.load_thread(Path(args.wiki_root), args.thread)
+        except (FileNotFoundError, ValueError) as exc:
+            print(json.dumps({"error": f"invalid thread `{args.thread}`: {exc}"}, ensure_ascii=False))
+            return 2
     report = run_deep_search(
         args.topic,
         searcher=searcher,

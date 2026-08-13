@@ -51,12 +51,28 @@ def test_arxiv_query_searcher_parses_atom():
         assert "export.arxiv.org" in url
         return SAMPLE_ATOM.encode("utf-8")
 
-    s = ArxivQuerySearcher(fetch_bytes=fake_fetch)
+    s = ArxivQuerySearcher(fetch_bytes=fake_fetch, wait_time=0)
     hits = s.search("alpha", limit=8)
     assert hits[0]["title"] == "Paper Alpha Title"
     assert hits[0]["arxiv"] == "2204.10254"
     assert "Alpha abstract" in hits[0]["abstract"]
     assert hits[0]["url"] == "https://arxiv.org/abs/2204.10254"
+
+
+def test_arxiv_query_searcher_waits_between_requests():
+    sleeps: list[float] = []
+
+    def fake_fetch(url: str) -> bytes:
+        return SAMPLE_ATOM.encode("utf-8")
+
+    s = ArxivQuerySearcher(
+        fetch_bytes=fake_fetch,
+        wait_time=3.0,
+        sleep=sleeps.append,
+    )
+    s.search("alpha", limit=1)
+    s.search("alpha", limit=1)
+    assert sleeps == [3.0]
 
 
 def test_paper_id_prefers_arxiv_then_doi_then_title():
@@ -236,6 +252,7 @@ def test_skill_mentions_breadth_depth_flags():
     assert "--breadth" in text
     assert "--depth" in text
     assert "deep-search" in text
+    assert "skip the old 1-wave refine" in text
 
 
 def test_cli_deep_search_with_seed_json(tmp_path):
@@ -266,6 +283,61 @@ def test_cli_deep_search_with_seed_json(tmp_path):
     payload = json.loads(proc.stdout)
     assert "stop_reason" in payload
     assert payload["paper_n"] >= 1
+
+
+def test_cli_deep_search_papers_seed_is_used_for_topic(tmp_path):
+    seed_path = tmp_path / "seed.json"
+    seed_path.write_text(
+        json.dumps({"papers": [{"title": "Seed Paper", "abstract": "retrieval"}]}),
+        encoding="utf-8",
+    )
+    cmd = [
+        sys.executable,
+        "-m",
+        "wiki_bridge.cli",
+        "deep-search",
+        "--topic",
+        "RAG",
+        "--breadth",
+        "1",
+        "--depth",
+        "1",
+        "--wiki-root",
+        str(tmp_path),
+        "--json",
+        str(seed_path),
+        "--dry-run",
+    ]
+    proc = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    assert json.loads(proc.stdout)["paper_n"] == 1
+
+
+def test_cli_deep_search_missing_thread_fails_without_writing(tmp_path):
+    seed_path = tmp_path / "seed.json"
+    seed_path.write_text(json.dumps({"papers": [{"title": "Seed Paper"}]}), encoding="utf-8")
+    cmd = [
+        sys.executable,
+        "-m",
+        "wiki_bridge.cli",
+        "deep-search",
+        "--topic",
+        "RAG",
+        "--depth",
+        "1",
+        "--wiki-root",
+        str(tmp_path),
+        "--json",
+        str(seed_path),
+        "--thread",
+        "missing-thread",
+    ]
+    proc = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True)
+    assert proc.returncode != 0
+    assert "Traceback" not in proc.stderr
+    assert json.loads(proc.stdout)["error"]
+    assert not (tmp_path / "content" / "deep_search").exists()
+    assert not (tmp_path / "content" / "threads" / "missing-thread" / "drafts").exists()
 
 
 if __name__ == "__main__":

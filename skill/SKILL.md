@@ -456,6 +456,7 @@ Locked command syntax:
 ```
 
 **Action**:
+0. If `--breadth` / `--depth` was passed (or live deep-search already ran), skip the old 1-wave refine Actions below and use the deep-search markdown report as the user-facing output.
 1. After wave 0, if kept unique hits **&lt; 8** → widen (drop rare terms / add synonyms / sibling venues); if **&gt; 40** noisy → narrow (add claim/gap tokens, year filter).
 2. Run **at most one** refine wave; stop early if already in [8, 40].
 3. Record a **检索轨迹 / Retrieval trace** (round, queries, raw hits, kept). Prefer persist via:
