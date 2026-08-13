@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import tempfile
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -177,6 +178,21 @@ def test_persist_writes_files_and_query_iter(tmp_path):
     assert out["query_iter_n"] >= 1
 
 
+def test_persist_uses_thread_store_clock_for_both_filenames(tmp_path):
+    report = {
+        "topic": "RAG",
+        "breadth": 1,
+        "max_depth": 1,
+        "stop_reason": "max_depth",
+        "rounds": [],
+        "papers": [],
+    }
+    with patch("wiki_bridge.deep_search.ts.utc_now_iso", return_value="2026-08-14T00:00:00Z"):
+        out = persist_deep_search(tmp_path, report)
+    assert Path(out["json_path"]).name == "deep_search_2026-08-14.json"
+    assert Path(out["md_path"]).name == "deep_search_2026-08-14.md"
+
+
 if __name__ == "__main__":
     test_paper_id_prefers_arxiv_then_doi_then_title()
     test_paper_id_normalizes_doi_prefixes()
@@ -191,4 +207,5 @@ if __name__ == "__main__":
     test_render_contains_reasoning_chain()
     with tempfile.TemporaryDirectory() as tmp:
         test_persist_writes_files_and_query_iter(Path(tmp))
+        test_persist_uses_thread_store_clock_for_both_filenames(Path(tmp))
     print("OK deep_search")

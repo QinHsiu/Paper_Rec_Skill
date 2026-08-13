@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol, TypedDict
 
@@ -253,7 +252,7 @@ def persist_deep_search(
     thread_id: str = "",
 ) -> dict[str, Any]:
     wiki_root = Path(wiki_root)
-    day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    day = ts.utc_now_iso()[:10]
     if thread_id:
         out_dir = ts.thread_dir(wiki_root, thread_id) / "drafts"
     else:
