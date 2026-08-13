@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Protocol, TypedDict
 
-from .rrf import normalize_arxiv_id
+from .rrf import normalize_arxiv_id, normalize_doi
 
 
 class PaperHit(TypedDict):
@@ -20,7 +20,7 @@ def paper_id(hit: dict[str, Any]) -> str:
     arxiv = normalize_arxiv_id(str(hit.get("arxiv") or hit.get("id") or ""))
     if arxiv:
         return f"arxiv:{arxiv}"
-    doi = str(hit.get("doi") or "").strip().lower().removeprefix("https://doi.org/")
+    doi = normalize_doi(str(hit.get("doi") or ""))
     if doi:
         return f"doi:{doi}"
     title = " ".join(str(hit.get("title") or "").split()).lower()
