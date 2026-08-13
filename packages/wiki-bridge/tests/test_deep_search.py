@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,9 +13,12 @@ from wiki_bridge.deep_search import (
     HeuristicReasoner,
     clip_followups,
     paper_id,
+    persist_deep_search,
+    render_deep_search_markdown,
     run_deep_search,
     search_round,
 )
+from wiki_bridge.thread_store import create_thread, list_events
 
 
 def test_paper_id_prefers_arxiv_then_doi_then_title():
@@ -134,6 +138,45 @@ def test_run_deep_search_stops_when_reasoner_says_sufficient():
     assert len(out["rounds"]) == 1
 
 
+def test_render_contains_reasoning_chain():
+    report = {
+        "topic": "RAG",
+        "breadth": 2,
+        "max_depth": 1,
+        "stop_reason": "max_depth",
+        "rounds": [
+            {
+                "round": 1,
+                "queries": ["RAG"],
+                "hits": [{"title": "P1", "url": "https://arxiv.org/abs/1111.00001", "abstract": "abs"}],
+                "learnings": [{"learning": "abs", "citation": "P1"}],
+                "followups": ["next"],
+                "sufficient": False,
+            }
+        ],
+        "papers": [{"title": "P1", "url": "https://arxiv.org/abs/1111.00001", "abstract": "abs"}],
+        "learnings": [],
+        "followups": ["next"],
+    }
+    md = render_deep_search_markdown(report)
+    assert "# Deep Search — RAG" in md
+    assert "Reasoning chain" in md
+    assert "Round 1" in md
+    assert "P1" in md
+
+
+def test_persist_writes_files_and_query_iter(tmp_path):
+    create_thread(tmp_path, title="T", thread_id="t1", hypothesis="h")
+    searcher = FakeSearcher({"RAG": [{"title": "P1", "abstract": "a", "arxiv": "1111.00001"}]})
+    report = run_deep_search("RAG", searcher=searcher, reasoner=HeuristicReasoner(), breadth=1, max_depth=1)
+    out = persist_deep_search(tmp_path, report, thread_id="t1")
+    assert Path(out["json_path"]).is_file()
+    assert Path(out["md_path"]).is_file()
+    kinds = [e.get("kind") for e in list_events(tmp_path, "t1", limit=50)]
+    assert "query_iter" in kinds
+    assert out["query_iter_n"] >= 1
+
+
 if __name__ == "__main__":
     test_paper_id_prefers_arxiv_then_doi_then_title()
     test_paper_id_normalizes_doi_prefixes()
@@ -145,4 +188,7 @@ if __name__ == "__main__":
     test_run_deep_search_two_rounds_then_max_depth()
     test_run_deep_search_stops_when_no_new_papers()
     test_run_deep_search_stops_when_reasoner_says_sufficient()
+    test_render_contains_reasoning_chain()
+    with tempfile.TemporaryDirectory() as tmp:
+        test_persist_writes_files_and_query_iter(Path(tmp))
     print("OK deep_search")

@@ -1,11 +1,15 @@
 """Live Search → Read → Reason loop (injectable Searcher / Reasoner)."""
 from __future__ import annotations
 
+import json
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Protocol, TypedDict
 
 from .deep_research import extract_learnings, followups_from_learnings
 from .reflect_search import reflect_coverage
 from .rrf import normalize_arxiv_id, normalize_doi
+from . import thread_store as ts
 
 
 class PaperHit(TypedDict):
@@ -205,4 +209,82 @@ def run_deep_search(
         "papers": all_papers,
         "learnings": all_learnings,
         "followups": last_followups,
+    }
+
+
+def render_deep_search_markdown(report: dict[str, Any]) -> str:
+    lines = [
+        f"# Deep Search — {report.get('topic')}",
+        "",
+        f"- breadth: `{report.get('breadth')}`",
+        f"- max_depth: `{report.get('max_depth')}`",
+        f"- stop_reason: `{report.get('stop_reason')}`",
+        f"- papers: `{len(report.get('papers') or [])}`",
+        "",
+        "## Reasoning chain",
+        "",
+    ]
+    for rnd in report.get("rounds") or []:
+        lines.append(f"### Round {rnd.get('round')}")
+        lines.append(f"- queries: {', '.join(rnd.get('queries') or []) or '—'}")
+        hits = rnd.get("hits") or []
+        lines.append("- new papers: " + (", ".join(h.get("title") or "?" for h in hits) or "—"))
+        learns = [str(x.get("learning") or "")[:160] for x in (rnd.get("learnings") or [])]
+        lines.append("- learnings:")
+        lines.extend(f"  - {x}" for x in learns or ["—"])
+        fups = rnd.get("followups") or []
+        lines.append("- follow-ups: " + (", ".join(fups) if fups else "—"))
+        lines.append("")
+    lines.extend(["## Papers", ""])
+    for paper in report.get("papers") or []:
+        title = paper.get("title") or "?"
+        url = paper.get("url") or ""
+        abstract = (paper.get("abstract") or "")[:180]
+        label = f"[{title}]({url})" if url else title
+        lines.append(f"- {label} — {abstract}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def persist_deep_search(
+    wiki_root: Path,
+    report: dict[str, Any],
+    *,
+    thread_id: str = "",
+) -> dict[str, Any]:
+    wiki_root = Path(wiki_root)
+    day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if thread_id:
+        out_dir = ts.thread_dir(wiki_root, thread_id) / "drafts"
+    else:
+        out_dir = ts.workspace_from_wiki_root(wiki_root) / "content" / "deep_search"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    json_path = out_dir / f"deep_search_{day}.json"
+    md_path = out_dir / f"deep_search_{day}.md"
+    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    md_path.write_text(render_deep_search_markdown(report), encoding="utf-8")
+
+    query_iter_n = 0
+    if thread_id:
+        trace = []
+        for rnd in report.get("rounds") or []:
+            learnings = [str(item.get("learning") or "")[:160] for item in (rnd.get("learnings") or [])]
+            notes = f"stop={report.get('stop_reason')}"
+            if learnings:
+                notes += "; learnings=" + " | ".join(learnings)
+            hits = rnd.get("hits") or []
+            trace.append(
+                {
+                    "round": rnd.get("round"),
+                    "queries": rnd.get("queries") or [],
+                    "raw_hits": len(hits),
+                    "kept": len(hits),
+                    "notes": notes,
+                }
+            )
+        query_iter_n = len(ts.append_query_trace(wiki_root, thread_id, trace, by="deep_search"))
+    return {
+        "json_path": str(json_path),
+        "md_path": str(md_path),
+        "query_iter_n": query_iter_n,
     }
