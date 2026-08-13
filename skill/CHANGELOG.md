@@ -4,6 +4,12 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.19.0] — 2026-08-13
+
+### Added
+
+- live deep-search loop (Search→Read→Reason), `--breadth`/`--depth`, CLI `deep-search`
+
 ## [1.18.0] — 2026-07-30
 
 ### Changed

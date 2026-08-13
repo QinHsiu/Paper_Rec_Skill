@@ -29,6 +29,12 @@
 - 国际源附加英文检索词：`LoRA, low-rank adaptation, LLM fine-tuning`
 - 报告标题：`论文推荐报告`
 
+**Live deep-search example**:
+
+```
+/query_chinese --breadth 3 --depth 2 对比学习如何缓解多模态偏差
+```
+
 ---
 
 ### `/query_other` — adaptive

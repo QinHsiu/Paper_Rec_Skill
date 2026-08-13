@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.18.0
+version: 1.19.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -27,6 +27,7 @@ Task Progress:
 - [ ] Module 1.5 (optional): Thread context inject — hypothesis / claims / gaps
 - [ ] Module 2: Retrieval — search, score, rank top 50
 - [ ] Module 2a/2b (optional): multi-path + iterative refine when thread/iterative
+- [ ] Module 2c (optional): live deep-search when --breadth/--depth
 - [ ] Module 2.5 (optional): Thread-aware rerank + rationale section
 - [ ] Module 3: Output — structured report (≤2 sentences per field)
 - [ ] Module 4 (optional): Persist selected papers to Wiki (`content/wiki/pages`)
@@ -58,6 +59,7 @@ After installing this skill, the user **must** prefix the query with one of thre
 
 ```
 /query_english Find papers on efficient LLM fine-tuning for code generation
+/query_english --breadth 3 --depth 2 Find papers on efficient LLM fine-tuning for code generation
 /query_chinese 帮我找多模态大模型对齐的最新论文
 /query_other 最新の物体検出モデルに関する論文を探して
 /wiki
@@ -438,6 +440,21 @@ If `reflect-search.should_retry`, run **at most one** refine wave with `improved
 
 **When**: same as 2a. **Default max rounds = 1** refinement after the initial pass (total ≤ 2 search waves). Triggers: `thread:<id>`, explicit `iterative`, or single active thread (unless `no-iterative`).
 
+If the user passes `--breadth` / `--depth` (or `breadth:` / `depth:` / `广度` / `深度`), **do not** stop after the old 1-wave refine. Run `python skill/scripts/deep_search.py --topic ... --breadth N --depth D` (add `--thread <id>` when Module 1.5 is active).
+
+- `--breadth` = how many follow-up questions from the previous Reason step become next-round Search queries (default 3).
+- `--depth` = max Search→Read→Reason iterations (default 2).
+- Final user-facing output is the markdown report (`render_deep_search_markdown`), not only a ranked list. Still apply language mode (`/query_english` → English headings; `/query_chinese` → Chinese headings). For Chinese mode, the agent may translate the English markdown headings; the JSON artifact stays English keys.
+- Existing `/wiki deep-research` stays as the **offline** planner. New `/wiki deep-search` is the **live** loop.
+
+Locked command syntax:
+
+```
+/query_english --breadth 4 --depth 3 <topic>
+/query_chinese --breadth 3 --depth 2 <topic>
+/wiki deep-search --breadth 3 --depth 2 [thread:<id>] <topic>
+```
+
 **Action**:
 1. After wave 0, if kept unique hits **&lt; 8** → widen (drop rare terms / add synonyms / sibling venues); if **&gt; 40** noisy → narrow (add claim/gap tokens, year filter).
 2. Run **at most one** refine wave; stop early if already in [8, 40].
@@ -590,6 +607,7 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki novelty-check` | Idea novelty vs local corpus (+ optional OpenAlex) |
 | `/wiki fig-review` | Figure/caption/ref consistency (heuristic) |
 | `/wiki deep-research` | Learnings tree → follow-up queries (depth×breadth) |
+| `/wiki deep-search` | Live Search→Read→Reason (depth×breadth) |
 | `/wiki research-session` | Deferred gather→write_report session (`research_id`) |
 | `/wiki exp-reflect` | Outer-loop `findings.md` + research-state from exp dir |
 | `/wiki labnote` | Smart lab notebook CLI mirror (`labnote` actions; prefer `/labnote`) |
@@ -638,6 +656,7 @@ python -m wiki_bridge.cli survey-draft --json papers.json --out related.md
 python -m wiki_bridge.cli novelty-check --idea "..." --papers-json corpus.json
 python -m wiki_bridge.cli fig-review --draft draft.md --strict
 python -m wiki_bridge.cli deep-research --topic "..." --json papers.json
+python skill/scripts/deep_search.py --topic "..." --breadth 3 --depth 2 --thread <id>
 python -m wiki_bridge.cli research-session --wiki-root ../.. --action create --topic "..." --sources-json papers.json
 python -m wiki_bridge.cli repro-check --exp-dir ../../content/exp/<exp> --init-design
 python -m wiki_bridge.cli exp-reflect --exp-dir ../../content/exp/<exp>

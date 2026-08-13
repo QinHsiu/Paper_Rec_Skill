@@ -230,6 +230,14 @@ def test_persist_uses_thread_store_clock_for_both_filenames(tmp_path):
     assert Path(out["md_path"]).name == "deep_search_2026-08-14.md"
 
 
+def test_skill_mentions_breadth_depth_flags():
+    skill = ROOT.parents[1] / "skill" / "SKILL.md"
+    text = skill.read_text(encoding="utf-8")
+    assert "--breadth" in text
+    assert "--depth" in text
+    assert "deep-search" in text
+
+
 def test_cli_deep_search_with_seed_json(tmp_path):
     seed = {
         "RAG": [{"title": "P1", "abstract": "retrieval", "arxiv": "1111.00001"}]
@@ -274,6 +282,7 @@ if __name__ == "__main__":
     test_run_deep_search_stops_when_no_new_papers()
     test_run_deep_search_stops_when_reasoner_says_sufficient()
     test_render_contains_reasoning_chain()
+    test_skill_mentions_breadth_depth_flags()
     with tempfile.TemporaryDirectory() as tmp:
         test_persist_writes_files_and_query_iter(Path(tmp))
         test_persist_uses_thread_store_clock_for_both_filenames(Path(tmp))
