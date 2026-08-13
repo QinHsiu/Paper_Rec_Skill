@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import Any, Protocol, TypedDict
 
+from .deep_research import extract_learnings, followups_from_learnings
+from .reflect_search import reflect_coverage
 from .rrf import normalize_arxiv_id, normalize_doi
 
 
@@ -77,3 +79,60 @@ def search_round(
             seen.add(pid)
             new_hits.append(hit)
     return new_hits, seen
+
+
+def clip_followups(followups: list[str], *, breadth: int) -> list[str]:
+    out: list[str] = []
+    for q in followups or []:
+        q = str(q or "").strip()
+        if q and q not in out:
+            out.append(q)
+        if len(out) >= max(1, breadth):
+            break
+    return out
+
+
+class Reasoner(Protocol):
+    def reason(
+        self,
+        topic: str,
+        round_papers: list[dict[str, Any]],
+        all_learnings: list[dict[str, Any]],
+        *,
+        breadth: int,
+        round_index: int,
+        max_depth: int,
+    ) -> dict[str, Any]: ...
+
+
+class HeuristicReasoner:
+    def reason(
+        self,
+        topic: str,
+        round_papers: list[dict[str, Any]],
+        all_learnings: list[dict[str, Any]],
+        *,
+        breadth: int,
+        round_index: int,
+        max_depth: int,
+    ) -> dict[str, Any]:
+        learnings = extract_learnings(round_papers, max_items=max(4, breadth * 2))
+        coverage = reflect_coverage(round_papers, query=topic)
+        followups = followups_from_learnings(learnings, topic, breadth=breadth)
+        for q in coverage.get("improved_queries") or []:
+            if q not in followups:
+                followups.append(q)
+        followups = clip_followups(followups, breadth=breadth)
+        known_n = len(all_learnings) + len(round_papers)
+        sufficient = (
+            round_index >= max_depth
+            or not round_papers
+            or not followups
+            or (not coverage.get("should_retry") and known_n >= 8)
+        )
+        return {
+            "learnings": learnings,
+            "followups": followups,
+            "sufficient": sufficient,
+            "coverage": {k: coverage[k] for k in ("issues", "should_retry", "paper_count") if k in coverage},
+        }
