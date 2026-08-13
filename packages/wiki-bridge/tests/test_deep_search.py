@@ -7,7 +7,14 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from wiki_bridge.deep_search import FakeSearcher, HeuristicReasoner, clip_followups, paper_id, search_round
+from wiki_bridge.deep_search import (
+    FakeSearcher,
+    HeuristicReasoner,
+    clip_followups,
+    paper_id,
+    run_deep_search,
+    search_round,
+)
 
 
 def test_paper_id_prefers_arxiv_then_doi_then_title():
@@ -87,6 +94,46 @@ def test_heuristic_reasoner_sufficient_at_max_depth():
     assert out["sufficient"] is True
 
 
+def test_run_deep_search_two_rounds_then_max_depth():
+    searcher = FakeSearcher(
+        {
+            "RAG": [{"title": "P1", "abstract": "retrieval augmented generation", "arxiv": "1111.00001"}],
+            "RAG related to: P1": [{"title": "P2", "abstract": "limitations of RAG", "arxiv": "1111.00002"}],
+        }
+    )
+    out = run_deep_search("RAG", searcher=searcher, reasoner=HeuristicReasoner(), breadth=1, max_depth=2)
+    assert out["stop_reason"] in {"max_depth", "sufficient", "no_followups", "no_new_papers"}
+    assert len(out["rounds"]) >= 1
+    assert out["rounds"][0]["queries"] == ["RAG"]
+    assert any(p["title"] == "P1" for p in out["papers"])
+
+
+def test_run_deep_search_stops_when_no_new_papers():
+    searcher = FakeSearcher({"lonely": []})
+    out = run_deep_search("lonely", searcher=searcher, reasoner=HeuristicReasoner(), breadth=2, max_depth=3)
+    assert out["stop_reason"] == "no_new_papers"
+    assert out["rounds"] == [] or out["papers"] == []
+
+
+class _AlwaysEnough:
+    def reason(self, topic, round_papers, all_learnings, *, breadth, round_index, max_depth):
+        return {
+            "learnings": [{"learning": "enough", "citation": "x"}],
+            "followups": ["more"],
+            "sufficient": True,
+            "coverage": {},
+        }
+
+
+def test_run_deep_search_stops_when_reasoner_says_sufficient():
+    searcher = FakeSearcher(
+        {"t": [{"title": "Only", "abstract": "one paper", "arxiv": "3333.00001"}]}
+    )
+    out = run_deep_search("t", searcher=searcher, reasoner=_AlwaysEnough(), breadth=2, max_depth=5)
+    assert out["stop_reason"] == "sufficient"
+    assert len(out["rounds"]) == 1
+
+
 if __name__ == "__main__":
     test_paper_id_prefers_arxiv_then_doi_then_title()
     test_paper_id_normalizes_doi_prefixes()
@@ -95,4 +142,7 @@ if __name__ == "__main__":
     test_clip_followups_honors_breadth()
     test_heuristic_reasoner_emits_learnings_and_followups()
     test_heuristic_reasoner_sufficient_at_max_depth()
+    test_run_deep_search_two_rounds_then_max_depth()
+    test_run_deep_search_stops_when_no_new_papers()
+    test_run_deep_search_stops_when_reasoner_says_sufficient()
     print("OK deep_search")

@@ -136,3 +136,73 @@ class HeuristicReasoner:
             "sufficient": sufficient,
             "coverage": {k: coverage[k] for k in ("issues", "should_retry", "paper_count") if k in coverage},
         }
+
+
+def run_deep_search(
+    topic: str,
+    *,
+    searcher: Searcher,
+    reasoner: Reasoner | None = None,
+    breadth: int = 3,
+    max_depth: int = 2,
+    limit_per_query: int = 8,
+) -> dict[str, Any]:
+    reasoner = reasoner or HeuristicReasoner()
+    breadth = max(1, int(breadth))
+    max_depth = max(1, int(max_depth))
+    queries = [str(topic).strip()]
+    seen: set[str] = set()
+    all_papers: list[dict[str, Any]] = []
+    all_learnings: list[dict[str, Any]] = []
+    rounds: list[dict[str, Any]] = []
+    stop_reason = "max_depth"
+    last_followups: list[str] = []
+
+    for round_index in range(1, max_depth + 1):
+        hits, seen = search_round(
+            searcher, queries, seen_ids=seen, limit_per_query=limit_per_query
+        )
+        if not hits:
+            stop_reason = "no_new_papers"
+            break
+        result = reasoner.reason(
+            topic,
+            hits,
+            all_learnings,
+            breadth=breadth,
+            round_index=round_index,
+            max_depth=max_depth,
+        )
+        all_papers.extend(hits)
+        all_learnings.extend(result.get("learnings") or [])
+        last_followups = list(result.get("followups") or [])
+        rounds.append(
+            {
+                "round": round_index,
+                "queries": list(queries),
+                "hits": hits,
+                "learnings": result.get("learnings") or [],
+                "followups": last_followups,
+                "sufficient": bool(result.get("sufficient")),
+            }
+        )
+        if result.get("sufficient"):
+            stop_reason = "max_depth" if round_index >= max_depth else "sufficient"
+            break
+        queries = last_followups
+        if not queries:
+            stop_reason = "no_followups"
+            break
+    else:
+        stop_reason = "max_depth"
+
+    return {
+        "topic": topic,
+        "breadth": breadth,
+        "max_depth": max_depth,
+        "stop_reason": stop_reason,
+        "rounds": rounds,
+        "papers": all_papers,
+        "learnings": all_learnings,
+        "followups": last_followups,
+    }
