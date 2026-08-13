@@ -2,13 +2,48 @@
 from __future__ import annotations
 
 import json
+import urllib.parse
 from pathlib import Path
 from typing import Any, Protocol, TypedDict
 
+from .arxiv_watch import parse_atom_feed
 from .deep_research import extract_learnings, followups_from_learnings
 from .reflect_search import reflect_coverage
 from .rrf import normalize_arxiv_id, normalize_doi
 from . import thread_store as ts
+
+
+def arxiv_search_url(query: str, *, limit: int = 8) -> str:
+    q = urllib.parse.quote(f"all:{query}")
+    n = max(1, int(limit))
+    return f"https://export.arxiv.org/api/query?search_query={q}&start=0&max_results={n}"
+
+
+class ArxivQuerySearcher:
+    def __init__(self, fetch_bytes=None):
+        if fetch_bytes is None:
+            from .arxiv_watch import _http_get as fetch_bytes  # production only
+        self.fetch_bytes = fetch_bytes
+
+    def search(self, query: str, *, limit: int = 8) -> list[dict[str, Any]]:
+        raw = self.fetch_bytes(arxiv_search_url(query, limit=limit))
+        if not raw:
+            return []
+        docs = parse_atom_feed(raw, source_cat="search")
+        out: list[dict[str, Any]] = []
+        for d in docs[: max(1, int(limit))]:
+            arxiv = str(d.get("arxiv") or "")
+            out.append(
+                {
+                    "title": d.get("title") or "",
+                    "abstract": d.get("summary") or d.get("abstract") or "",
+                    "arxiv": arxiv,
+                    "doi": d.get("doi") or "",
+                    "year": str(d.get("published") or "")[:4],
+                    "url": f"https://arxiv.org/abs/{arxiv}" if arxiv else str(d.get("paper_link") or ""),
+                }
+            )
+        return out
 
 
 class PaperHit(TypedDict):

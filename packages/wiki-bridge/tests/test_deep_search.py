@@ -10,8 +10,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from wiki_bridge.deep_search import (
+    ArxivQuerySearcher,
     FakeSearcher,
     HeuristicReasoner,
+    arxiv_search_url,
     clip_followups,
     paper_id,
     persist_deep_search,
@@ -20,6 +22,39 @@ from wiki_bridge.deep_search import (
     search_round,
 )
 from wiki_bridge.thread_store import create_thread, list_events
+
+
+SAMPLE_ATOM = """<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom">
+  <entry>
+    <id>http://arxiv.org/abs/2204.10254v1</id>
+    <published>2022-04-21T12:00:00Z</published>
+    <title>Paper Alpha Title</title>
+    <summary>Alpha abstract here.</summary>
+    <arxiv:primary_category term="cs.IR"/>
+  </entry>
+</feed>
+"""
+
+
+def test_arxiv_search_url_encodes_query():
+    url = arxiv_search_url("retrieval augmented", limit=5)
+    assert url.startswith("https://export.arxiv.org/api/query?")
+    assert "max_results=5" in url
+    assert "search_query=" in url
+
+
+def test_arxiv_query_searcher_parses_atom():
+    def fake_fetch(url: str) -> bytes | None:
+        assert "export.arxiv.org" in url
+        return SAMPLE_ATOM.encode("utf-8")
+
+    s = ArxivQuerySearcher(fetch_bytes=fake_fetch)
+    hits = s.search("alpha", limit=8)
+    assert hits[0]["title"] == "Paper Alpha Title"
+    assert hits[0]["arxiv"] == "2204.10254"
+    assert "Alpha abstract" in hits[0]["abstract"]
+    assert hits[0]["url"] == "https://arxiv.org/abs/2204.10254"
 
 
 def test_paper_id_prefers_arxiv_then_doi_then_title():
@@ -194,6 +229,8 @@ def test_persist_uses_thread_store_clock_for_both_filenames(tmp_path):
 
 
 if __name__ == "__main__":
+    test_arxiv_search_url_encodes_query()
+    test_arxiv_query_searcher_parses_atom()
     test_paper_id_prefers_arxiv_then_doi_then_title()
     test_paper_id_normalizes_doi_prefixes()
     test_search_round_dedups_doi_prefix_variants()
