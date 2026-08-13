@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import sys
+import json
+import subprocess
 import tempfile
 from unittest.mock import patch
 from pathlib import Path
@@ -226,6 +228,36 @@ def test_persist_uses_thread_store_clock_for_both_filenames(tmp_path):
         out = persist_deep_search(tmp_path, report)
     assert Path(out["json_path"]).name == "deep_search_2026-08-14.json"
     assert Path(out["md_path"]).name == "deep_search_2026-08-14.md"
+
+
+def test_cli_deep_search_with_seed_json(tmp_path):
+    seed = {
+        "RAG": [{"title": "P1", "abstract": "retrieval", "arxiv": "1111.00001"}]
+    }
+    seed_path = tmp_path / "seed.json"
+    seed_path.write_text(json.dumps(seed), encoding="utf-8")
+    cmd = [
+        sys.executable,
+        "-m",
+        "wiki_bridge.cli",
+        "deep-search",
+        "--topic",
+        "RAG",
+        "--breadth",
+        "1",
+        "--depth",
+        "1",
+        "--wiki-root",
+        str(tmp_path),
+        "--json",
+        str(seed_path),
+        "--dry-run",
+    ]
+    proc = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert "stop_reason" in payload
+    assert payload["paper_n"] >= 1
 
 
 if __name__ == "__main__":
