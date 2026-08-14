@@ -3,6 +3,7 @@
 
 # SDD scratch
 .superpowers/
+docs/superpowers/
 
 # Python
 __pycache__/
