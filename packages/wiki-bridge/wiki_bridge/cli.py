@@ -917,6 +917,66 @@ def cmd_deep_research(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_deep_search(args: argparse.Namespace) -> int:
+    from .deep_search import (
+        ArxivQuerySearcher,
+        FakeSearcher,
+        HeuristicReasoner,
+        persist_deep_search,
+        run_deep_search,
+    )
+
+    searcher: object
+    if args.json:
+        raw = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
+        if isinstance(raw, list):
+            searcher = FakeSearcher({args.topic: raw})
+        elif isinstance(raw, dict) and (
+            isinstance(raw.get("papers"), list) or isinstance(raw.get("documents"), list)
+        ):
+            seed_hits = raw["papers"] if isinstance(raw.get("papers"), list) else raw["documents"]
+            searcher = FakeSearcher({args.topic: seed_hits})
+        elif isinstance(raw, dict):
+            searcher = FakeSearcher({k: v for k, v in raw.items() if isinstance(v, list)})
+        else:
+            searcher = FakeSearcher({args.topic: []})
+    else:
+        searcher = ArxivQuerySearcher()
+    if args.thread:
+        try:
+            thread_store.load_thread(Path(args.wiki_root), args.thread)
+        except (FileNotFoundError, ValueError) as exc:
+            print(json.dumps({"error": f"invalid thread `{args.thread}`: {exc}"}, ensure_ascii=False))
+            return 2
+    report = run_deep_search(
+        args.topic,
+        searcher=searcher,
+        reasoner=HeuristicReasoner(),
+        breadth=args.breadth,
+        max_depth=args.depth,
+    )
+    persisted = {"json_path": None, "md_path": None, "query_iter_n": 0}
+    if not args.dry_run:
+        persisted = persist_deep_search(Path(args.wiki_root), report, thread_id=args.thread)
+        if args.out:
+            Path(args.out).write_text(
+                json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+    print(
+        json.dumps(
+            {
+                "stop_reason": report["stop_reason"],
+                "paper_n": len(report["papers"]),
+                "round_n": len(report["rounds"]),
+                "md_path": persisted.get("md_path"),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    return 0
+
+
 def cmd_research_session(args: argparse.Namespace) -> int:
     from . import research_session as rs
 
@@ -1816,6 +1876,17 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--breadth", type=int, default=3)
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_deep_research)
+
+    s = sub.add_parser("deep-search", help="Live Search→Read→Reason loop (breadth×depth)")
+    s.add_argument("--topic", required=True)
+    s.add_argument("--breadth", type=int, default=3)
+    s.add_argument("--depth", type=int, default=2, help="max Search-Read-Reason iterations")
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="")
+    s.add_argument("--json", default="", help="seed hits or {query: [hits]} FakeSearcher table")
+    s.add_argument("--out", default="")
+    s.add_argument("--dry-run", action="store_true")
+    s.set_defaults(func=cmd_deep_search)
 
     s = sub.add_parser("research-session", help="Deferred gather→write_report session store")
     s.add_argument("--wiki-root", default=".")

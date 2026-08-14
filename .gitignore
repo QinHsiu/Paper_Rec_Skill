@@ -1,3 +1,9 @@
+# Git worktrees
+.worktrees/
+
+# SDD scratch
+.superpowers/
+
 # Python
 __pycache__/
 *.py[cod]

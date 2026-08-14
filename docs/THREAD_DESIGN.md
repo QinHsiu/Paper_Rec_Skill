@@ -88,6 +88,8 @@ Skill Modules **2a/2b**: multi-path queries + ≤1 refine wave when `thread:` or
 - API: `POST /api/threads/{id}/query-trace`
 - Report: `retrieval_trace` in JSON → auto-appended on `sync-report --thread`
 
+Phase F+ live loop: `deep-search` CLI persists `drafts/deep_search_*.md` + `query_iter`
+
 ## Multi-run curves (Phase F / 2.10.0)
 
 `metrics/curves.json` + `metrics/curves_<run>.json` → API `curve_runs[]`. Wiki ExpDetail: run overlay, compare exp, primary-only, 5s poll.

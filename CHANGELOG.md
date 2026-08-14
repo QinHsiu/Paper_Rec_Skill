@@ -6,6 +6,12 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.42.0] — 2026-08-13
+
+### Added
+
+- **paper-rec** v1.19.0: live deep-search loop (Search→Read→Reason), `--breadth`/`--depth`, CLI `deep-search`
+
 ## [2.41.0] — 2026-07-30
 
 ### Added
