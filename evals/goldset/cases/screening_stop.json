@@ -1,0 +1,7 @@
+{
+  "id": "screening_stop_after_n_irrelevant",
+  "family": "screening_stop",
+  "n_consecutive_irrelevant": 3,
+  "labels": ["irrelevant", "irrelevant", "irrelevant"],
+  "expect_stop": true
+}

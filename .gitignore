@@ -48,3 +48,10 @@ benchmarks/**/last_run.json
 skill-wxmp/scripts/wxmp_accounts.json
 **/wxmp_accounts.json
 temp_cover_*.jpg
+
+# Local agent / worktree scratch (never publish)
+.worktrees/
+.superpowers/
+.pytest_cache/
+**/__pycache__/
+

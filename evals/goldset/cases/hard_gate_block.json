@@ -1,0 +1,7 @@
+{
+  "id": "hard_gate_block_fabricated",
+  "family": "hard_gate",
+  "expect": "blocked",
+  "metrics": {"accuracy": 0.91},
+  "prose": "# Results\n\nWe achieve accuracy 99.9 on the test set.\n"
+}

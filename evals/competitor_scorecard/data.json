@@ -1,0 +1,2631 @@
+{
+  "version": 1,
+  "as_of": "2026-09-15",
+  "competitors": {
+    "AutoResearchClaw": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both retrieve multi-source; Paper_Rec skill+CLI.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for AutoResearchClaw.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs AutoResearchClaw.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs AutoResearchClaw.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs AutoResearchClaw discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "Full conference paper OS report stages are non-goal vs AutoResearchClaw.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs AutoResearchClaw grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "No deep retraction engine on either side for AutoResearchClaw; neither fully solves trust.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "持平",
+          "note": "Paper_Rec number-verify --hard-gate vs VerifiedRegistry; both block fake metrics.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "不适用",
+          "note": "23-stage auto paper survey/write pipeline is non-goal.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Full idea→exp novelty OS loop is non-goal vs AutoResearchClaw.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "不适用",
+          "note": "Domain sandbox / stage pipeline non-goal product shape.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "落后",
+          "note": "ARC/AI-Scientist-v2 class VLM deeper than fig-review stub.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; AutoResearchClaw not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than AutoResearchClaw.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither is ResearchRabbit-class interest drift product.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless AutoResearchClaw is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; AutoResearchClaw MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to AutoResearchClaw.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical AutoResearchClaw UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "AI-Scientist": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs AI-Scientist.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for AI-Scientist.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs AI-Scientist.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs AI-Scientist.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs AI-Scientist discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "Full auto idea→write paper OS is non-goal.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs AI-Scientist grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "No deep retraction engine on either side for AI-Scientist; neither fully solves trust.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate on Results floats; AI-Scientist lacks VerifiedRegistry-style block.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "不适用",
+          "note": "Auto experiment writeup survey phases are non-goal.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "落后",
+          "note": "AI-Scientist multi-round novelty critic deeper than single-shot novelty-check.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "不适用",
+          "note": "Full auto discovery tree product is non-goal.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "v1 fig review weaker than v2; Paper_Rec stub comparable.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; AI-Scientist not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than AI-Scientist.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither focuses on lit interest-drift watch.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless AI-Scientist is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; AI-Scientist MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to AI-Scientist.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical AI-Scientist UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "AI-Scientist-v2": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs AI-Scientist-v2.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for AI-Scientist-v2.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs AI-Scientist-v2.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs AI-Scientist-v2.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs AI-Scientist-v2 discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "BFTS workshop writeup OS is non-goal.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs AI-Scientist-v2 grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "No deep retraction engine on either side for AI-Scientist-v2; neither fully solves trust.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate shipped; v2 focuses VLM/tree not Results registry block.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "不适用",
+          "note": "Full BFTS writer survey path is non-goal.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "Tree search novelty vs novelty-check; Paper_Rec thinner but same class.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "不适用",
+          "note": "BFTS experiment tree product non-goal.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "落后",
+          "note": "perform_vlm_review semantic fig↔caption deeper than fig-review heuristic+stub.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; AI-Scientist-v2 not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than AI-Scientist-v2.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither is interest-drift watch product.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless AI-Scientist-v2 is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; AI-Scientist-v2 MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to AI-Scientist-v2.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical AI-Scientist-v2 UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "AgentLaboratory": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs AgentLaboratory.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for AgentLaboratory.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs AgentLaboratory.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs AgentLaboratory.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs AgentLaboratory discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "AgentRxiv / multi-agent lab store is non-goal.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs AgentLaboratory grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "No deep retraction engine on either side for AgentLaboratory; neither fully solves trust.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate; AgentLaboratory emphasizes review score revise loops.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Lab phases ≠ AutoSurvey; survey-draft on par for lit related-work.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "Review-driven revise vs novelty-check; comparable medium depth.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "deep-research tree exists; AgentLaboratory not a parallel supervisor benchmark.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Neither ships strong VLM fig semantic gate.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; AgentLaboratory not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than AgentLaboratory.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither is ResearchRabbit-class drift.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless AgentLaboratory is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; AgentLaboratory MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to AgentLaboratory.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical AgentLaboratory UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "AI-Researcher": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "不适用",
+          "note": "clone empty / not scored",
+          "evidence": "code"
+        }
+      }
+    },
+    "AI-Research-SKILLs": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs AI-Research-SKILLs.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for AI-Research-SKILLs.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs AI-Research-SKILLs.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs AI-Research-SKILLs.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs AI-Research-SKILLs discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "Wholesale 98 domain skills pack is non-goal.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs AI-Research-SKILLs grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "No deep retraction engine on either side for AI-Research-SKILLs; neither fully solves trust.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate vs ARA rigor docs; registry BLOCK is stronger for Results floats.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "exp-reflect findings.md vs SKILLs outer loop; related-work still heuristic.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "DEEPEN/BROADEN patterns vs novelty-check; neither kills ideas as harshly as AI-Scientist.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "deep-research tree exists; AI-Research-SKILLs not a parallel supervisor benchmark.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Neither is AI-Scientist-v2 VLM class.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; AI-Research-SKILLs not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than AI-Research-SKILLs.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither ships interest-drift Watch product.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless AI-Research-SKILLs is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; AI-Research-SKILLs MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to AI-Research-SKILLs.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical AI-Research-SKILLs UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "PaperPilot": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both protocolized lit CLI; filters/matrix/ledger parity.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for PaperPilot.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs PaperPilot.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "持平",
+          "note": "Related-paper matrix explore comparable.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs PaperPilot discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Structured reports via CLI packs; parity with PaperPilot for lit summaries.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs PaperPilot grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Claim ledger without retraction engine on both sides.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate; PaperPilot lacks Results registry BLOCK.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Related-work protocols vs survey-draft; neither AutoSurvey-class.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "novelty-check single-shot vs PaperPilot; comparable shallow novelty gates.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "deep-research tree exists; PaperPilot not a parallel supervisor benchmark.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Neither has strong VLM fig review.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; PaperPilot not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + git wiki stronger than PaperPilot Obsidian polish focus.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither is ResearchRabbit-class.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless PaperPilot is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; PaperPilot MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to PaperPilot.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + thread ledger more auditable for lit workflow.",
+          "evidence": "code"
+        }
+      }
+    },
+    "paper-search-pro": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Multi-source Skill search + tiers; Paper_Rec retrieval parity.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for paper-search-pro.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Tier/influCit ranking vs rank-intent; both interpretable.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs paper-search-pro.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs paper-search-pro discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Structured reports via CLI packs; parity with paper-search-pro for lit summaries.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs paper-search-pro grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "落后",
+          "note": "OA vs S2 cite-count conflict + influCit; Paper_Rec lacks retraction/conflict engine.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate on Results; PSP focuses retrieval trust not numeric registry.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "survey-draft TF-IDF clusters vs paper-search-pro; neither is AutoSurvey-class.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "novelty-check single-shot vs paper-search-pro; comparable shallow novelty gates.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "Deep research not PSP core; deep-research tree comparable for lit.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Neither ships VLM fig semantic review.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; paper-search-pro not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than paper-search-pro.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither is interest-drift Watch product.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless paper-search-pro is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; paper-search-pro MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to paper-search-pro.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical paper-search-pro UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "paper-qa": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Paper corpus RAG vs multi-source gather; both cite-aware.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for paper-qa.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs paper-qa.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs paper-qa.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs paper-qa discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Structured reports via CLI packs; parity with paper-qa for lit summaries.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "落后",
+          "note": "paper-qa map-reduce relevance + refuse; Paper_Rec cutoff thinner than agentic paper-qa.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "落后",
+          "note": "Retraction flags / refuse-on-bad-cite; Paper_Rec lacks retraction+conflict engine.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate numeric Results; paper-qa focuses RAG trust not registry BLOCK.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Neither is AutoSurvey outline-merge class.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "novelty-check single-shot vs paper-qa; comparable shallow novelty gates.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "deep-research tree exists; paper-qa not a parallel supervisor benchmark.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Multimodal fig chunks optional; Paper_Rec fig-review stub — neither v2-class VLM.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; paper-qa not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Thread+wiki lit workflow stronger than paper-qa session alone.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither is ResearchRabbit-class.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless paper-qa is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; paper-qa MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to paper-qa.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local CLI+git audit trail for lit packs.",
+          "evidence": "code"
+        }
+      }
+    },
+    "OpenScholar": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs OpenScholar.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "feedback-edit rewrite vs OpenScholar edit loop; both present.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs OpenScholar.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs OpenScholar.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs OpenScholar discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "Train 8B retriever / ScholarQA model stack is non-goal.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "落后",
+          "note": "ScholarQA feedback→edit→re-retrieve deeper than one-shot answer-ground.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Neither is Scite/paper-qa retraction-class.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate shipped; OpenScholar is RAG/edit focused.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Neither AutoSurvey-class survey generator.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "novelty-check single-shot vs OpenScholar; comparable shallow novelty gates.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "deep-research tree exists; OpenScholar not a parallel supervisor benchmark.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Neither VLM fig semantic class.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; OpenScholar not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than OpenScholar.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither interest-drift Watch product.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless OpenScholar is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; OpenScholar MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to OpenScholar.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical OpenScholar UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "asreview": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Screening corpus ingest vs multi-source; different product, retrieval parity for seed set.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for asreview.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "落后",
+          "note": "Nature-grade AL ranking/balancer deeper than screen-next TF-IDF hybrid.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs asreview.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs asreview discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Structured reports via CLI packs; parity with asreview for lit summaries.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs asreview grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Neither retraction conflict engine for cites.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate Results; asreview is screening not numeric registry.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "不适用",
+          "note": "Full Web LAB / systematic review product shape non-goal.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Novelty kill-switch not an asreview dimension.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "不适用",
+          "note": "Parallel deep-research not asreview scope.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Figure VLM not relevant to systematic screening product.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "落后",
+          "note": "asreview querier/balancer/stoppers + simulation; screen-next lacks real stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Thread+wiki lit workflow vs asreview LAB UI.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "AL labels ≠ interest-drift Watch product.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless asreview is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; asreview MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to asreview.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local CLI+git audit for lit packs.",
+          "evidence": "code"
+        }
+      }
+    },
+    "AutoSurvey": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs AutoSurvey.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for AutoSurvey.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs AutoSurvey.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs AutoSurvey.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "Large local DB ops non-goal; discovery-curve covers stop for Paper_Rec.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "落后",
+          "note": "Large-corpus survey generation quality ahead of TF-IDF survey-draft.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs AutoSurvey grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Cite check in survey path; Paper_Rec lacks retraction engine but survey cite audit exists.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate Results; AutoSurvey focuses survey prose not numeric registry.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "落后",
+          "note": "outline-merge + subsection RAG + cite check deeper than survey-draft heuristic.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "Survey novelty framing vs novelty-check; different jobs.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "Corpus survey ≠ parallel supervisor deep-research.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Neither AI-Scientist-v2 VLM class.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; AutoSurvey not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than AutoSurvey.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither ResearchRabbit-class.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless AutoSurvey is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; AutoSurvey MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to AutoSurvey.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical AutoSurvey UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "gpt-researcher": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs gpt-researcher.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for gpt-researcher.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs gpt-researcher.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs gpt-researcher.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs gpt-researcher discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "Full frontend SaaS report UX is non-goal.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs gpt-researcher grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Web cite quality ≠ retraction/OA-S2 conflict engine.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate Results; GPT-R is web deep-research not numeric registry.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Web research reports ≠ AutoSurvey paper survey.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "novelty-check single-shot vs gpt-researcher; comparable shallow novelty gates.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "落后",
+          "note": "Role agent_creator + parallel lanes deeper than serial deep-research tree.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Neither VLM fig semantic class for papers.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; gpt-researcher not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than gpt-researcher.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither interest-drift Watch.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless gpt-researcher is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "gptr-mcp sibling stronger; core GPT-R session vs research-session comparable.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "SaaS push vs webhook docs; push maturity similar.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical gpt-researcher UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "STORM": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs STORM.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "落后",
+          "note": "Persona-parallel question lanes / Co-STORM mind map cover skew better than single rewrite.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs STORM.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs STORM.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs STORM discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "Pure wiki-style multi-perspective article product is non-goal.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs STORM grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "No deep retraction engine on either side for STORM; neither fully solves trust.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate Results; STORM is wiki generation.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Wiki articles ≠ AutoSurvey paper survey.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Idea novelty kill-switch not STORM scope.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "Multi-perspective gather vs deep-research; different shape, similar depth for lit.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Figure VLM not STORM core.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "AL screening not STORM scope.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread + wiki ledger stronger for lit workflow than STORM.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither ResearchRabbit-class.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "Wiki generation ≠ khoj filter apply; parse-only gap remains elsewhere.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; STORM MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to STORM.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical STORM UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "open_deep_research": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs open_deep_research.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "clarify→brief→rewrite pattern; research-brief parity.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs open_deep_research.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs open_deep_research.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs open_deep_research discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Structured reports via CLI packs; parity with open_deep_research for lit summaries.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs open_deep_research grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Neither retraction conflict engine.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate Results; ODR is LangGraph research not numeric registry.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Deep research reports ≠ AutoSurvey.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "novelty-check single-shot vs open_deep_research; comparable shallow novelty gates.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "落后",
+          "note": "max_concurrent ConductResearch + compress deeper than serial deep-research tree.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Neither VLM fig semantic class.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; open_deep_research not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Thread+wiki stronger for ongoing lit workflow.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither interest-drift Watch.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless open_deep_research is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; open_deep_research MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to open_deep_research.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI artifacts more auditable than typical open_deep_research UX.",
+          "evidence": "code"
+        }
+      }
+    },
+    "Curie": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs Curie.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for Curie.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs Curie.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs Curie.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs Curie discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "Full Docker rigorous ML experiment OS is non-goal.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "不适用",
+          "note": "Grounded lit QA not Curie experiment OS focus.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "不适用",
+          "note": "Citation retraction trust not Curie scope.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "持平",
+          "note": "repro-check / exec_validator rigor vs hard-gate; different surfaces, both strict.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "不适用",
+          "note": "Paper survey generation not Curie focus.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Idea novelty kill-switch not Curie focus.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "不适用",
+          "note": "Docker partition redo loops are different product.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "VLM fig review not Curie core OS dim.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "AL screening not Curie scope.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Lit Thread+wiki vs Curie Docker lab artifacts — Paper_Rec wins for lit audit.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "不适用",
+          "note": "Interest drift Watch not Curie scope.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "不适用",
+          "note": "Wiki filter apply not Curie scope.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; Curie MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to Curie.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki lit audit vs Docker lab logs; Paper_Rec stronger for lit workflow.",
+          "evidence": "code"
+        }
+      }
+    },
+    "khoj": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Personal knowledge ingest vs lit multi-source; different corpus.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for khoj.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs khoj.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs khoj.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs khoj discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "不适用",
+          "note": "Whole second-brain product is non-goal.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "Second-brain QA vs answer-ground; lit-specific grounding comparable.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Neither Scite-class retraction UX for papers.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate Results; khoj is PKM not numeric registry.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "不适用",
+          "note": "Auto paper survey not khoj core.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Novelty kill-switch not khoj core.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "不适用",
+          "note": "Parallel deep-research not khoj core.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Paper fig VLM not khoj core.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "AL screening not khoj core.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Cognitive Thread lit ledger vs general second brain.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "PKM search ≠ ResearchRabbit interest-drift Watch.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "落后",
+          "note": "khoj applies wiki filters on pages; Paper_Rec parse-only without apply.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "持平",
+          "note": "research-session research_id present; khoj MCP depth varies.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs exist; push maturity similar to khoj.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Git wiki + CLI lit audit trail.",
+          "evidence": "code"
+        }
+      }
+    },
+    "gptr-mcp": {
+      "kind": "oss",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Both multi-source lit retrieval; Paper_Rec skill+CLI vs gptr-mcp.",
+          "evidence": "code"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query rewrite / intent present on both sides; depth comparable for gptr-mcp.",
+          "evidence": "code"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Interpretable ranking available; Paper_Rec rank-intent vs gptr-mcp.",
+          "evidence": "code"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Graph exploration not a Paper_Rec primary product vs gptr-mcp.",
+          "evidence": "code"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "discovery-curve saturation vs gptr-mcp discovery loop; both cover stop-when-low-yield.",
+          "evidence": "code"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Structured reports via CLI packs; parity with gptr-mcp for lit summaries.",
+          "evidence": "code"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "answer-ground / gather-evidence vs gptr-mcp grounded QA; both cite-aware.",
+          "evidence": "code"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "No deep retraction engine on either side for gptr-mcp; neither fully solves trust.",
+          "evidence": "code"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Hard-gate Results; gptr-mcp is MCP transport.",
+          "evidence": "code"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "survey-draft TF-IDF clusters vs gptr-mcp; neither is AutoSurvey-class.",
+          "evidence": "code"
+        },
+        "b_novelty": {
+          "state": "持平",
+          "note": "novelty-check single-shot vs gptr-mcp; comparable shallow novelty gates.",
+          "evidence": "code"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "MCP wrapper over GPT-R; core parallel depth attributed to gpt-researcher row.",
+          "evidence": "code"
+        },
+        "b_fig_vlm": {
+          "state": "持平",
+          "note": "Neither VLM fig class.",
+          "evidence": "code"
+        },
+        "b_al_stop": {
+          "state": "持平",
+          "note": "screen-next TF-IDF hybrid; gptr-mcp not asreview-class AL stoppers.",
+          "evidence": "code"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Thread+wiki lit workflow stronger than MCP-only session.",
+          "evidence": "code"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither interest-drift Watch.",
+          "evidence": "code"
+        },
+        "c_wiki_filter": {
+          "state": "持平",
+          "note": "wiki-filter-parse exists; apply gap shared unless gptr-mcp is khoj.",
+          "evidence": "code"
+        },
+        "c_mcp_session": {
+          "state": "落后",
+          "note": "research_id → deferred write_report first-class; Paper_Rec research-session thinner in thread-MCP.",
+          "evidence": "code"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "MCP tools vs webhook; push channels differ.",
+          "evidence": "code"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local git wiki audit vs MCP remote session.",
+          "evidence": "code"
+        }
+      }
+    },
+    "Elicit": {
+      "kind": "closed",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Public multi-source discovery; Paper_Rec CLI vs Elicit SaaS.",
+          "evidence": "public-docs"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query assist documented on both sides vs Elicit.",
+          "evidence": "public-docs"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Ranking/relevance UX public; Paper_Rec interpretable rank vs Elicit.",
+          "evidence": "public-docs"
+        },
+        "a_graph_explore": {
+          "state": "持平",
+          "note": "Elicit not primarily a citation-graph explorer; Connected Papers stronger there.",
+          "evidence": "public-docs"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "Discovery stop heuristics; Paper_Rec discovery-curve vs Elicit coverage UX.",
+          "evidence": "public-docs"
+        },
+        "a_report": {
+          "state": "落后",
+          "note": "Elicit structured research reports / tables stronger than Pack CLI summaries.",
+          "evidence": "public-docs"
+        },
+        "b_grounded_qa": {
+          "state": "落后",
+          "note": "Elicit systematic Q&A over papers UX ahead of answer-ground cutoff.",
+          "evidence": "public-docs"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Citation UX public; Paper_Rec lacks retraction engine unless Elicit specializes.",
+          "evidence": "public-docs"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate local Results block; Elicit SaaS typically soft verify.",
+          "evidence": "public-docs"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Related-work assist; Paper_Rec survey-draft heuristic vs Elicit tables.",
+          "evidence": "public-docs"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Novelty kill-switch not a public Elicit lit product dim.",
+          "evidence": "public-docs"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "Deep research features vary; Paper_Rec deep-research vs Elicit depth tools.",
+          "evidence": "public-docs"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Paper figure VLM review not a public Elicit core claim.",
+          "evidence": "public-docs"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "Active screening stoppers not a public Elicit core claim.",
+          "evidence": "public-docs"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Local Cognitive Thread + git wiki vs Elicit cloud-only memory.",
+          "evidence": "public-docs"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Neither ResearchRabbit-class visual interest drift.",
+          "evidence": "public-docs"
+        },
+        "c_wiki_filter": {
+          "state": "领先",
+          "note": "Local wiki-filter-parse vs Elicit closed filters; auditable local rules.",
+          "evidence": "public-docs"
+        },
+        "c_mcp_session": {
+          "state": "领先",
+          "note": "Local research-session / MCP docs vs Elicit proprietary session.",
+          "evidence": "public-docs"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs vs Elicit notifications; maturity similar.",
+          "evidence": "public-docs"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local CLI+git artifacts vs Elicit SaaS-only audit trail.",
+          "evidence": "public-docs"
+        }
+      }
+    },
+    "Consensus": {
+      "kind": "closed",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Public multi-source discovery; Paper_Rec CLI vs Consensus SaaS.",
+          "evidence": "public-docs"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query assist documented on both sides vs Consensus.",
+          "evidence": "public-docs"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Ranking/relevance UX public; Paper_Rec interpretable rank vs Consensus.",
+          "evidence": "public-docs"
+        },
+        "a_graph_explore": {
+          "state": "持平",
+          "note": "Not a primary graph explorer product.",
+          "evidence": "public-docs"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "Discovery stop heuristics; Paper_Rec discovery-curve vs Consensus coverage UX.",
+          "evidence": "public-docs"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Structured summaries; Paper_Rec packs vs Consensus reports.",
+          "evidence": "public-docs"
+        },
+        "b_grounded_qa": {
+          "state": "落后",
+          "note": "Consensus evidence-synthesis answers stronger than thin chunk cutoff.",
+          "evidence": "public-docs"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Consensus claim consensus UX; Paper_Rec still lacks retraction conflict engine.",
+          "evidence": "public-docs"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate local Results block; Consensus SaaS typically soft verify.",
+          "evidence": "public-docs"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Related-work assist public; neither always AutoSurvey-class.",
+          "evidence": "public-docs"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Novelty kill-switch not a public Consensus lit product dim.",
+          "evidence": "public-docs"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "Deep research features vary; Paper_Rec deep-research vs Consensus depth tools.",
+          "evidence": "public-docs"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Paper figure VLM review not a public Consensus core claim.",
+          "evidence": "public-docs"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "Active screening stoppers not a public Consensus core claim.",
+          "evidence": "public-docs"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Local Cognitive Thread + git wiki vs Consensus cloud-only memory.",
+          "evidence": "public-docs"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Not ResearchRabbit-class drift watch.",
+          "evidence": "public-docs"
+        },
+        "c_wiki_filter": {
+          "state": "领先",
+          "note": "Local wiki-filter-parse vs Consensus closed filters; auditable local rules.",
+          "evidence": "public-docs"
+        },
+        "c_mcp_session": {
+          "state": "领先",
+          "note": "Local research-session / MCP docs vs Consensus proprietary session.",
+          "evidence": "public-docs"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs vs Consensus notifications; maturity similar.",
+          "evidence": "public-docs"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local CLI+git artifacts vs Consensus SaaS-only audit trail.",
+          "evidence": "public-docs"
+        }
+      }
+    },
+    "Scite": {
+      "kind": "closed",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Public multi-source discovery; Paper_Rec CLI vs Scite SaaS.",
+          "evidence": "public-docs"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query assist documented on both sides vs Scite.",
+          "evidence": "public-docs"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Ranking/relevance UX public; Paper_Rec interpretable rank vs Scite.",
+          "evidence": "public-docs"
+        },
+        "a_graph_explore": {
+          "state": "持平",
+          "note": "Citation context ≠ Related-paper graph explorer primary.",
+          "evidence": "public-docs"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "Discovery stop heuristics; Paper_Rec discovery-curve vs Scite coverage UX.",
+          "evidence": "public-docs"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Citation reports vs Pack summaries; different jobs.",
+          "evidence": "public-docs"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "Smart citations support trust more than full grounded QA product.",
+          "evidence": "public-docs"
+        },
+        "b_citation_trust": {
+          "state": "落后",
+          "note": "Scite smart citations / retraction UX; Paper_Rec lacks retraction+conflict engine.",
+          "evidence": "public-docs"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate local Results block; Scite SaaS typically soft verify.",
+          "evidence": "public-docs"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Related-work assist public; neither always AutoSurvey-class.",
+          "evidence": "public-docs"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Novelty kill-switch not a public Scite lit product dim.",
+          "evidence": "public-docs"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "Deep research features vary; Paper_Rec deep-research vs Scite depth tools.",
+          "evidence": "public-docs"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Paper figure VLM review not a public Scite core claim.",
+          "evidence": "public-docs"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "Active screening stoppers not a public Scite core claim.",
+          "evidence": "public-docs"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Local Cognitive Thread + git wiki vs Scite cloud-only memory.",
+          "evidence": "public-docs"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Not interest-drift Watch product.",
+          "evidence": "public-docs"
+        },
+        "c_wiki_filter": {
+          "state": "领先",
+          "note": "Local wiki-filter-parse vs Scite closed filters; auditable local rules.",
+          "evidence": "public-docs"
+        },
+        "c_mcp_session": {
+          "state": "领先",
+          "note": "Local research-session / MCP docs vs Scite proprietary session.",
+          "evidence": "public-docs"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs vs Scite notifications; maturity similar.",
+          "evidence": "public-docs"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local CLI+git artifacts vs SaaS-only audit trail.",
+          "evidence": "public-docs"
+        }
+      }
+    },
+    "ResearchRabbit": {
+      "kind": "closed",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Public multi-source discovery; Paper_Rec CLI vs ResearchRabbit SaaS.",
+          "evidence": "public-docs"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query assist documented on both sides vs ResearchRabbit.",
+          "evidence": "public-docs"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Ranking/relevance UX public; Paper_Rec interpretable rank vs ResearchRabbit.",
+          "evidence": "public-docs"
+        },
+        "a_graph_explore": {
+          "state": "落后",
+          "note": "ResearchRabbit visual related-paper graph ahead of Paper_Rec graph exploration.",
+          "evidence": "public-docs"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "Collection growth UX vs discovery-curve stop.",
+          "evidence": "public-docs"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Structured summaries; Paper_Rec packs vs ResearchRabbit reports.",
+          "evidence": "public-docs"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "Discovery-first; grounded QA not RR primary vs answer-ground.",
+          "evidence": "public-docs"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Neither Scite-class retraction engine in Paper_Rec.",
+          "evidence": "public-docs"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate local Results block; ResearchRabbit SaaS typically soft verify.",
+          "evidence": "public-docs"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Related-work assist public; neither always AutoSurvey-class.",
+          "evidence": "public-docs"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Novelty kill-switch not a public ResearchRabbit lit product dim.",
+          "evidence": "public-docs"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "Deep research features vary; Paper_Rec deep-research vs ResearchRabbit depth tools.",
+          "evidence": "public-docs"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Paper figure VLM review not a public ResearchRabbit core claim.",
+          "evidence": "public-docs"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "Active screening stoppers not a public ResearchRabbit core claim.",
+          "evidence": "public-docs"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Local Cognitive Thread + git wiki vs ResearchRabbit cloud-only memory.",
+          "evidence": "public-docs"
+        },
+        "c_drift_watch": {
+          "state": "落后",
+          "note": "Interest/collection drift patterns; Paper_Rec feedback unused for Watch/rank profile.",
+          "evidence": "public-docs"
+        },
+        "c_wiki_filter": {
+          "state": "领先",
+          "note": "Local wiki-filter-parse vs ResearchRabbit closed filters; auditable local rules.",
+          "evidence": "public-docs"
+        },
+        "c_mcp_session": {
+          "state": "领先",
+          "note": "Local research-session / MCP docs vs ResearchRabbit proprietary session.",
+          "evidence": "public-docs"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs vs ResearchRabbit notifications; maturity similar.",
+          "evidence": "public-docs"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local CLI+git artifacts vs ResearchRabbit SaaS-only audit trail.",
+          "evidence": "public-docs"
+        }
+      }
+    },
+    "Connected Papers": {
+      "kind": "closed",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Public multi-source discovery; Paper_Rec CLI vs Connected Papers SaaS.",
+          "evidence": "public-docs"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query assist documented on both sides vs Connected Papers.",
+          "evidence": "public-docs"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Ranking/relevance UX public; Paper_Rec interpretable rank vs Connected Papers.",
+          "evidence": "public-docs"
+        },
+        "a_graph_explore": {
+          "state": "落后",
+          "note": "Connected Papers similarity graph is the product; Paper_Rec graph explore thin.",
+          "evidence": "public-docs"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "Discovery stop heuristics; Paper_Rec discovery-curve vs Connected Papers coverage UX.",
+          "evidence": "public-docs"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Graph export vs Pack reports; different artifacts.",
+          "evidence": "public-docs"
+        },
+        "b_grounded_qa": {
+          "state": "不适用",
+          "note": "Grounded Q&A not a Connected Papers core public claim.",
+          "evidence": "public-docs"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Citation UX public; Paper_Rec lacks retraction engine unless Connected Papers specializes.",
+          "evidence": "public-docs"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate local Results block; Connected Papers SaaS typically soft verify.",
+          "evidence": "public-docs"
+        },
+        "b_survey": {
+          "state": "不适用",
+          "note": "Survey generation not Connected Papers core.",
+          "evidence": "public-docs"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Novelty kill-switch not a public Connected Papers lit product dim.",
+          "evidence": "public-docs"
+        },
+        "b_parallel_deep": {
+          "state": "不适用",
+          "note": "Deep research supervisor not Connected Papers core.",
+          "evidence": "public-docs"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Paper figure VLM review not a public Connected Papers core claim.",
+          "evidence": "public-docs"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "Active screening stoppers not a public Connected Papers core claim.",
+          "evidence": "public-docs"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Local Cognitive Thread + git wiki vs Connected Papers cloud-only memory.",
+          "evidence": "public-docs"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Static graph snapshots ≠ ongoing interest-drift Watch.",
+          "evidence": "public-docs"
+        },
+        "c_wiki_filter": {
+          "state": "领先",
+          "note": "Local wiki-filter-parse vs Connected Papers closed filters; auditable local rules.",
+          "evidence": "public-docs"
+        },
+        "c_mcp_session": {
+          "state": "领先",
+          "note": "Local research-session / MCP docs vs Connected Papers proprietary session.",
+          "evidence": "public-docs"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs vs Connected Papers notifications; maturity similar.",
+          "evidence": "public-docs"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local CLI+git artifacts vs Connected Papers SaaS-only audit trail.",
+          "evidence": "public-docs"
+        }
+      }
+    },
+    "Semantic Scholar": {
+      "kind": "closed",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "S2 API is a Paper_Rec source; public search parity for indexed lit.",
+          "evidence": "public-docs"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query assist documented on both sides vs Semantic Scholar.",
+          "evidence": "public-docs"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Highly Influential citations public; Paper_Rec rank-intent local.",
+          "evidence": "public-docs"
+        },
+        "a_graph_explore": {
+          "state": "落后",
+          "note": "S2 citation/influential graph UX ahead of Paper_Rec graph explore.",
+          "evidence": "public-docs"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "Discovery stop heuristics; Paper_Rec discovery-curve vs Semantic Scholar coverage UX.",
+          "evidence": "public-docs"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Structured summaries; Paper_Rec packs vs Semantic Scholar reports.",
+          "evidence": "public-docs"
+        },
+        "b_grounded_qa": {
+          "state": "持平",
+          "note": "Grounded answers claimed publicly; Paper_Rec answer-ground vs Semantic Scholar.",
+          "evidence": "public-docs"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "S2 metadata trust signals; Paper_Rec still lacks retraction conflict engine.",
+          "evidence": "public-docs"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Local hard-gate Results; S2 is discovery index not Results registry.",
+          "evidence": "public-docs"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Related-work assist public; neither always AutoSurvey-class.",
+          "evidence": "public-docs"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Novelty kill-switch not a public Semantic Scholar lit product dim.",
+          "evidence": "public-docs"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "Deep research features vary; Paper_Rec deep-research vs Semantic Scholar depth tools.",
+          "evidence": "public-docs"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Paper figure VLM review not a public Semantic Scholar core claim.",
+          "evidence": "public-docs"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "Active screening stoppers not a public Semantic Scholar core claim.",
+          "evidence": "public-docs"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Local Cognitive Thread + git wiki vs Semantic Scholar cloud-only memory.",
+          "evidence": "public-docs"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Library alerts ≠ ResearchRabbit-class visual drift.",
+          "evidence": "public-docs"
+        },
+        "c_wiki_filter": {
+          "state": "领先",
+          "note": "Local wiki-filter-parse vs Semantic Scholar closed filters; auditable local rules.",
+          "evidence": "public-docs"
+        },
+        "c_mcp_session": {
+          "state": "领先",
+          "note": "Local research-session / MCP docs vs Semantic Scholar proprietary session.",
+          "evidence": "public-docs"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs vs Semantic Scholar notifications; maturity similar.",
+          "evidence": "public-docs"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local CLI+git artifacts vs Semantic Scholar SaaS-only audit trail.",
+          "evidence": "public-docs"
+        }
+      }
+    },
+    "NotebookLM": {
+      "kind": "closed",
+      "cells": {
+        "a_multi_source": {
+          "state": "持平",
+          "note": "Public multi-source discovery; Paper_Rec CLI vs NotebookLM SaaS.",
+          "evidence": "public-docs"
+        },
+        "a_query_rewrite": {
+          "state": "持平",
+          "note": "Query assist documented on both sides vs NotebookLM.",
+          "evidence": "public-docs"
+        },
+        "a_ranking": {
+          "state": "持平",
+          "note": "Ranking/relevance UX public; Paper_Rec interpretable rank vs NotebookLM.",
+          "evidence": "public-docs"
+        },
+        "a_graph_explore": {
+          "state": "不适用",
+          "note": "Citation graph exploration not NotebookLM core public claim.",
+          "evidence": "public-docs"
+        },
+        "a_saturation": {
+          "state": "持平",
+          "note": "Discovery stop heuristics; Paper_Rec discovery-curve vs NotebookLM coverage UX.",
+          "evidence": "public-docs"
+        },
+        "a_report": {
+          "state": "持平",
+          "note": "Audio/overview artifacts vs Pack reports; different formats.",
+          "evidence": "public-docs"
+        },
+        "b_grounded_qa": {
+          "state": "落后",
+          "note": "Notebook-grounded multimodal Q&A UX ahead of answer-ground for uploaded corpora.",
+          "evidence": "public-docs"
+        },
+        "b_citation_trust": {
+          "state": "持平",
+          "note": "Source grounding ≠ Scite retraction UX; Paper_Rec still lacks retraction engine.",
+          "evidence": "public-docs"
+        },
+        "b_hard_gate": {
+          "state": "领先",
+          "note": "Paper_Rec hard-gate local Results block; NotebookLM SaaS typically soft verify.",
+          "evidence": "public-docs"
+        },
+        "b_survey": {
+          "state": "持平",
+          "note": "Related-work assist public; neither always AutoSurvey-class.",
+          "evidence": "public-docs"
+        },
+        "b_novelty": {
+          "state": "不适用",
+          "note": "Novelty kill-switch not a public NotebookLM lit product dim.",
+          "evidence": "public-docs"
+        },
+        "b_parallel_deep": {
+          "state": "持平",
+          "note": "Deep research modes vary; Paper_Rec deep-research vs notebook guides.",
+          "evidence": "public-docs"
+        },
+        "b_fig_vlm": {
+          "state": "不适用",
+          "note": "Paper figure VLM review not a public NotebookLM core claim.",
+          "evidence": "public-docs"
+        },
+        "b_al_stop": {
+          "state": "不适用",
+          "note": "Active screening stoppers not a public NotebookLM core claim.",
+          "evidence": "public-docs"
+        },
+        "c_thread": {
+          "state": "领先",
+          "note": "Local Cognitive Thread + git wiki vs NotebookLM cloud-only memory.",
+          "evidence": "public-docs"
+        },
+        "c_drift_watch": {
+          "state": "持平",
+          "note": "Notebook memory ≠ ResearchRabbit interest-drift Watch.",
+          "evidence": "public-docs"
+        },
+        "c_wiki_filter": {
+          "state": "领先",
+          "note": "Local wiki filter parse/rules vs closed notebook filters.",
+          "evidence": "public-docs"
+        },
+        "c_mcp_session": {
+          "state": "领先",
+          "note": "Local research-session / MCP docs vs NotebookLM proprietary session.",
+          "evidence": "public-docs"
+        },
+        "c_bot_push": {
+          "state": "持平",
+          "note": "Webhook/bot docs vs NotebookLM notifications; maturity similar.",
+          "evidence": "public-docs"
+        },
+        "c_local_audit": {
+          "state": "领先",
+          "note": "Local CLI+git artifacts vs NotebookLM SaaS-only audit trail.",
+          "evidence": "public-docs"
+        }
+      }
+    }
+  }
+}

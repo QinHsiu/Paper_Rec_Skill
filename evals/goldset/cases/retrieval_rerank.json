@@ -1,0 +1,15 @@
+{
+  "id": "retrieval_gold_in_top5",
+  "family": "retrieval",
+  "query": "dense retrieval transformers ranking",
+  "docs": [
+    {"id": "g1", "title": "Dense Passage Retrieval", "abstract": "Dense retrieval with transformers for ranking."},
+    {"id": "n1", "title": "Pasta recipes", "abstract": "Tomato sauce and noodles cooking tips."},
+    {"id": "n2", "title": "Weather models", "abstract": "Atmospheric pressure forecasting methods."},
+    {"id": "g2", "title": "ColBERT late interaction", "abstract": "Efficient transformer ranking retrieval."},
+    {"id": "n3", "title": "Basketball stats", "abstract": "Player efficiency ratings over seasons."}
+  ],
+  "gold_ids": ["g1", "g2"],
+  "k": 5,
+  "min_recall": 1.0
+}

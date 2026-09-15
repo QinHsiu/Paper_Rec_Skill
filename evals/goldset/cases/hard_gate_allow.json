@@ -1,0 +1,7 @@
+{
+  "id": "hard_gate_allow_registry",
+  "family": "hard_gate",
+  "expect": "allowed",
+  "metrics": {"accuracy": 0.91},
+  "prose": "# Results\n\nWe achieve accuracy 0.91 on the test set.\n"
+}
