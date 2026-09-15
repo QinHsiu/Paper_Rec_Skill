@@ -1,0 +1,8 @@
+{
+  "id": "fig_vlm_skipped_without_key",
+  "family": "fig_review",
+  "use_vlm": "auto",
+  "markdown": "As shown in Figure 1, accuracy increases.\n\n![f1](missing.png)\n**Figure 1.** Accuracy over epochs.\n",
+  "expect_vlm_skipped": true,
+  "expect_skip_reason": "no_api_key"
+}

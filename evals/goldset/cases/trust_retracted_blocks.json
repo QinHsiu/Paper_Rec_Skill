@@ -1,0 +1,8 @@
+{
+  "id": "trust_retracted_blocks",
+  "family": "trust_meta",
+  "papers": [{"title": "Bad", "doi": "10.9/bad"}],
+  "oa": {"10.9/bad": {"cite": 40, "retracted": true}},
+  "s2": {"10.9/bad": {"cite": 39, "retracted": false}},
+  "expect_status": ["retracted"]
+}

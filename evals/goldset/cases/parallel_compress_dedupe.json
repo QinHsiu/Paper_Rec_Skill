@@ -1,0 +1,10 @@
+{
+  "id": "parallel_compress_dedupe",
+  "family": "parallel_deep",
+  "topic": "retrieval",
+  "seed": [{"title": "Seed A", "abstract": "dense retrieval", "doi": "10.5/seed", "year": 2023}],
+  "breadth": 2,
+  "max_concurrent": 2,
+  "search_results": {"*": [{"title": "Shared Hit", "abstract": "appears in every lane", "doi": "10.5/dup", "year": 2024}]},
+  "dup_doi": "10.5/dup"
+}

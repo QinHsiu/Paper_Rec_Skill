@@ -853,21 +853,45 @@ def cmd_novelty_check(args: argparse.Namespace) -> int:
 
 
 def cmd_fig_review(args: argparse.Namespace) -> int:
-    from .fig_review import load_vlm_reviews_file, review_figures
+    from .fig_review import VlmUnconfigured, load_vlm_reviews_file, review_figures
 
     text = Path(args.draft).read_text(encoding="utf-8") if args.draft else ""
     paths = _split_csv(args.figure_paths) if args.figure_paths else []
     vlm = load_vlm_reviews_file(Path(args.vlm_json)) if getattr(args, "vlm_json", "") and args.vlm_json else None
-    out = review_figures(
-        text,
-        figure_paths=paths or None,
-        abstract=getattr(args, "abstract", "") or "",
-        vlm_reviews=vlm,
-        emit_vlm_prompts=bool(getattr(args, "emit_vlm_prompts", False)),
-    )
+    try:
+        out = review_figures(
+            text,
+            figure_paths=paths or None,
+            abstract=getattr(args, "abstract", "") or "",
+            vlm_reviews=vlm,
+            emit_vlm_prompts=bool(getattr(args, "emit_vlm_prompts", False)),
+            use_vlm=args.use_vlm,
+        )
+    except VlmUnconfigured:
+        print(json.dumps({"error": "vlm_required_but_unconfigured"}, ensure_ascii=False), file=sys.stderr)
+        return 2
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({k: out[k] for k in ("ok", "figure_n", "ref_n", "issue_n", "vlm_applied") if k in out}, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {
+                k: out[k]
+                for k in (
+                    "ok",
+                    "figure_n",
+                    "ref_n",
+                    "issue_n",
+                    "vlm_applied",
+                    "vlm_skipped",
+                    "vlm_skip_reason",
+                    "vlm_model",
+                )
+                if k in out
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0 if out.get("ok") else (1 if args.strict else 0)
 
 
@@ -905,11 +929,42 @@ def cmd_feedback_edit(args: argparse.Namespace) -> int:
 
 
 def cmd_deep_research(args: argparse.Namespace) -> int:
-    from .deep_research import build_deep_research_plan
+    from .deep_research import build_deep_research_plan, run_parallel_research, search_fn_from_command
 
     papers = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
     if isinstance(papers, dict):
         papers = list(papers.get("papers") or papers.get("documents") or [])
+    if args.parallel:
+        if args.search_cmd:
+            search_fn = search_fn_from_command(args.search_cmd, timeout=args.lane_timeout)
+        else:
+            search_fn = lambda q: []  # structure-only lanes
+        out = run_parallel_research(
+            args.topic,
+            search_fn,
+            seed_papers=papers,
+            max_concurrent=args.max_concurrent,
+            breadth=args.breadth,
+            max_depth=args.max_depth,
+            timeout_per_lane=args.lane_timeout,
+        )
+        if args.out:
+            Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(
+            json.dumps(
+                {
+                    "ok": out["ok"],
+                    "lanes_n": len(out["lanes"]),
+                    "failed_n": len(out["failed_lanes"]),
+                    "compressed_n": len(out["compressed_learnings"]),
+                    "next_queries": out["next_queries"],
+                    "out": args.out or None,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return 0 if out["ok"] else 1
     out = build_deep_research_plan(args.topic, papers, max_depth=args.max_depth, breadth=args.breadth)
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1142,11 +1197,14 @@ def cmd_reflect_search(args: argparse.Namespace) -> int:
 
 def cmd_screen_next(args: argparse.Namespace) -> int:
     from .screen_next import build_label_map, screen_next
+    from .screening_stop import StopRules, history_from_events, validate_rules
 
     cands = json.loads(Path(args.candidates).read_text(encoding="utf-8"))
     if isinstance(cands, dict):
         cands = list(cands.get("documents") or cands.get("papers") or cands.get("candidates") or [])
     labels: dict[str, int] = {}
+    raw = None
+    events: list[dict[str, Any]] = []
     if args.labels_json:
         raw = json.loads(Path(args.labels_json).read_text(encoding="utf-8"))
         if isinstance(raw, dict) and "labels" in raw:
@@ -1159,12 +1217,32 @@ def cmd_screen_next(args: argparse.Namespace) -> int:
         data = thread_store.load_thread(Path(args.wiki_root), args.thread)
         events = list(data.get("events") or []) + list(data.get("feedback") or [])
         labels = build_label_map(events)
+    history: list[int] | None = None
+    if args.labels_json and isinstance(raw, list):
+        history = history_from_events(raw)
+    elif args.thread:
+        # events + feedback are concatenated; order by ts so stoppers see true label sequence
+        history = history_from_events(sorted(events, key=lambda e: str((e or {}).get("ts") or "")))
+    rules = StopRules(
+        n_consecutive_irrelevant=args.stop_n if args.stop_n > 0 else None,
+        max_labels=args.stop_max_labels or None,
+        saturation_window=args.stop_window or None,
+        saturation_max_relevant=args.stop_max_relevant,
+        min_labels_before_stop=args.min_labels,
+    )
+    try:
+        validate_rules(rules)
+    except ValueError as exc:
+        print(json.dumps({"error": "invalid_stop_rules", "detail": str(exc)}), file=sys.stderr)
+        return 2
     out = screen_next(
         cands,
         labels,
         batch_size=args.batch_size,
         strategy=args.strategy,
         consecutive_irrelevant_stop=args.stop_n,
+        stop_rules=rules,
+        history=history,
     )
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1309,6 +1387,25 @@ def cmd_citation_expand(args: argparse.Namespace) -> int:
             indent=2,
         )
     )
+    return 0
+
+
+def cmd_trust_meta(args: argparse.Namespace) -> int:
+    from .trust_meta import annotate_papers, openalex_fetcher, s2_fetcher
+
+    raw = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
+    papers = raw if isinstance(raw, list) else list(raw.get("papers") or raw.get("documents") or raw.get("items") or [])
+    out = annotate_papers(
+        papers,
+        fetch_oa=None if args.offline else openalex_fetcher(),
+        fetch_s2=None if args.offline else s2_fetcher(),
+        conflict_ratio=args.conflict_ratio,
+        offline=bool(args.offline),
+    )
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    summary = {k: out[k] for k in ("retracted_n", "conflict_n", "unknown_n", "ok_n", "degraded", "degraded_reasons", "blocked_for_writing")}
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -1848,12 +1945,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_novelty_check)
 
-    s = sub.add_parser("fig-review", help="Figure/caption/ref consistency (+ optional VLM JSON)")
+    s = sub.add_parser("fig-review", help="Figure/caption/ref consistency (+ optional real VLM via env)")
     s.add_argument("--draft", required=True)
     s.add_argument("--figure-paths", default="")
     s.add_argument("--abstract", default="")
     s.add_argument("--vlm-json", default="", help="precomputed VLM review JSON list")
     s.add_argument("--emit-vlm-prompts", action="store_true", help="include prompt bundles for a vision model")
+    s.add_argument("--use-vlm", choices=["off", "auto", "required"], default="off")
     s.add_argument("--strict", action="store_true")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_fig_review)
@@ -1875,6 +1973,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--max-depth", type=int, default=2)
     s.add_argument("--breadth", type=int, default=3)
     s.add_argument("--out", default="")
+    s.add_argument("--parallel", action="store_true", help="run follow-up lanes concurrently + compress")
+    s.add_argument("--max-concurrent", type=int, default=3)
+    s.add_argument("--search-cmd", default="", help="shell command: query on stdin → JSON list on stdout")
+    s.add_argument("--lane-timeout", type=float, default=60.0)
     s.set_defaults(func=cmd_deep_research)
 
     s = sub.add_parser("deep-search", help="Live Search→Read→Reason loop (breadth×depth)")
@@ -1961,6 +2063,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--strategy", default="hybrid", choices=["hybrid", "max", "uncertainty"])
     s.add_argument("--batch-size", type=int, default=10)
     s.add_argument("--stop-n", type=int, default=10, help="stop after N irrelevant labels (cold skip storm)")
+    s.add_argument("--stop-max-labels", type=int, default=0, help="stop after total N labels (0 = off)")
+    s.add_argument("--stop-window", type=int, default=0, help="saturation window W (0 = off)")
+    s.add_argument("--stop-max-relevant", type=int, default=0, help="≤ this many relevant in window → stop")
+    s.add_argument("--min-labels", type=int, default=5, help="never stop before this many labels")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_screen_next)
 
@@ -2046,6 +2152,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--top-k", type=int, default=5)
     s.add_argument("--no-persist", action="store_true")
     s.set_defaults(func=cmd_citation_expand)
+
+    s = sub.add_parser("trust-meta", help="Retraction + OA/S2 citation-count conflict annotations")
+    s.add_argument("--json", required=True, help="paper hits JSON (list or {papers:[...]})")
+    s.add_argument("--conflict-ratio", type=float, default=0.30)
+    s.add_argument("--offline", action="store_true", help="no network; everything unknown")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_trust_meta)
 
     s = sub.add_parser("evidence-coverage", help="Hypothesis/claim evidence confidence summary")
     s.add_argument("--wiki-root", required=True)

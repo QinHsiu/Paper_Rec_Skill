@@ -207,3 +207,16 @@ Plan (W0): `docs/superpowers/plans/2026-09-15-competitor-exceed-w0-scorecard.md`
 - [ ] W1 engines not started in SP0 (explicit)
 
 Do **not** market "全方位超过" until W1 Critical clear + gold-set wave gate.
+
+## Pass 7 — W1 Critical trust engines shipped (2026-09-16)
+
+| Gap | Engine | CLI |
+|-----|--------|-----|
+| AL stoppers | `screening_stop.StopRules` (consecutive / max_labels / saturation) | `screen-next --stop-n --stop-max-labels --stop-window --stop-max-relevant --min-labels` |
+| Citation trust | `trust_meta.annotate_papers` (retraction, OA/S2 conflict, unknown) | `trust-meta --json --conflict-ratio [--offline]` |
+| Fig VLM | `fig_review` env-configured OpenAI-compatible call, degrade without key | `fig-review --use-vlm off\|auto\|required` |
+| Parallel deep | `deep_research.run_parallel_research` + `compress_learnings` | `deep-research --parallel --max-concurrent [--search-cmd]` |
+
+Shared: `http_client` (injectable transport, typed errors, key redaction). Gold-set: 11 cases incl. trust ×3, fig ×1, parallel ×1, stoppers ×2.
+
+Scorecard: four Critical cells `落后 → 持平` (8 cells). `GAP_PRIORITY.md` now has zero Critical rows. No `领先` claims added; "全方位超过" remains gated on W2/W3 + benchmarks.

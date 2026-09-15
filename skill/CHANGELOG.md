@@ -4,6 +4,21 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.20.0] — 2026-09-16
+
+### Added
+
+- `trust-meta`: retraction flags + OpenAlex/S2 citation-count conflict, `unknown` when one side missing
+- `fig-review --use-vlm off|auto|required`: real OpenAI-compatible vision call from env, offline degrade
+- `deep-research --parallel`: concurrent follow-up lanes + learning compression
+- `screen-next` stoppers: `--stop-max-labels`, `--stop-window/--stop-max-relevant`, `--min-labels`
+- `wiki_bridge.http_client`: stdlib HTTP with injectable transport and key redaction
+- Gold-set families: `trust_meta`, `fig_review`, `parallel_deep`; stoppers now use production code
+
+### Changed
+
+- Competitor scorecard: 4 Critical dimensions (8 competitor cells) upgraded `落后→持平`; `GAP_PRIORITY.md` has no Critical rows
+
 ## [1.19.0] — 2026-08-13
 
 ### Added

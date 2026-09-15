@@ -1,9 +1,16 @@
 """Depth×breadth research tree: learnings → follow-up queries (offline structure)."""
 from __future__ import annotations
 
-from typing import Any
+import json as _json
+import re
+import subprocess
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import wait as _wait
+from typing import Any, Callable
 
 from .reflect_search import reflect_coverage
+
+_WS = re.compile(r"[^a-z0-9\u4e00-\u9fff]+")
 
 
 def extract_learnings(papers: list[dict[str, Any]], *, max_items: int = 8) -> list[dict[str, Any]]:
@@ -99,3 +106,136 @@ def build_deep_research_plan(
         "tree": root,
         "next_queries": root.get("followups") or [],
     }
+
+
+def _norm_title(t: str) -> str:
+    return _WS.sub(" ", (t or "").lower()).strip()
+
+
+def compress_learnings(lanes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    merged: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for lane in lanes:
+        q = str(lane.get("query") or lane.get("topic") or "")
+        is_parallel_lane = "query" in lane
+        for L in lane.get("learnings") or []:
+            key = str(L.get("doi") or "").lower() or "t:" + _norm_title(str(L.get("citation") or ""))
+            if not key or key == "t:":
+                continue
+            if key not in merged:
+                merged[key] = {
+                    "learning": L.get("learning"),
+                    "citation": L.get("citation"),
+                    "year": L.get("year"),
+                    "doi": L.get("doi"),
+                    "paper_path": L.get("paper_path"),
+                    "lane_hits": 0,
+                    "lanes": [],
+                }
+                order.append(key)
+            m = merged[key]
+            if is_parallel_lane:
+                m["lane_hits"] += 1
+                if q and q not in m["lanes"]:
+                    m["lanes"].append(q)
+    out = [merged[k] for k in order]
+    out.sort(
+        key=lambda m: (
+            -m["lane_hits"],
+            -(int(m["year"]) if isinstance(m.get("year"), (int, float)) else 0),
+            str(m.get("citation") or ""),
+        )
+    )
+    return out
+
+
+def run_parallel_research(
+    topic: str,
+    search_fn: Callable[[str], list[dict[str, Any]]],
+    *,
+    seed_papers: list[dict[str, Any]] | None = None,
+    max_concurrent: int = 3,
+    breadth: int = 3,
+    max_depth: int = 2,
+    compress: bool = True,
+    timeout_per_lane: float = 60.0,
+) -> dict[str, Any]:
+    if max_concurrent < 1:
+        raise ValueError("max_concurrent must be >= 1")
+    root = deep_research_step(topic, seed_papers or [], depth=1, breadth=breadth, max_depth=max_depth)
+    queries = list(root.get("followups") or [])[: max(1, breadth)]
+    lanes: dict[str, dict[str, Any]] = {}
+    failed: dict[str, str] = {}
+
+    def lane(q: str) -> dict[str, Any]:
+        hits = search_fn(q)
+        node = deep_research_step(q, hits, depth=2, breadth=breadth, max_depth=max_depth)
+        node["query"] = q
+        node["hit_n"] = len(hits or [])
+        return node
+
+    # Wall-clock budget = per-lane timeout × number of sequential "rounds" the pool needs.
+    # Lanes still running at the deadline are recorded as TimeoutError and abandoned
+    # (shutdown(wait=False)); a runaway search_fn must bound itself (subprocess path does).
+    rounds = -(-len(queries) // max_concurrent) if queries else 0
+    budget = timeout_per_lane * max(1, rounds)
+    ex = ThreadPoolExecutor(max_workers=max_concurrent)
+    try:
+        futs = {ex.submit(lane, q): q for q in queries}
+        done, pending = _wait(futs, timeout=budget)
+        for fut in pending:
+            failed[futs[fut]] = "TimeoutError"
+            fut.cancel()
+        for fut in done:
+            q = futs[fut]
+            try:
+                lanes[q] = fut.result()
+            except Exception as exc:  # noqa: BLE001
+                failed[q] = type(exc).__name__
+    finally:
+        ex.shutdown(wait=False, cancel_futures=True)
+    ordered_lanes = [lanes[q] for q in sorted(lanes)]
+    failed_lanes = [{"query": q, "error": failed[q]} for q in sorted(failed)]
+    compressed = compress_learnings([root] + ordered_lanes) if compress else []
+    next_q: list[str] = []
+    for ln in ordered_lanes:
+        for fq in ln.get("followups") or []:
+            if fq not in next_q and fq not in queries:
+                next_q.append(fq)
+    return {
+        "ok": bool(ordered_lanes) or not queries,
+        "topic": topic,
+        "max_concurrent": max_concurrent,
+        "root": root,
+        "lanes": ordered_lanes,
+        "failed_lanes": failed_lanes,
+        "next_queries_attempted": queries,
+        "compressed_learnings": compressed,
+        "next_queries": next_q[: breadth * 2],
+    }
+
+
+def search_fn_from_command(cmd: str, *, timeout: float = 60.0) -> Callable[[str], list[dict[str, Any]]]:
+    """Wrap an operator-supplied shell command as a search lane.
+
+    `cmd` comes from the local CLI flag `--search-cmd` and is trusted operator input;
+    it is executed via the shell (so pipes/redirects work), receives the query on stdin,
+    and must print a JSON list (or {"papers": [...]}) on stdout. Never pass untrusted text here.
+    """
+
+    def run(q: str) -> list[dict[str, Any]]:
+        proc = subprocess.run(  # noqa: S602 - trusted operator command, see docstring
+            cmd,
+            input=q,
+            capture_output=True,
+            text=True,
+            shell=True,
+            timeout=timeout,
+            check=True,
+        )
+        data = _json.loads(proc.stdout or "[]")
+        if isinstance(data, dict):
+            data = list(data.get("papers") or data.get("documents") or data.get("items") or [])
+        return [d for d in data if isinstance(d, dict)]
+
+    return run

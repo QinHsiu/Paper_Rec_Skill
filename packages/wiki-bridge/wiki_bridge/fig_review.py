@@ -1,10 +1,14 @@
 """Figure ↔ caption ↔ body review (heuristic + pluggable VLM semantic pass)."""
 from __future__ import annotations
 
+import base64
 import json
+import os
 import re
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
+
+from .http_client import HttpError, Transport, post_json
 
 _FIG_LATEX = re.compile(
     r"(?is)\\begin\{figure\*?\}.*?\\caption\{(?P<cap>[^}]*)\}.*?\\label\{(?P<label>[^}]*)\}"
@@ -32,6 +36,103 @@ Img_description, Img_review, Caption_review, Figrefs_review,
 alignment_ok (bool), issues (list of short strings).
 Be critical: flag caption claims the plot does not support.
 """
+
+
+class VlmUnconfigured(RuntimeError):
+    pass
+
+
+_MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".webp": "image/webp"}
+
+
+def vlm_config_from_env(env: Mapping[str, str] | None = None) -> dict[str, str] | None:
+    e = os.environ if env is None else env
+    key = e.get("PAPER_REC_VLM_API_KEY") or e.get("OPENAI_API_KEY")
+    if not key:
+        return None
+    return {
+        "api_key": key,
+        "base_url": (e.get("PAPER_REC_VLM_BASE_URL") or "https://api.openai.com/v1").rstrip("/"),
+        "model": e.get("PAPER_REC_VLM_MODEL") or "gpt-4o-mini",
+    }
+
+
+def _first_json_object(text: str) -> dict[str, Any] | None:
+    text = text or ""
+    try:
+        obj = json.loads(text)
+        return obj if isinstance(obj, dict) else None
+    except json.JSONDecodeError:
+        pass
+    start = text.find("{")
+    end = text.rfind("}")
+    if start >= 0 and end > start:
+        try:
+            obj = json.loads(text[start : end + 1])
+            return obj if isinstance(obj, dict) else None
+        except json.JSONDecodeError:
+            return None
+    return None
+
+
+def make_vlm_callback(
+    config: dict[str, str],
+    *,
+    transport: Transport | None = None,
+    timeout: float = 60.0,
+) -> Callable[[dict[str, Any]], dict[str, Any]]:
+    url = config["base_url"] + "/chat/completions"
+    headers = {"Authorization": f"Bearer {config['api_key']}"}
+    model = config["model"]
+
+    def call(bundle: dict[str, Any]) -> dict[str, Any]:
+        fig = str(bundle.get("figure") or "")
+        path = Path(str(bundle.get("path") or ""))
+        if not path.is_file():
+            return {"figure": fig, "skipped": True, "skip_reason": "image_unreadable", "alignment_ok": True, "issues": []}
+        try:
+            data = path.read_bytes()
+        except OSError:
+            return {"figure": fig, "skipped": True, "skip_reason": "image_unreadable", "alignment_ok": True, "issues": []}
+        mime = _MIME.get(path.suffix.lower())
+        if mime is None:
+            # only ship known raster image types to the VLM; never base64 arbitrary files
+            return {"figure": fig, "skipped": True, "skip_reason": "image_unreadable", "alignment_ok": True, "issues": []}
+        img = f"data:{mime};base64,{base64.b64encode(data).decode('ascii')}"
+        payload = {
+            "model": model,
+            "temperature": 0,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": str(bundle.get("prompt") or "")},
+                        {"type": "image_url", "image_url": {"url": img}},
+                    ],
+                }
+            ],
+        }
+        try:
+            resp = post_json(url, payload, headers=headers, timeout=timeout, transport=transport)
+        except HttpError as exc:
+            return {"figure": fig, "alignment_ok": False, "issues": [f"vlm_error:{type(exc).__name__}"]}
+        try:
+            content = resp["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError):
+            return {"figure": fig, "alignment_ok": False, "issues": ["vlm_error:bad_response_shape"]}
+        obj = _first_json_object(str(content))
+        if obj is None:
+            return {"figure": fig, "alignment_ok": False, "issues": ["vlm_error:non_json_content"]}
+        obj.setdefault("figure", fig)
+        obj.setdefault("issues", [])
+        return obj
+
+    return call
+
+
+def default_vlm_callback_from_env(*, transport: Transport | None = None) -> Callable[[dict[str, Any]], dict[str, Any]] | None:
+    cfg = vlm_config_from_env()
+    return make_vlm_callback(cfg, transport=transport) if cfg else None
 
 
 def extract_figures(text: str) -> list[dict[str, Any]]:
@@ -190,6 +291,8 @@ def review_figures(
     vlm_reviews: list[dict[str, Any]] | None = None,
     vlm_callback: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     emit_vlm_prompts: bool = False,
+    use_vlm: str = "off",
+    vlm_transport: Transport | None = None,
 ) -> dict[str, Any]:
     """Structural + offline semantic (+ optional VLM JSON) figure review."""
     text = text or ""
@@ -227,16 +330,35 @@ def review_figures(
             for iss in rev.get("issues") or []:
                 issues.append({"figure": str(rev.get("figure")), "issue": str(iss)})
 
+    vlm_skipped = False
+    vlm_skip_reason: str | None = None
+    vlm_model: str | None = None
+    if vlm_callback is None and vlm_reviews is None:
+        if use_vlm == "off":
+            vlm_skipped, vlm_skip_reason = True, "disabled"
+        else:
+            cfg = vlm_config_from_env()
+            if cfg is None:
+                if use_vlm == "required":
+                    raise VlmUnconfigured("vlm_required_but_unconfigured: set PAPER_REC_VLM_API_KEY or OPENAI_API_KEY")
+                vlm_skipped, vlm_skip_reason = True, "no_api_key"
+            else:
+                vlm_callback = make_vlm_callback(cfg, transport=vlm_transport)
+                vlm_model = cfg["model"]
+
     applied_vlm = vlm_reviews
     if vlm_callback and not applied_vlm:
-        applied_vlm = []
+        raw_vlm: list[dict[str, Any]] = []
         for bundle in vlm_prompt_bundle(text, figures, abstract=abstract):
             try:
-                applied_vlm.append(vlm_callback(bundle))
+                raw_vlm.append(vlm_callback(bundle))
             except Exception as exc:  # noqa: BLE001
-                applied_vlm.append(
-                    {"figure": bundle["figure"], "alignment_ok": False, "issues": [f"vlm_error:{exc}"]}
+                raw_vlm.append(
+                    {"figure": bundle["figure"], "alignment_ok": False, "issues": [f"vlm_error:{type(exc).__name__}"]}
                 )
+        applied_vlm = [r for r in raw_vlm if not r.get("skipped")]
+        if raw_vlm and not applied_vlm:
+            vlm_skipped, vlm_skip_reason = True, "image_unreadable"
 
     semantic = merge_vlm_reviews(offline, applied_vlm)
     for rev in semantic:
@@ -255,6 +377,9 @@ def review_figures(
         "issue_n": len(issues),
         "semantic": semantic,
         "vlm_applied": bool(applied_vlm),
+        "vlm_skipped": vlm_skipped if not applied_vlm else False,
+        "vlm_skip_reason": vlm_skip_reason if not applied_vlm else None,
+        "vlm_model": vlm_model,
     }
     if emit_vlm_prompts:
         out["vlm_prompts"] = vlm_prompt_bundle(text, figures, abstract=abstract)

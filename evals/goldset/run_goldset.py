@@ -9,16 +9,14 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "packages" / "wiki-bridge"))
 
+from wiki_bridge.deep_research import run_parallel_research
 from wiki_bridge.feedback_edit import critique_answer
+from wiki_bridge.fig_review import review_figures
 from wiki_bridge.litsearch_eval import recall_at_k
 from wiki_bridge.prerank import prerank
+from wiki_bridge.screening_stop import StopRules, should_stop
+from wiki_bridge.trust_meta import annotate_papers
 from wiki_bridge.verified_registry import hard_gate
-
-
-def should_stop(labels: list[str], n: int) -> bool:
-    if len(labels) < n:
-        return False
-    return all(x == "irrelevant" for x in labels[-n:])
 
 
 def run_case(case: dict[str, Any]) -> dict[str, Any]:
@@ -44,9 +42,51 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         ok = rec >= float(case["min_recall"])
         return {"id": cid, "ok": ok, "detail": {"recall": rec, "ids": ids}}
     if fam == "screening_stop":
-        stopped = should_stop(case["labels"], int(case["n_consecutive_irrelevant"]))
-        ok = stopped == bool(case["expect_stop"])
-        return {"id": cid, "ok": ok, "detail": {"stopped": stopped}}
+        hist = [0 if x == "irrelevant" else 1 for x in case["labels"]]
+        rules = StopRules(
+            n_consecutive_irrelevant=case.get("n_consecutive_irrelevant"),
+            saturation_window=case.get("saturation_window"),
+            saturation_max_relevant=int(case.get("saturation_max_relevant", 0)),
+            min_labels_before_stop=int(case.get("min_labels_before_stop", 0)),
+        )
+        sd = should_stop(hist, rules)
+        ok = sd["stopped"] == bool(case["expect_stop"])
+        if ok and case.get("expect_reason"):
+            ok = sd["reason"] == case["expect_reason"]
+        return {"id": cid, "ok": ok, "detail": sd}
+    if fam == "trust_meta":
+        oa_map = case.get("oa") or {}
+        s2_map = case.get("s2") or {}
+        oa = lambda p: oa_map.get(p["doi"])
+        s2 = lambda p: s2_map.get(p["doi"])
+        out = annotate_papers(case["papers"], fetch_oa=oa, fetch_s2=s2, conflict_ratio=float(case.get("conflict_ratio", 0.3)))
+        got = [r["trust_status"] for r in out["papers"]]
+        ok = got == case["expect_status"]
+        return {"id": cid, "ok": ok, "detail": {"got": got, "blocked": out["blocked_for_writing"]}}
+    if fam == "fig_review":
+        import os
+
+        keys = ("OPENAI_API_KEY", "PAPER_REC_VLM_API_KEY")
+        saved = {k: os.environ.pop(k) for k in keys if k in os.environ}
+        try:
+            out = review_figures(case["markdown"], use_vlm=case.get("use_vlm", "auto"))
+        finally:
+            os.environ.update(saved)
+        ok = out["vlm_skipped"] == bool(case["expect_vlm_skipped"]) and out["vlm_skip_reason"] == case["expect_skip_reason"]
+        return {"id": cid, "ok": ok, "detail": {k: out[k] for k in ("vlm_applied", "vlm_skipped", "vlm_skip_reason", "issue_n")}}
+    if fam == "parallel_deep":
+        table = case["search_results"]
+        search = lambda q: table.get(q, table.get("*", []))
+        out = run_parallel_research(
+            case["topic"],
+            search,
+            seed_papers=case["seed"],
+            max_concurrent=int(case["max_concurrent"]),
+            breadth=int(case["breadth"]),
+        )
+        dois = [c.get("doi") for c in out["compressed_learnings"]]
+        ok = out["ok"] and dois.count(case["dup_doi"]) == 1 and out["compressed_learnings"][0]["doi"] == case["dup_doi"]
+        return {"id": cid, "ok": ok, "detail": {"lanes": len(out["lanes"]), "top": out["compressed_learnings"][:1]}}
     return {"id": cid, "ok": False, "detail": {"error": f"unknown family {fam}"}}
 
 

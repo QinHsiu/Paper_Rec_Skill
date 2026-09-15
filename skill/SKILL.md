@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.19.0
+version: 1.20.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -434,6 +434,7 @@ python -m wiki_bridge.cli reflect-search --json fused.json --query "<topic>" --s
 
 If `reflect-search.should_retry`, run **at most one** refine wave with `improved_queries` (Module 2b). Saturation warnings are **advisory only**.
 8. Interactive screening after Top-N: `thread-feedback` accept|skip → `screen-next --strategy hybrid`.
+9. Before persisting Top-N: `trust-meta --json hits.json` — drop `retracted`, caveat `conflict`, never treat `unknown` as verified.
 
 
 ### 2b Iterative refine / 自动收窄·放宽（有上限）
@@ -606,8 +607,8 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki stats-rigor` | Results claims need ±/std/CI/seeds cues |
 | `/wiki survey-draft` | Outline-merge + subsection RAG related-work draft |
 | `/wiki novelty-check` | Idea novelty vs local corpus (+ optional OpenAlex) |
-| `/wiki fig-review` | Figure/caption/ref consistency (heuristic) |
-| `/wiki deep-research` | Learnings tree → follow-up queries (depth×breadth) |
+| `/wiki fig-review` | Figure/caption/ref consistency (+ `--use-vlm auto` real vision check when key set) |
+| `/wiki deep-research` | Learnings tree → follow-up queries; `--parallel` lanes + compression |
 | `/wiki deep-search` | Live Search→Read→Reason (depth×breadth) |
 | `/wiki research-session` | Deferred gather→write_report session (`research_id`) |
 | `/wiki exp-reflect` | Outer-loop `findings.md` + research-state from exp dir |
@@ -617,7 +618,8 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki exp-tree` | Experiment tree show/add/buggy/ready |
 | `/wiki posthoc-cite` | Bind uncited claim sentences to evidence pool |
 | `/wiki research-brief` | Scope artifact before Module 1 |
-| `/wiki screen-next` | Active screening next batch (TF-IDF hybrid AL) |
+| `/wiki screen-next` | Active screening next batch (TF-IDF hybrid AL) + configurable stoppers |
+| `/wiki trust-meta` | Retraction + OA/S2 citation-conflict annotations before writing |
 | `/wiki reflect-search` | Coverage issues → follow-up queries |
 | `/wiki discovery-curve` | Advisory retrieval saturation |
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |

@@ -6,17 +6,18 @@ from derive_gaps import derive_gaps, render_gap_markdown
 HERE = Path(__file__).resolve().parent
 
 
-def test_derive_includes_pass5_criticals():
+def test_no_critical_gaps_after_w1():
     data = json.loads((HERE / "data.json").read_text(encoding="utf-8"))
     gaps = derive_gaps(data)
+    assert not [g for g in gaps if g["severity"] == "Critical"], [g["dimension"] for g in gaps if g["severity"] == "Critical"]
     dims = {g["dimension"] for g in gaps}
     for must in ("b_fig_vlm", "b_parallel_deep", "b_citation_trust", "b_al_stop"):
-        assert must in dims, must
-    assert any(g["severity"] == "Critical" and g["wave"] == "W1" for g in gaps)
+        assert must not in dims, must
 
 
 def test_render_gap_markdown_has_table():
     data = json.loads((HERE / "data.json").read_text(encoding="utf-8"))
     md = render_gap_markdown(derive_gaps(data))
-    assert "| Critical |" in md or "|Critical|" in md.replace(" ", "")
-    assert "fig-review" in md
+    assert "| High |" in md or "|High|" in md.replace(" ", "")
+    assert "| Critical |" not in md
+    assert "Gap Priority" in md

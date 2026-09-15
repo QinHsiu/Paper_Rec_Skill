@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "as_of": "2026-09-15",
+  "as_of": "2026-09-16",
   "competitors": {
     "AutoResearchClaw": {
       "kind": "oss",
@@ -66,8 +66,8 @@
           "evidence": "code"
         },
         "b_fig_vlm": {
-          "state": "落后",
-          "note": "ARC/AI-Scientist-v2 class VLM deeper than fig-review stub.",
+          "state": "持平",
+          "note": "W1: fig-review --use-vlm real OpenAI-compatible call, offline degrade, strict block.",
           "evidence": "code"
         },
         "b_al_stop": {
@@ -276,8 +276,8 @@
           "evidence": "code"
         },
         "b_fig_vlm": {
-          "state": "落后",
-          "note": "perform_vlm_review semantic fig↔caption deeper than fig-review heuristic+stub.",
+          "state": "持平",
+          "note": "W1: fig-review --use-vlm real OpenAI-compatible call, offline degrade, strict block.",
           "evidence": "code"
         },
         "b_al_stop": {
@@ -776,8 +776,8 @@
           "evidence": "code"
         },
         "b_citation_trust": {
-          "state": "落后",
-          "note": "OA vs S2 cite-count conflict + influCit; Paper_Rec lacks retraction/conflict engine.",
+          "state": "持平",
+          "note": "W1: trust-meta retraction + OA/S2 conflict + unknown status; no paid smart-citation context.",
           "evidence": "code"
         },
         "b_hard_gate": {
@@ -881,8 +881,8 @@
           "evidence": "code"
         },
         "b_citation_trust": {
-          "state": "落后",
-          "note": "Retraction flags / refuse-on-bad-cite; Paper_Rec lacks retraction+conflict engine.",
+          "state": "持平",
+          "note": "W1: trust-meta retraction + OA/S2 conflict + unknown status; no paid smart-citation context.",
           "evidence": "code"
         },
         "b_hard_gate": {
@@ -1121,8 +1121,8 @@
           "evidence": "code"
         },
         "b_al_stop": {
-          "state": "落后",
-          "note": "asreview querier/balancer/stoppers + simulation; screen-next lacks real stoppers.",
+          "state": "持平",
+          "note": "W1: screening_stop StopRules (consecutive / max_labels / saturation) wired into screen-next; asreview still richer balancer/simulation.",
           "evidence": "code"
         },
         "c_thread": {
@@ -1321,8 +1321,8 @@
           "evidence": "code"
         },
         "b_parallel_deep": {
-          "state": "落后",
-          "note": "Role agent_creator + parallel lanes deeper than serial deep-research tree.",
+          "state": "持平",
+          "note": "W1: deep-research --parallel lanes + compression; no LLM supervisor yet.",
           "evidence": "code"
         },
         "b_fig_vlm": {
@@ -1531,8 +1531,8 @@
           "evidence": "code"
         },
         "b_parallel_deep": {
-          "state": "落后",
-          "note": "max_concurrent ConductResearch + compress deeper than serial deep-research tree.",
+          "state": "持平",
+          "note": "W1: deep-research --parallel lanes + compression; no LLM supervisor yet.",
           "evidence": "code"
         },
         "b_fig_vlm": {
@@ -2141,8 +2141,8 @@
           "evidence": "public-docs"
         },
         "b_citation_trust": {
-          "state": "落后",
-          "note": "Scite smart citations / retraction UX; Paper_Rec lacks retraction+conflict engine.",
+          "state": "持平",
+          "note": "W1: trust-meta retraction + OA/S2 conflict + unknown status; no paid smart-citation context.",
           "evidence": "public-docs"
         },
         "b_hard_gate": {

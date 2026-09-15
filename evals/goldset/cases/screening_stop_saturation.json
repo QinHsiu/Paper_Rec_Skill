@@ -1,0 +1,11 @@
+{
+  "id": "screening_stop_saturation_window",
+  "family": "screening_stop",
+  "n_consecutive_irrelevant": null,
+  "saturation_window": 4,
+  "saturation_max_relevant": 0,
+  "min_labels_before_stop": 0,
+  "labels": ["relevant", "irrelevant", "irrelevant", "irrelevant", "irrelevant"],
+  "expect_stop": true,
+  "expect_reason": "saturation"
+}
