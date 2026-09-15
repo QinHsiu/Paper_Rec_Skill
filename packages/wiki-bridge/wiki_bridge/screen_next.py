@@ -6,6 +6,8 @@ import re
 from collections import Counter
 from typing import Any
 
+from .screening_stop import StopRules, should_stop
+
 _TOKEN = re.compile(r"[A-Za-z0-9\u4e00-\u9fff]+")
 
 
@@ -77,6 +79,8 @@ def screen_next(
     batch_size: int = 10,
     strategy: str = "hybrid",
     consecutive_irrelevant_stop: int = 10,
+    stop_rules: StopRules | None = None,
+    history: list[int] | None = None,
 ) -> dict[str, Any]:
     """Rank unlabeled candidates; hybrid = mix high-rel + uncertain."""
     pos_docs = []
@@ -103,12 +107,20 @@ def screen_next(
         toks = tokenize(_doc(item))
         (pos_docs if lab == 1 else neg_docs).append(toks)
 
-    consec = 0
-    # walk labels in insertion order of events if provided as list values — use last N skips
-    # approximate: if more skips than accepts recently — caller passes consecutive via labels meta
-    consecutive_skips = sum(1 for v in labels.values() if v == 0)
-    consecutive_accepts = sum(1 for v in labels.values() if v == 1)
-    stop = consecutive_skips >= consecutive_irrelevant_stop and consecutive_accepts == 0
+    if history is not None:
+        rules = stop_rules or StopRules(n_consecutive_irrelevant=consecutive_irrelevant_stop)
+        sd = should_stop(history, rules)
+        stop = bool(sd["stopped"])
+        stop_meta = {"mode": "ordered", "reason": sd["reason"], "checked": sd["checked"]}
+    else:
+        consecutive_skips = sum(1 for v in labels.values() if v == 0)
+        consecutive_accepts = sum(1 for v in labels.values() if v == 1)
+        stop = consecutive_skips >= consecutive_irrelevant_stop and consecutive_accepts == 0
+        stop_meta = {
+            "mode": "aggregate",
+            "reason": "n_consecutive_irrelevant" if stop else None,
+            "checked": ["aggregate_skip_count"],
+        }
 
     pos_c = _tfidf_weights(pos_docs)
     neg_c = _tfidf_weights(neg_docs)
@@ -139,6 +151,7 @@ def screen_next(
             "unlabeled_n": len(candidates or []),
             "stopped": False,
             "stop_reason": None,
+            "stop_meta": stop_meta,
             "cold_start": True,
         }
 
@@ -150,7 +163,8 @@ def screen_next(
             "labeled_n": len(labeled_keys),
             "unlabeled_n": len(unscored),
             "stopped": True,
-            "stop_reason": "n_consecutive_irrelevant",
+            "stop_reason": stop_meta["reason"],
+            "stop_meta": stop_meta,
             "cold_start": False,
         }
 
@@ -188,6 +202,7 @@ def screen_next(
         "unlabeled_n": len(unscored),
         "stopped": False,
         "stop_reason": None,
+        "stop_meta": stop_meta,
         "cold_start": False,
         "pos_n": len(pos_docs),
         "neg_n": len(neg_docs),

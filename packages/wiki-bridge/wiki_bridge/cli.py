@@ -1142,11 +1142,14 @@ def cmd_reflect_search(args: argparse.Namespace) -> int:
 
 def cmd_screen_next(args: argparse.Namespace) -> int:
     from .screen_next import build_label_map, screen_next
+    from .screening_stop import StopRules, history_from_events, validate_rules
 
     cands = json.loads(Path(args.candidates).read_text(encoding="utf-8"))
     if isinstance(cands, dict):
         cands = list(cands.get("documents") or cands.get("papers") or cands.get("candidates") or [])
     labels: dict[str, int] = {}
+    raw = None
+    events: list[dict[str, Any]] = []
     if args.labels_json:
         raw = json.loads(Path(args.labels_json).read_text(encoding="utf-8"))
         if isinstance(raw, dict) and "labels" in raw:
@@ -1159,12 +1162,31 @@ def cmd_screen_next(args: argparse.Namespace) -> int:
         data = thread_store.load_thread(Path(args.wiki_root), args.thread)
         events = list(data.get("events") or []) + list(data.get("feedback") or [])
         labels = build_label_map(events)
+    history: list[int] | None = None
+    if args.labels_json and isinstance(raw, list):
+        history = history_from_events(raw)
+    elif args.thread:
+        history = history_from_events(events)
+    rules = StopRules(
+        n_consecutive_irrelevant=args.stop_n if args.stop_n > 0 else None,
+        max_labels=args.stop_max_labels or None,
+        saturation_window=args.stop_window or None,
+        saturation_max_relevant=args.stop_max_relevant,
+        min_labels_before_stop=args.min_labels,
+    )
+    try:
+        validate_rules(rules)
+    except ValueError as exc:
+        print(json.dumps({"error": "invalid_stop_rules", "detail": str(exc)}), file=sys.stderr)
+        return 2
     out = screen_next(
         cands,
         labels,
         batch_size=args.batch_size,
         strategy=args.strategy,
         consecutive_irrelevant_stop=args.stop_n,
+        stop_rules=rules,
+        history=history,
     )
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1961,6 +1983,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--strategy", default="hybrid", choices=["hybrid", "max", "uncertainty"])
     s.add_argument("--batch-size", type=int, default=10)
     s.add_argument("--stop-n", type=int, default=10, help="stop after N irrelevant labels (cold skip storm)")
+    s.add_argument("--stop-max-labels", type=int, default=0, help="stop after total N labels (0 = off)")
+    s.add_argument("--stop-window", type=int, default=0, help="saturation window W (0 = off)")
+    s.add_argument("--stop-max-relevant", type=int, default=0, help="≤ this many relevant in window → stop")
+    s.add_argument("--min-labels", type=int, default=5, help="never stop before this many labels")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_screen_next)
 

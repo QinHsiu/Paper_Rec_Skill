@@ -12,13 +12,8 @@ sys.path.insert(0, str(ROOT / "packages" / "wiki-bridge"))
 from wiki_bridge.feedback_edit import critique_answer
 from wiki_bridge.litsearch_eval import recall_at_k
 from wiki_bridge.prerank import prerank
+from wiki_bridge.screening_stop import StopRules, should_stop
 from wiki_bridge.verified_registry import hard_gate
-
-
-def should_stop(labels: list[str], n: int) -> bool:
-    if len(labels) < n:
-        return False
-    return all(x == "irrelevant" for x in labels[-n:])
 
 
 def run_case(case: dict[str, Any]) -> dict[str, Any]:
@@ -44,9 +39,18 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         ok = rec >= float(case["min_recall"])
         return {"id": cid, "ok": ok, "detail": {"recall": rec, "ids": ids}}
     if fam == "screening_stop":
-        stopped = should_stop(case["labels"], int(case["n_consecutive_irrelevant"]))
-        ok = stopped == bool(case["expect_stop"])
-        return {"id": cid, "ok": ok, "detail": {"stopped": stopped}}
+        hist = [0 if x == "irrelevant" else 1 for x in case["labels"]]
+        rules = StopRules(
+            n_consecutive_irrelevant=case.get("n_consecutive_irrelevant"),
+            saturation_window=case.get("saturation_window"),
+            saturation_max_relevant=int(case.get("saturation_max_relevant", 0)),
+            min_labels_before_stop=int(case.get("min_labels_before_stop", 0)),
+        )
+        sd = should_stop(hist, rules)
+        ok = sd["stopped"] == bool(case["expect_stop"])
+        if ok and case.get("expect_reason"):
+            ok = sd["reason"] == case["expect_reason"]
+        return {"id": cid, "ok": ok, "detail": sd}
     return {"id": cid, "ok": False, "detail": {"error": f"unknown family {fam}"}}
 
 
