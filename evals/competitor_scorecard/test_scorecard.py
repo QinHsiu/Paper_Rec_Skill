@@ -24,3 +24,14 @@ def test_data_json_validates_complete():
     data = json.loads((HERE / "data.json").read_text(encoding="utf-8"))
     errors = validate_scorecard(data)
     assert errors == [], errors
+
+
+def test_render_contains_axes_and_closed_tag():
+    from render import render_scorecard
+
+    data = json.loads((HERE / "data.json").read_text(encoding="utf-8"))
+    md = render_scorecard(data)
+    assert "Axis A" in md or "轴 A" in md or "## A" in md
+    assert "Elicit" in md
+    assert "public-docs" in md
+    assert "落后" in md  # W0 must surface real gaps
