@@ -48,3 +48,6 @@ benchmarks/**/last_run.json
 skill-wxmp/scripts/wxmp_accounts.json
 **/wxmp_accounts.json
 temp_cover_*.jpg
+
+.worktrees/
+
