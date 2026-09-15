@@ -109,3 +109,18 @@ def test_review_auto_with_key_applies_and_blocks(tmp_path, monkeypatch):
 def test_review_off_is_unchanged():
     out = review_figures(MD, use_vlm="off")
     assert out["vlm_applied"] is False and out["vlm_skipped"] is True and out["vlm_skip_reason"] == "disabled"
+
+
+def test_unknown_suffix_never_sent_to_vlm(tmp_path):
+    p = tmp_path / "secret.txt"
+    p.write_text("not an image")
+    calls = []
+
+    def transport(req, timeout):
+        calls.append(req)
+        return 200, b"{}"
+
+    cb = make_vlm_callback({"api_key": "k", "base_url": "https://h/v1", "model": "m"}, transport=transport)
+    out = cb({"figure": "Figure 1", "path": str(p), "prompt": "x"})
+    assert out["skipped"] and out["skip_reason"] == "image_unreadable"
+    assert calls == []

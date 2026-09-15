@@ -17,7 +17,7 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ### Changed
 
-- Competitor scorecard: four Critical cells upgraded to `持平`; `GAP_PRIORITY.md` has no Critical rows
+- Competitor scorecard: 4 Critical dimensions (8 competitor cells) upgraded `落后→持平`; `GAP_PRIORITY.md` has no Critical rows
 
 ## [1.19.0] — 2026-08-13
 

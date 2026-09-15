@@ -94,3 +94,16 @@ def test_all_lanes_fail_not_ok():
 def test_lane_timeout_recorded():
     out = run_parallel_research("retrieval", _search_factory(delay=0.3), seed_papers=SEED, max_concurrent=2, breadth=2, timeout_per_lane=0.05)
     assert out["failed_lanes"] and all(f["error"] == "TimeoutError" for f in out["failed_lanes"])
+
+
+def test_timeout_bounds_wall_clock():
+    def slow(q: str):
+        time.sleep(4)
+        return []
+
+    t0 = time.monotonic()
+    out = run_parallel_research("retrieval", slow, seed_papers=SEED, max_concurrent=3, breadth=3, timeout_per_lane=0.3)
+    elapsed = time.monotonic() - t0
+    assert elapsed < 2.5, elapsed  # not blocked by shutdown(wait=True) on running lanes
+    assert out["lanes"] == [] and out["ok"] is False
+    assert all(f["error"] == "TimeoutError" for f in out["failed_lanes"])

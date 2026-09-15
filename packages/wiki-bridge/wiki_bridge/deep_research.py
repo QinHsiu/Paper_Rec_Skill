@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import json as _json
 import re
-import shlex
 import subprocess
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as _FutTimeout
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import wait as _wait
 from typing import Any, Callable
 
 from .reflect_search import reflect_coverage
@@ -174,16 +174,26 @@ def run_parallel_research(
         node["hit_n"] = len(hits or [])
         return node
 
-    with ThreadPoolExecutor(max_workers=max_concurrent) as ex:
+    # Wall-clock budget = per-lane timeout × number of sequential "rounds" the pool needs.
+    # Lanes still running at the deadline are recorded as TimeoutError and abandoned
+    # (shutdown(wait=False)); a runaway search_fn must bound itself (subprocess path does).
+    rounds = -(-len(queries) // max_concurrent) if queries else 0
+    budget = timeout_per_lane * max(1, rounds)
+    ex = ThreadPoolExecutor(max_workers=max_concurrent)
+    try:
         futs = {ex.submit(lane, q): q for q in queries}
-        for fut, q in futs.items():
+        done, pending = _wait(futs, timeout=budget)
+        for fut in pending:
+            failed[futs[fut]] = "TimeoutError"
+            fut.cancel()
+        for fut in done:
+            q = futs[fut]
             try:
-                lanes[q] = fut.result(timeout=timeout_per_lane)
-            except _FutTimeout:
-                failed[q] = "TimeoutError"
-                fut.cancel()
+                lanes[q] = fut.result()
             except Exception as exc:  # noqa: BLE001
                 failed[q] = type(exc).__name__
+    finally:
+        ex.shutdown(wait=False, cancel_futures=True)
     ordered_lanes = [lanes[q] for q in sorted(lanes)]
     failed_lanes = [{"query": q, "error": failed[q]} for q in sorted(failed)]
     compressed = compress_learnings([root] + ordered_lanes) if compress else []
@@ -206,9 +216,16 @@ def run_parallel_research(
 
 
 def search_fn_from_command(cmd: str, *, timeout: float = 60.0) -> Callable[[str], list[dict[str, Any]]]:
+    """Wrap an operator-supplied shell command as a search lane.
+
+    `cmd` comes from the local CLI flag `--search-cmd` and is trusted operator input;
+    it is executed via the shell (so pipes/redirects work), receives the query on stdin,
+    and must print a JSON list (or {"papers": [...]}) on stdout. Never pass untrusted text here.
+    """
+
     def run(q: str) -> list[dict[str, Any]]:
-        proc = subprocess.run(  # noqa: S603
-            cmd if isinstance(cmd, str) else shlex.join(cmd),
+        proc = subprocess.run(  # noqa: S602 - trusted operator command, see docstring
+            cmd,
             input=q,
             capture_output=True,
             text=True,

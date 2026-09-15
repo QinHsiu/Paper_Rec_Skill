@@ -115,7 +115,11 @@ def screen_next(
     else:
         consecutive_skips = sum(1 for v in labels.values() if v == 0)
         consecutive_accepts = sum(1 for v in labels.values() if v == 1)
-        stop = consecutive_skips >= consecutive_irrelevant_stop and consecutive_accepts == 0
+        stop = (
+            consecutive_irrelevant_stop > 0
+            and consecutive_skips >= consecutive_irrelevant_stop
+            and consecutive_accepts == 0
+        )
         stop_meta = {
             "mode": "aggregate",
             "reason": "n_consecutive_irrelevant" if stop else None,

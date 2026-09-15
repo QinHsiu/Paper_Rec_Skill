@@ -66,9 +66,12 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
     if fam == "fig_review":
         import os
 
-        for k in ("OPENAI_API_KEY", "PAPER_REC_VLM_API_KEY"):
-            os.environ.pop(k, None)
-        out = review_figures(case["markdown"], use_vlm=case.get("use_vlm", "auto"))
+        keys = ("OPENAI_API_KEY", "PAPER_REC_VLM_API_KEY")
+        saved = {k: os.environ.pop(k) for k in keys if k in os.environ}
+        try:
+            out = review_figures(case["markdown"], use_vlm=case.get("use_vlm", "auto"))
+        finally:
+            os.environ.update(saved)
         ok = out["vlm_skipped"] == bool(case["expect_vlm_skipped"]) and out["vlm_skip_reason"] == case["expect_skip_reason"]
         return {"id": cid, "ok": ok, "detail": {k: out[k] for k in ("vlm_applied", "vlm_skipped", "vlm_skip_reason", "issue_n")}}
     if fam == "parallel_deep":

@@ -11,7 +11,7 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 ### Added
 
 - **paper-rec** v1.20.0 (W1 trust engines): `trust-meta` (retraction + OA/S2 citation conflict), `fig-review --use-vlm off|auto|required`, `deep-research --parallel`, `screen-next` saturation/max-label stoppers, `wiki_bridge.http_client`
-- Competitor scorecard Pass 7: 8 Critical cells `落后→持平`; `docs/GAP_PRIORITY.md` has no Critical rows
+- Competitor scorecard Pass 7: 4 Critical dimensions (8 competitor cells) `落后→持平`; `docs/GAP_PRIORITY.md` has no Critical rows
 
 ## [2.42.0] — 2026-08-13
 

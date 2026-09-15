@@ -94,7 +94,10 @@ def make_vlm_callback(
             data = path.read_bytes()
         except OSError:
             return {"figure": fig, "skipped": True, "skip_reason": "image_unreadable", "alignment_ok": True, "issues": []}
-        mime = _MIME.get(path.suffix.lower(), "image/png")
+        mime = _MIME.get(path.suffix.lower())
+        if mime is None:
+            # only ship known raster image types to the VLM; never base64 arbitrary files
+            return {"figure": fig, "skipped": True, "skip_reason": "image_unreadable", "alignment_ok": True, "issues": []}
         img = f"data:{mime};base64,{base64.b64encode(data).decode('ascii')}"
         payload = {
             "model": model,
@@ -351,7 +354,7 @@ def review_figures(
                 raw_vlm.append(vlm_callback(bundle))
             except Exception as exc:  # noqa: BLE001
                 raw_vlm.append(
-                    {"figure": bundle["figure"], "alignment_ok": False, "issues": [f"vlm_error:{exc}"]}
+                    {"figure": bundle["figure"], "alignment_ok": False, "issues": [f"vlm_error:{type(exc).__name__}"]}
                 )
         applied_vlm = [r for r in raw_vlm if not r.get("skipped")]
         if raw_vlm and not applied_vlm:

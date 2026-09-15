@@ -1221,7 +1221,8 @@ def cmd_screen_next(args: argparse.Namespace) -> int:
     if args.labels_json and isinstance(raw, list):
         history = history_from_events(raw)
     elif args.thread:
-        history = history_from_events(events)
+        # events + feedback are concatenated; order by ts so stoppers see true label sequence
+        history = history_from_events(sorted(events, key=lambda e: str((e or {}).get("ts") or "")))
     rules = StopRules(
         n_consecutive_irrelevant=args.stop_n if args.stop_n > 0 else None,
         max_labels=args.stop_max_labels or None,
