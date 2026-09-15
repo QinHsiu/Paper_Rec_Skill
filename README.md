@@ -7,8 +7,8 @@
 
 <br/>
 
-[![Workspace](https://img.shields.io/badge/workspace-v2.41.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
-[![paper-rec](https://img.shields.io/badge/paper--rec-v1.18.0-1A2332?style=for-the-badge)](skill/VERSION)
+[![Workspace](https://img.shields.io/badge/workspace-v2.43.0-0F766E?style=for-the-badge&labelColor=1A2332)](VERSION)
+[![paper-rec](https://img.shields.io/badge/paper--rec-v1.20.0-1A2332?style=for-the-badge)](skill/VERSION)
 [![exp-sandbox](https://img.shields.io/badge/exp--sandbox-v1.11.0-0F766E?style=for-the-badge&labelColor=1A2332)](skill-exp/VERSION)
 [![multi-agent-lab](https://img.shields.io/badge/multi--agent--lab-v1.0.0-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-agents/VERSION)
 [![plot-draw](https://img.shields.io/badge/plot--draw-v1.2.1-1f5c55?style=for-the-badge&labelColor=1A2332)](skill-draw/VERSION)
