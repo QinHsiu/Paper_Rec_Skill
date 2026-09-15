@@ -1,0 +1,8 @@
+{
+  "id": "citation_flags_uncited_claim",
+  "family": "citation_fidelity",
+  "query": "RAG evaluation",
+  "answer": "Studies show retrieval improves generation quality substantially.",
+  "evidence": [{"eid": "E1", "quote": "Retrieval improves generation on QA tasks."}],
+  "expect_feedback_substring": "citation"
+}
