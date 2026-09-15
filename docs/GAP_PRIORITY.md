@@ -4,10 +4,6 @@ Derived from `evals/competitor_scorecard/data.json` cells with state `落后`.
 
 | Severity | Dimension | Wave | Target CLI | Competitors | Rationale |
 |----------|-----------|------|------------|-------------|-----------|
-| Critical | b_al_stop | W1 | `screen-next` | asreview | asreview querier/balancer/stoppers + simulation; screen-next lacks real stoppers. |
-| Critical | b_citation_trust | W1 | `trust-meta` | paper-search-pro, paper-qa, Scite | OA vs S2 cite-count conflict + influCit; Paper_Rec lacks retraction/conflict engine. |
-| Critical | b_fig_vlm | W1 | `fig-review` | AutoResearchClaw, AI-Scientist-v2 | ARC/AI-Scientist-v2 class VLM deeper than fig-review stub. |
-| Critical | b_parallel_deep | W1 | `deep-research` | gpt-researcher, open_deep_research | Role agent_creator + parallel lanes deeper than serial deep-research tree. |
 | High | b_novelty | W2 | `novelty-check` | AI-Scientist | AI-Scientist multi-round novelty critic deeper than single-shot novelty-check. |
 | High | b_survey | W2 | `survey-draft` | AutoSurvey | outline-merge + subsection RAG + cite check deeper than survey-draft heuristic. |
 | High | c_drift_watch | W2 | `thread-delta` | ResearchRabbit | Interest/collection drift patterns; Paper_Rec feedback unused for Watch/rank profile. |

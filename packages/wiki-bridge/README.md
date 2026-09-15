@@ -64,3 +64,12 @@ python -m wiki_bridge.cli arxiv-watch --wiki-root ../.. --config ./examples/arxi
 
 Contract: [`docs/THREAD_DESIGN.md`](../../docs/THREAD_DESIGN.md).  
 Bots (Feishu / Telegram / WeCom / QQ): [`docs/BOTS.md`](../../docs/BOTS.md).
+
+## Trust & screening CLIs (W1)
+
+| Command | Purpose |
+|---------|---------|
+| `trust-meta --json hits.json [--conflict-ratio 0.30] [--offline]` | Retraction + OpenAlex/S2 citation-count conflict; `unknown` when a source is missing |
+| `fig-review --draft ... --use-vlm off\|auto\|required` | Figure/caption/ref consistency; real OpenAI-compatible VLM when key set (`PAPER_REC_VLM_*` / `OPENAI_API_KEY`) |
+| `deep-research --topic ... --json hits.json --parallel [--max-concurrent N] [--search-cmd CMD]` | Learnings tree → follow-up queries; concurrent lanes + compression |
+| `screen-next --candidates pool.json [--stop-n N] [--stop-max-labels N] [--stop-window W] [--stop-max-relevant R] [--min-labels N]` | Active screening next batch + configurable stoppers |
