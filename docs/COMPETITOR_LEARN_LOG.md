@@ -187,3 +187,23 @@ ARA 6-dim scorer · Devil’s-advocate code into Critique · MetaClaw lesson→s
 ### Suggested next cut
 
 **#1–#4 first** (true vision gate · parallel deep research · trust metadata · real screening stop). Then #5–#10 by product need (survey-heavy → #6; daily Watch → #8).
+
+## Pass 6 — Scorecard-first exceed program (2026-09-15)
+
+Spec: `docs/superpowers/specs/2026-09-15-competitor-exceed-scorecard-design.md`  
+Plan (W0): `docs/superpowers/plans/2026-09-15-competitor-exceed-w0-scorecard.md`
+
+| Artifact | Path |
+|----------|------|
+| Scorecard | `docs/COMPETITOR_SCORECARD.md` (source: `evals/competitor_scorecard/data.json`) |
+| Gaps | `docs/GAP_PRIORITY.md` |
+| Gold-set | `evals/goldset/` |
+
+### SP0 exit criteria
+
+- [x] 18 OSS + ≥5 closed scored
+- [x] Critical lags listed for W1
+- [x] Gold-set runner green on skeleton cases
+- [ ] W1 engines not started in SP0 (explicit)
+
+Do **not** market "全方位超过" until W1 Critical clear + gold-set wave gate.
