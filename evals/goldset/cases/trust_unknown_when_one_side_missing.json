@@ -1,0 +1,8 @@
+{
+  "id": "trust_unknown_when_one_side_missing",
+  "family": "trust_meta",
+  "papers": [{"title": "Half", "doi": "10.9/half"}],
+  "oa": {"10.9/half": {"cite": 55, "retracted": false}},
+  "s2": {},
+  "expect_status": ["unknown"]
+}

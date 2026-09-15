@@ -13,6 +13,7 @@ from wiki_bridge.feedback_edit import critique_answer
 from wiki_bridge.litsearch_eval import recall_at_k
 from wiki_bridge.prerank import prerank
 from wiki_bridge.screening_stop import StopRules, should_stop
+from wiki_bridge.trust_meta import annotate_papers
 from wiki_bridge.verified_registry import hard_gate
 
 
@@ -51,6 +52,15 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         if ok and case.get("expect_reason"):
             ok = sd["reason"] == case["expect_reason"]
         return {"id": cid, "ok": ok, "detail": sd}
+    if fam == "trust_meta":
+        oa_map = case.get("oa") or {}
+        s2_map = case.get("s2") or {}
+        oa = lambda p: oa_map.get(p["doi"])
+        s2 = lambda p: s2_map.get(p["doi"])
+        out = annotate_papers(case["papers"], fetch_oa=oa, fetch_s2=s2, conflict_ratio=float(case.get("conflict_ratio", 0.3)))
+        got = [r["trust_status"] for r in out["papers"]]
+        ok = got == case["expect_status"]
+        return {"id": cid, "ok": ok, "detail": {"got": got, "blocked": out["blocked_for_writing"]}}
     return {"id": cid, "ok": False, "detail": {"error": f"unknown family {fam}"}}
 
 

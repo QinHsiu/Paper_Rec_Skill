@@ -1334,6 +1334,25 @@ def cmd_citation_expand(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_trust_meta(args: argparse.Namespace) -> int:
+    from .trust_meta import annotate_papers, openalex_fetcher, s2_fetcher
+
+    raw = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
+    papers = raw if isinstance(raw, list) else list(raw.get("papers") or raw.get("documents") or raw.get("items") or [])
+    out = annotate_papers(
+        papers,
+        fetch_oa=None if args.offline else openalex_fetcher(),
+        fetch_s2=None if args.offline else s2_fetcher(),
+        conflict_ratio=args.conflict_ratio,
+        offline=bool(args.offline),
+    )
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    summary = {k: out[k] for k in ("retracted_n", "conflict_n", "unknown_n", "ok_n", "degraded", "degraded_reasons", "blocked_for_writing")}
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_evidence_coverage(args: argparse.Namespace) -> int:
     from .thread_evidence import hypothesis_evidence_coverage
 
@@ -2072,6 +2091,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--top-k", type=int, default=5)
     s.add_argument("--no-persist", action="store_true")
     s.set_defaults(func=cmd_citation_expand)
+
+    s = sub.add_parser("trust-meta", help="Retraction + OA/S2 citation-count conflict annotations")
+    s.add_argument("--json", required=True, help="paper hits JSON (list or {papers:[...]})")
+    s.add_argument("--conflict-ratio", type=float, default=0.30)
+    s.add_argument("--offline", action="store_true", help="no network; everything unknown")
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_trust_meta)
 
     s = sub.add_parser("evidence-coverage", help="Hypothesis/claim evidence confidence summary")
     s.add_argument("--wiki-root", required=True)

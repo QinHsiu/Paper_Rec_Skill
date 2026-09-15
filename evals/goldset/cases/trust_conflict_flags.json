@@ -1,0 +1,9 @@
+{
+  "id": "trust_conflict_flags",
+  "family": "trust_meta",
+  "papers": [{"title": "Split", "doi": "10.9/split"}],
+  "oa": {"10.9/split": {"cite": 200, "retracted": false}},
+  "s2": {"10.9/split": {"cite": 100, "retracted": false}},
+  "conflict_ratio": 0.3,
+  "expect_status": ["conflict"]
+}
