@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "packages" / "wiki-bridge"))
 
 from wiki_bridge.feedback_edit import critique_answer
+from wiki_bridge.fig_review import review_figures
 from wiki_bridge.litsearch_eval import recall_at_k
 from wiki_bridge.prerank import prerank
 from wiki_bridge.screening_stop import StopRules, should_stop
@@ -61,6 +62,14 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         got = [r["trust_status"] for r in out["papers"]]
         ok = got == case["expect_status"]
         return {"id": cid, "ok": ok, "detail": {"got": got, "blocked": out["blocked_for_writing"]}}
+    if fam == "fig_review":
+        import os
+
+        for k in ("OPENAI_API_KEY", "PAPER_REC_VLM_API_KEY"):
+            os.environ.pop(k, None)
+        out = review_figures(case["markdown"], use_vlm=case.get("use_vlm", "auto"))
+        ok = out["vlm_skipped"] == bool(case["expect_vlm_skipped"]) and out["vlm_skip_reason"] == case["expect_skip_reason"]
+        return {"id": cid, "ok": ok, "detail": {k: out[k] for k in ("vlm_applied", "vlm_skipped", "vlm_skip_reason", "issue_n")}}
     return {"id": cid, "ok": False, "detail": {"error": f"unknown family {fam}"}}
 
 

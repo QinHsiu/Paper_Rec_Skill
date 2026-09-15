@@ -853,21 +853,45 @@ def cmd_novelty_check(args: argparse.Namespace) -> int:
 
 
 def cmd_fig_review(args: argparse.Namespace) -> int:
-    from .fig_review import load_vlm_reviews_file, review_figures
+    from .fig_review import VlmUnconfigured, load_vlm_reviews_file, review_figures
 
     text = Path(args.draft).read_text(encoding="utf-8") if args.draft else ""
     paths = _split_csv(args.figure_paths) if args.figure_paths else []
     vlm = load_vlm_reviews_file(Path(args.vlm_json)) if getattr(args, "vlm_json", "") and args.vlm_json else None
-    out = review_figures(
-        text,
-        figure_paths=paths or None,
-        abstract=getattr(args, "abstract", "") or "",
-        vlm_reviews=vlm,
-        emit_vlm_prompts=bool(getattr(args, "emit_vlm_prompts", False)),
-    )
+    try:
+        out = review_figures(
+            text,
+            figure_paths=paths or None,
+            abstract=getattr(args, "abstract", "") or "",
+            vlm_reviews=vlm,
+            emit_vlm_prompts=bool(getattr(args, "emit_vlm_prompts", False)),
+            use_vlm=args.use_vlm,
+        )
+    except VlmUnconfigured:
+        print(json.dumps({"error": "vlm_required_but_unconfigured"}, ensure_ascii=False), file=sys.stderr)
+        return 2
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({k: out[k] for k in ("ok", "figure_n", "ref_n", "issue_n", "vlm_applied") if k in out}, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {
+                k: out[k]
+                for k in (
+                    "ok",
+                    "figure_n",
+                    "ref_n",
+                    "issue_n",
+                    "vlm_applied",
+                    "vlm_skipped",
+                    "vlm_skip_reason",
+                    "vlm_model",
+                )
+                if k in out
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0 if out.get("ok") else (1 if args.strict else 0)
 
 
@@ -1889,12 +1913,13 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_novelty_check)
 
-    s = sub.add_parser("fig-review", help="Figure/caption/ref consistency (+ optional VLM JSON)")
+    s = sub.add_parser("fig-review", help="Figure/caption/ref consistency (+ optional real VLM via env)")
     s.add_argument("--draft", required=True)
     s.add_argument("--figure-paths", default="")
     s.add_argument("--abstract", default="")
     s.add_argument("--vlm-json", default="", help="precomputed VLM review JSON list")
     s.add_argument("--emit-vlm-prompts", action="store_true", help="include prompt bundles for a vision model")
+    s.add_argument("--use-vlm", choices=["off", "auto", "required"], default="off")
     s.add_argument("--strict", action="store_true")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_fig_review)
