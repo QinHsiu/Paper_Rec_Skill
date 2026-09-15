@@ -9,6 +9,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "packages" / "wiki-bridge"))
 
+from wiki_bridge.deep_research import run_parallel_research
 from wiki_bridge.feedback_edit import critique_answer
 from wiki_bridge.fig_review import review_figures
 from wiki_bridge.litsearch_eval import recall_at_k
@@ -70,6 +71,19 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         out = review_figures(case["markdown"], use_vlm=case.get("use_vlm", "auto"))
         ok = out["vlm_skipped"] == bool(case["expect_vlm_skipped"]) and out["vlm_skip_reason"] == case["expect_skip_reason"]
         return {"id": cid, "ok": ok, "detail": {k: out[k] for k in ("vlm_applied", "vlm_skipped", "vlm_skip_reason", "issue_n")}}
+    if fam == "parallel_deep":
+        table = case["search_results"]
+        search = lambda q: table.get(q, table.get("*", []))
+        out = run_parallel_research(
+            case["topic"],
+            search,
+            seed_papers=case["seed"],
+            max_concurrent=int(case["max_concurrent"]),
+            breadth=int(case["breadth"]),
+        )
+        dois = [c.get("doi") for c in out["compressed_learnings"]]
+        ok = out["ok"] and dois.count(case["dup_doi"]) == 1 and out["compressed_learnings"][0]["doi"] == case["dup_doi"]
+        return {"id": cid, "ok": ok, "detail": {"lanes": len(out["lanes"]), "top": out["compressed_learnings"][:1]}}
     return {"id": cid, "ok": False, "detail": {"error": f"unknown family {fam}"}}
 
 

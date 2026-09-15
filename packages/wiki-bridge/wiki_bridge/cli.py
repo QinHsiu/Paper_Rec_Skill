@@ -929,11 +929,42 @@ def cmd_feedback_edit(args: argparse.Namespace) -> int:
 
 
 def cmd_deep_research(args: argparse.Namespace) -> int:
-    from .deep_research import build_deep_research_plan
+    from .deep_research import build_deep_research_plan, run_parallel_research, search_fn_from_command
 
     papers = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
     if isinstance(papers, dict):
         papers = list(papers.get("papers") or papers.get("documents") or [])
+    if args.parallel:
+        if args.search_cmd:
+            search_fn = search_fn_from_command(args.search_cmd, timeout=args.lane_timeout)
+        else:
+            search_fn = lambda q: []  # structure-only lanes
+        out = run_parallel_research(
+            args.topic,
+            search_fn,
+            seed_papers=papers,
+            max_concurrent=args.max_concurrent,
+            breadth=args.breadth,
+            max_depth=args.max_depth,
+            timeout_per_lane=args.lane_timeout,
+        )
+        if args.out:
+            Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(
+            json.dumps(
+                {
+                    "ok": out["ok"],
+                    "lanes_n": len(out["lanes"]),
+                    "failed_n": len(out["failed_lanes"]),
+                    "compressed_n": len(out["compressed_learnings"]),
+                    "next_queries": out["next_queries"],
+                    "out": args.out or None,
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
+        return 0 if out["ok"] else 1
     out = build_deep_research_plan(args.topic, papers, max_depth=args.max_depth, breadth=args.breadth)
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1941,6 +1972,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--max-depth", type=int, default=2)
     s.add_argument("--breadth", type=int, default=3)
     s.add_argument("--out", default="")
+    s.add_argument("--parallel", action="store_true", help="run follow-up lanes concurrently + compress")
+    s.add_argument("--max-concurrent", type=int, default=3)
+    s.add_argument("--search-cmd", default="", help="shell command: query on stdin → JSON list on stdout")
+    s.add_argument("--lane-timeout", type=float, default=60.0)
     s.set_defaults(func=cmd_deep_research)
 
     s = sub.add_parser("deep-search", help="Live Search→Read→Reason loop (breadth×depth)")
