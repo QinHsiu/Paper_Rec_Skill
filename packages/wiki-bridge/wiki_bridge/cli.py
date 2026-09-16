@@ -1300,6 +1300,16 @@ def cmd_wiki_filter_parse(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_wiki_filter_apply(args: argparse.Namespace) -> int:
+    from .wiki_filters import apply_filters
+
+    out = apply_filters(Path(args.wiki_root), args.query, fulltext=bool(args.fulltext), limit=int(args.limit))
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_related_work(args: argparse.Namespace) -> int:
     from .related_work import build_related_work_outline
 
@@ -2093,6 +2103,14 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("wiki-filter-parse", help="Parse +term -term dt>=YYYY file:pdf library query")
     s.add_argument("--query", required=True)
     s.set_defaults(func=cmd_wiki_filter_parse)
+
+    s = sub.add_parser("wiki-filter-apply", help="Apply +term -term dt>=YYYY file:pdf filters to wiki pages (auditable reasons)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--query", required=True)
+    s.add_argument("--fulltext", action="store_true", help="also match terms against page body")
+    s.add_argument("--limit", type=int, default=50)
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_wiki_filter_apply)
 
     s = sub.add_parser(
         "citation-verify",

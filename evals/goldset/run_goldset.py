@@ -17,6 +17,8 @@ from wiki_bridge.prerank import prerank
 from wiki_bridge.screening_stop import StopRules, should_stop
 from wiki_bridge.trust_meta import annotate_papers
 from wiki_bridge.verified_registry import hard_gate
+from wiki_bridge.wiki_filters import apply_filters
+from wiki_bridge.writer import resolve_content_root
 
 
 def run_case(case: dict[str, Any]) -> dict[str, Any]:
@@ -87,6 +89,22 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         dois = [c.get("doi") for c in out["compressed_learnings"]]
         ok = out["ok"] and dois.count(case["dup_doi"]) == 1 and out["compressed_learnings"][0]["doi"] == case["dup_doi"]
         return {"id": cid, "ok": ok, "detail": {"lanes": len(out["lanes"]), "top": out["compressed_learnings"][:1]}}
+    if fam == "wiki_filter":
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / "wiki"
+            for pg in case["pages"]:
+                d = resolve_content_root(root) / pg["kw"] / str(pg["year"]) / pg["slug"]
+                d.mkdir(parents=True)
+                tags = ", ".join(pg.get("tags") or [])
+                d.joinpath("README.md").write_text(
+                    f"---\ntitle: {pg['title']}\nyear: {pg['year']}\ntags: [{tags}]\nkeyword: {pg['kw']}\n---\n", encoding="utf-8"
+                )
+            out = apply_filters(root, case["query"])
+        slugs = [m["path"].split("/")[-1] for m in out["matched"]]
+        ok = slugs == case["expect_slugs"] and (not out["matched"] or set(out["matched"][0]["reasons"]) == set(case["expect_reasons"]))
+        return {"id": cid, "ok": ok, "detail": {"slugs": slugs, "matched_n": out["matched_n"]}}
     return {"id": cid, "ok": False, "detail": {"error": f"unknown family {fam}"}}
 
 
