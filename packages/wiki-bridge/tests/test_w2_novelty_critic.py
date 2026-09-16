@@ -25,6 +25,13 @@ def test_extract_facets_buckets_cue_phrases():
     assert "languages" in " ".join(f["setting"])
 
 
+def test_extract_facets_setting_before_method():
+    f = extract_facets("Hard negative mining for dense retrieval in low-resource African languages with curriculum scheduling")
+    assert "languages" in " ".join(f["setting"])
+    assert "curriculum" in " ".join(f["method"])
+    assert "retrieval" in " ".join(f["problem"])
+
+
 def test_duplicate_when_whole_idea_overlaps():
     out = run_novelty_critic("Contrastive pretraining for dense passage retrieval encoders with contrastive learning on web corpora evaluated on MS MARCO", CORPUS)
     assert out["verdict"] == "duplicate" and out["rounds_run"] >= 1
@@ -32,10 +39,15 @@ def test_duplicate_when_whole_idea_overlaps():
 
 
 def test_incremental_when_facets_hit_but_whole_does_not():
-    out = run_novelty_critic("Hard negative mining for dense retrieval in low-resource African languages with curriculum scheduling", CORPUS, high_overlap=6.5)
-    assert out["verdict"] in ("incremental", "novel")
+    out = run_novelty_critic(
+        "Dense passage retrieval for question answering in low-resource African languages using hard negative mining",
+        CORPUS,
+        high_overlap=6.5,
+    )
+    assert out["verdict"] == "incremental"
     assert out["rounds_run"] == 3 and len(out["per_round"]) == 3
     assert isinstance(out["shared_points"], list) and isinstance(out["distinguishing_points"], list)
+    assert "languages" in " ".join(out["facets"]["setting"])
 
 
 def test_novel_when_nothing_matches():
@@ -66,6 +78,15 @@ def test_llm_applied_via_transport(monkeypatch):
     out = run_novelty_critic("Quantum annealing for protein folding", CORPUS, use_llm="auto", transport=transport)
     assert out["llm"]["applied"] is True and out["llm"]["verdict"] == "incremental"
     assert out["verdict"] == "incremental"  # tightened from novel
+
+
+def test_llm_bad_confidence_degrades_to_heuristic(monkeypatch):
+    monkeypatch.setenv("PAPER_REC_LLM_API_KEY", "k")
+    content = json.dumps({"verdict": "incremental", "shared_points": ["p"], "distinguishing_points": [], "confidence": "high"})
+    transport = lambda req, t: (200, json.dumps({"choices": [{"message": {"content": content}}]}).encode())
+    out = run_novelty_critic("Quantum annealing for protein folding", CORPUS, use_llm="auto", transport=transport)
+    assert out["llm"]["applied"] is False
+    assert out["verdict"] == "novel"
 
 
 def test_check_idea_novelty_keeps_legacy_keys_and_adds_critic():

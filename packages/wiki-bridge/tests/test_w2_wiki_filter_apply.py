@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from wiki_bridge.wiki_filters import apply_filters, iter_wiki_pages
+from wiki_bridge.wiki_filters import apply_filters, iter_wiki_pages, match_meta, parse_wiki_query
 from wiki_bridge.writer import resolve_content_root
 
 
@@ -62,3 +62,23 @@ def test_file_pdf_limit_and_order(tmp_path):
 def test_missing_root_is_empty_not_error(tmp_path):
     out = apply_filters(tmp_path / "nope", "+x")
     assert out["scanned_n"] == 0 and out["matched"] == []
+
+
+def test_apply_filters_non_numeric_year_defaults_zero(tmp_path):
+    root = tmp_path / "wiki"
+    d = resolve_content_root(root) / "retrieval" / "unknown" / "nd-paper"
+    d.mkdir(parents=True)
+    (d / "README.md").write_text(
+        "---\ntitle: ND Paper\nyear: n.d.\ntags: [x]\nkeyword: retrieval\n---\n\n",
+        encoding="utf-8",
+    )
+    out = apply_filters(root, "")
+    assert out["matched_n"] == 1
+    assert out["matched"][0]["year"] == 0
+
+
+def test_date_filter_rejects_missing_year():
+    f = parse_wiki_query("dt>=2023")
+    assert match_meta({"title": "x"}, f) is False
+    assert match_meta({"title": "x", "year": ""}, f) is False
+    assert match_meta({"title": "x", "year": 2024}, f) is True

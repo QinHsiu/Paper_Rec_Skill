@@ -3,4 +3,4 @@
  "papers": [{"title": "Contrastive learning for dense passage retrieval in question answering", "abstract": "Dense passage retrieval for open-domain question answering trained with contrastive learning."},
             {"title": "Hard negative mining for dense retrieval", "abstract": "Mining hard negatives with contrastive learning improves dense passage retrieval training."},
             {"title": "Sparse lexical retrieval with BM25 variants", "abstract": "BM25 parameter tuning for lexical retrieval on TREC."}],
- "expect_verdict_in": ["incremental", "duplicate"], "expect_distinguishing_contains": "biomedical"}
+ "expect_verdict": "incremental", "expect_distinguishing_contains": "biomedical"}

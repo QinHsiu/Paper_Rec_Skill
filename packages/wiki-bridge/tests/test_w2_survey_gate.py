@@ -80,3 +80,29 @@ def test_llm_prose_is_gated_by_offline_cite_check(monkeypatch):
     assert out["llm"]["applied"] is True and calls["n"] >= 2
     assert "P9" in out["cite_audit"]["unknown_keys"]
     assert out["ok"] is False
+    assert "[citation needed]" in out["markdown"]
+
+
+def test_llm_uncited_prose_fails_ok_and_marks_citation_needed(monkeypatch):
+    monkeypatch.setenv("PAPER_REC_LLM_API_KEY", "k")
+
+    def transport(req, timeout):
+        body = json.loads(req.data.decode())
+        user = body["messages"][1]["content"]
+        if "OUTLINES" in user:
+            content = json.dumps({"sections": [{"title": "Dense retrieval methods", "subsections": []}]})
+        else:
+            content = json.dumps({"prose": "Dense retrieval is solved by magic unicorns without citing any paper."})
+        return 200, json.dumps({"choices": [{"message": {"content": content}}]}).encode()
+
+    out = build_survey_draft(PAPERS[:4], chunk_size=2, rag_k=2, use_llm="auto", transport=transport)
+    assert out["ok"] is False
+    assert "[citation needed]" in out["markdown"]
+    assert out["cite_audit"]["unsupported_n"] > 0
+
+
+def test_llm_merge_outline_non_dict_section_degrades():
+    chunks = [{"sections": [{"title": "Dense retrieval methods"}]}]
+    heur = {"sections": [{"title": "Dense retrieval methods", "description": "d"}]}
+    out, rejected = llm_merge_outline(lambda s, u: {"sections": ["not-a-dict"]}, chunks, heur)
+    assert rejected is True and out == heur

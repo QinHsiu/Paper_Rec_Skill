@@ -74,7 +74,9 @@ def match_meta(meta: dict[str, Any], filters: WikiQueryFilters, *, has_fulltext:
                 return False
         elif t.lower() in blob:
             return False
-    if filters.dt_value and year:
+    if filters.dt_value:
+        if not year:
+            return False
         y = year[:4]
         v = filters.dt_value[:4]
         op = filters.dt_op or ">="
@@ -151,6 +153,13 @@ def _page_matches(page: dict[str, Any], filters: WikiQueryFilters, *, fulltext: 
     return match_meta(meta, filters, has_fulltext=fulltext and bool(page["body"]), has_pdf=bool(page["has_pdf"]))
 
 
+def _year_int(raw: Any) -> int:
+    try:
+        return int(str(raw or "")[:4])
+    except (TypeError, ValueError):
+        return 0
+
+
 def apply_filters(wiki_root: Path, query: str, *, fulltext: bool = False, limit: int = 50) -> dict[str, Any]:
     filters = parse_wiki_query(query)
     scanned = 0
@@ -164,7 +173,7 @@ def apply_filters(wiki_root: Path, query: str, *, fulltext: bool = False, limit:
             {
                 "path": page["path"],
                 "title": str(meta.get("title") or page["path"].split("/")[-1]),
-                "year": int(str(meta.get("year") or 0)[:4] or 0),
+                "year": _year_int(meta.get("year")),
                 "keyword": str(meta.get("keyword") or page["path"].split("/")[0]),
                 "reasons": match_reasons(meta, filters, body=page["body"], fulltext=fulltext),
             }

@@ -255,14 +255,31 @@ def write_subsection(
         llm_prose = llm_write_subsection(chat, section, cite_map)
     if llm_prose:
         for sent in re.split(r"(?<=[.!?])\s+", llm_prose):
+            sent = sent.strip()
+            if not sent:
+                continue
             keys = re.findall(r"\[(P\d+)\]", sent)
             if not keys:
+                claims.append({"cite": "", "claim": sent, "support_score": 0.0, "supported": False, "source": "llm"})
                 continue
+            scores: list[float] = []
+            all_ok = True
             for k in keys:
                 p = cite_map.get(k)
                 score = _support_score(sent, _abstract(p)) if p else 0.0
-                claims.append({"cite": k, "claim": sent.strip(), "support_score": score, "supported": bool(p) and score >= tau, "source": "llm"})
-        lines.append(llm_prose)
+                scores.append(score)
+                if not (p and score >= tau):
+                    all_ok = False
+            claims.append(
+                {
+                    "cite": keys[0],
+                    "claim": sent,
+                    "support_score": min(scores) if scores else 0.0,
+                    "supported": all_ok,
+                    "source": "llm",
+                }
+            )
+        lines.extend(_prose_paragraph(claims))
     else:
         for key, p in cite_map.items():
             claim = f"[{key}] report work on {_title(p).split(':')[0][:80]}, emphasizing themes relevant to {section.get('title')}."
@@ -306,12 +323,15 @@ def llm_merge_outline(chat, chunk_outlines: list[dict[str, Any]], heuristic: dic
     if not isinstance(secs, list) or not secs:
         return heuristic, True
     merged = []
-    for s in secs:
-        title = str((s or {}).get("title") or "").strip()
-        if not title or not any(_jaccard_title(title, ct) >= 0.3 for ct in chunk_titles):
-            return heuristic, True
-        match = next((h for h in heuristic.get("sections") or [] if _jaccard_title(title, str(h.get("title"))) >= 0.3), {})
-        merged.append({**match, "title": title, "subsections": [str(x) for x in (s.get("subsections") or [])]})
+    try:
+        for s in secs:
+            title = str((s or {}).get("title") or "").strip()
+            if not title or not any(_jaccard_title(title, ct) >= 0.3 for ct in chunk_titles):
+                return heuristic, True
+            match = next((h for h in heuristic.get("sections") or [] if _jaccard_title(title, str(h.get("title"))) >= 0.3), {})
+            merged.append({**match, "title": title, "subsections": [str(x) for x in (s.get("subsections") or [])]})
+    except (TypeError, ValueError, AttributeError):
+        return heuristic, True
     return {"sections": merged, "section_n": len(merged)}, False
 
 

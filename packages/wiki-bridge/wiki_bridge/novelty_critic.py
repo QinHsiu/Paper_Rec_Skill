@@ -33,13 +33,22 @@ def extract_facets(idea: str) -> dict[str, list[str]]:
     facets = {"problem": [], "method": [], "setting": []}
     if not text:
         return facets
+    cuts: list[tuple[int, str]] = []
     m_method = re.search(_METHOD_CUES, text, re.I)
     m_setting = re.search(_SETTING_CUES, text, re.I)
-    cut_method = m_method.start() if m_method else len(text)
-    cut_setting = m_setting.start() if m_setting and (not m_method or m_setting.start() > m_method.start()) else len(text)
-    problem_seg = text[: min(cut_method, cut_setting)]
-    method_seg = text[cut_method:cut_setting] if m_method else ""
-    setting_seg = text[cut_setting:] if cut_setting < len(text) else ""
+    if m_method:
+        cuts.append((m_method.start(), "method"))
+    if m_setting:
+        cuts.append((m_setting.start(), "setting"))
+    cuts.sort(key=lambda c: c[0])
+    problem_seg = text[: cuts[0][0]] if cuts else text
+    method_seg = setting_seg = ""
+    for i, (pos, kind) in enumerate(cuts):
+        end = cuts[i + 1][0] if i + 1 < len(cuts) else len(text)
+        if kind == "method":
+            method_seg = text[pos:end]
+        else:
+            setting_seg = text[pos:end]
     facets["problem"] = _phrase_terms(re.sub(_PROBLEM_CUES, " ", problem_seg, flags=re.I))
     facets["method"] = _phrase_terms(method_seg)
     facets["setting"] = _phrase_terms(setting_seg)
@@ -101,12 +110,15 @@ def llm_critique(chat: Callable[[str, str], dict[str, Any] | None], idea: str, h
     out = chat(SYSTEM_PROMPT, f"IDEA:\n{idea}\n\nCLOSEST PRIOR WORK:\n{prior}")
     if not isinstance(out, dict) or str(out.get("verdict")) not in VERDICT_ORDER:
         return None
-    return {
-        "verdict": str(out["verdict"]),
-        "shared_points": [str(x) for x in (out.get("shared_points") or [])][:8],
-        "distinguishing_points": [str(x) for x in (out.get("distinguishing_points") or [])][:8],
-        "confidence": float(out.get("confidence") or 0.0),
-    }
+    try:
+        return {
+            "verdict": str(out["verdict"]),
+            "shared_points": [str(x) for x in (out.get("shared_points") or [])][:8],
+            "distinguishing_points": [str(x) for x in (out.get("distinguishing_points") or [])][:8],
+            "confidence": float(out.get("confidence") or 0.0),
+        }
+    except (TypeError, ValueError, AttributeError):
+        return None
 
 
 def merge_verdicts(heuristic: dict[str, Any], llm: dict[str, Any] | None) -> dict[str, Any]:
