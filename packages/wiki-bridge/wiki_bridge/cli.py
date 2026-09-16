@@ -845,16 +845,28 @@ def cmd_survey_draft(args: argparse.Namespace) -> int:
 
 
 def cmd_novelty_check(args: argparse.Namespace) -> int:
+    from .llm_client import LlmUnconfigured
     from .novelty_check import check_idea_novelty
 
     papers = []
     if args.papers_json:
         raw = json.loads(Path(args.papers_json).read_text(encoding="utf-8-sig"))
         papers = raw if isinstance(raw, list) else list(raw.get("papers") or raw.get("documents") or [])
-    out = check_idea_novelty(args.idea, papers, use_openalex=args.openalex, mailto=args.mailto)
+    try:
+        out = check_idea_novelty(
+            args.idea,
+            papers,
+            use_openalex=args.openalex,
+            mailto=args.mailto,
+            rounds=args.rounds,
+            use_llm=args.use_llm,
+        )
+    except LlmUnconfigured as exc:
+        print(json.dumps({"error": "llm_required_but_unconfigured", "detail": str(exc)}), file=sys.stderr)
+        return 2
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"novel": out["novel"], "decision": out["decision"]}, ensure_ascii=False, indent=2))
+    print(json.dumps({"novel": out["novel"], "decision": out["decision"], "verdict": out["critic"]["verdict"]}, ensure_ascii=False, indent=2))
     return 0 if out.get("novel") else (1 if args.strict else 0)
 
 
@@ -1958,6 +1970,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--papers-json", default="")
     s.add_argument("--openalex", action="store_true")
     s.add_argument("--mailto", default="paper-rec@local")
+    s.add_argument("--rounds", type=int, default=3, help="critic rounds 1-3")
+    s.add_argument("--use-llm", default="off", choices=["off", "auto", "required"])
     s.add_argument("--strict", action="store_true")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_novelty_check)

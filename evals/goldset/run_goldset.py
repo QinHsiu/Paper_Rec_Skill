@@ -20,6 +20,7 @@ from wiki_bridge.verified_registry import hard_gate
 from wiki_bridge.interest_profile import build_profile, drift_report
 from wiki_bridge.thread_store import score_paper_against_thread
 from wiki_bridge.wiki_filters import apply_filters
+from wiki_bridge.novelty_critic import run_novelty_critic
 from wiki_bridge.writer import resolve_content_root
 
 
@@ -118,6 +119,18 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         first = "a" if ra > rb else "b"
         ok = case["expect_emerging_contains"] in rep["emerging"] and case["expect_fading_contains"] in rep["fading"] and first == rk["expect_first"]
         return {"id": cid, "ok": ok, "detail": {"drift": rep, "ra": ra, "rb": rb}}
+    if fam == "novelty":
+        out = run_novelty_critic(case["idea"], case["papers"])
+        ok = True
+        if "expect_verdict" in case:
+            ok = ok and out["verdict"] == case["expect_verdict"]
+        if "expect_verdict_in" in case:
+            ok = ok and out["verdict"] in case["expect_verdict_in"]
+        if "expect_novel" in case:
+            ok = ok and (out["verdict"] != "duplicate") == bool(case["expect_novel"])
+        if "expect_distinguishing_contains" in case:
+            ok = ok and any(case["expect_distinguishing_contains"] in d for d in out["distinguishing_points"])
+        return {"id": cid, "ok": ok, "detail": {"verdict": out["verdict"], "shared": out["shared_points"], "distinguishing": out["distinguishing_points"]}}
     return {"id": cid, "ok": False, "detail": {"error": f"unknown family {fam}"}}
 
 

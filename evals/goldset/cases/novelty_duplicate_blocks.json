@@ -1,0 +1,5 @@
+{"id": "novelty_duplicate_blocks", "family": "novelty",
+ "idea": "Contrastive pretraining for dense passage retrieval encoders with contrastive learning on web corpora evaluated on MS MARCO",
+ "papers": [{"title": "Contrastive pretraining for dense passage retrieval", "abstract": "We pretrain dense passage retrieval encoders with contrastive learning on web corpora and evaluate on MS MARCO."},
+            {"title": "Sparse lexical retrieval with BM25 variants", "abstract": "BM25 parameter tuning for lexical retrieval on TREC."}],
+ "expect_verdict": "duplicate", "expect_novel": false}
