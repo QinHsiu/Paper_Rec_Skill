@@ -221,6 +221,12 @@ def cmd_thread_delta(args: argparse.Namespace) -> int:
     # ensure thread_id for notify
     result.setdefault("thread_id", args.id)
     print(json.dumps({k: v for k, v in result.items() if k != "markdown"}, ensure_ascii=False, indent=2))
+    if getattr(args, "drift", False):
+        d = result.get("drift")
+        if d is None:
+            print("\n## Drift\n\nnot enough feedback yet (need > 20 feedback events)")
+        else:
+            print(f"\n## Drift (score {d['drift_score']})\n\n- emerging: {', '.join(d['emerging']) or '-'}\n- fading: {', '.join(d['fading']) or '-'}")
     if args.print_md:
         print("\n" + result.get("markdown", ""))
     if getattr(args, "webhook", "") or getattr(args, "notify", False):
@@ -1711,6 +1717,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--threshold", type=float, default=0.45)
     s.add_argument("--dry-run", action="store_true")
     s.add_argument("--print-md", action="store_true")
+    s.add_argument("--drift", action="store_true", help="print interest-drift brief after candidates")
     s.add_argument("--webhook", default="", help="POST Delta summary (or PAPER_REC_WEBHOOK_URL)")
     s.add_argument("--notify", action="store_true", help="notify using PAPER_REC_WEBHOOK_URL")
     s.set_defaults(func=cmd_thread_delta)

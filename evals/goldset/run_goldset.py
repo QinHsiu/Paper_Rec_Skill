@@ -17,6 +17,8 @@ from wiki_bridge.prerank import prerank
 from wiki_bridge.screening_stop import StopRules, should_stop
 from wiki_bridge.trust_meta import annotate_papers
 from wiki_bridge.verified_registry import hard_gate
+from wiki_bridge.interest_profile import build_profile, drift_report
+from wiki_bridge.thread_store import score_paper_against_thread
 from wiki_bridge.wiki_filters import apply_filters
 from wiki_bridge.writer import resolve_content_root
 
@@ -105,6 +107,17 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         slugs = [m["path"].split("/")[-1] for m in out["matched"]]
         ok = slugs == case["expect_slugs"] and (not out["matched"] or set(out["matched"][0]["reasons"]) == set(case["expect_reasons"]))
         return {"id": cid, "ok": ok, "detail": {"slugs": slugs, "matched_n": out["matched_n"]}}
+    if fam == "drift":
+        mk = lambda rows: [{"kind": "feedback", **r} for r in rows]
+        older, recent = build_profile(mk(case["older"])), build_profile(mk(case["recent"]))
+        rep = drift_report(older, recent)
+        prof = build_profile(mk(case["older"] + case["recent"]))
+        rk = case["rank"]
+        ra = score_paper_against_thread(rk["thread"], title=rk["a"], profile=prof)["R"]
+        rb = score_paper_against_thread(rk["thread"], title=rk["b"], profile=prof)["R"]
+        first = "a" if ra > rb else "b"
+        ok = case["expect_emerging_contains"] in rep["emerging"] and case["expect_fading_contains"] in rep["fading"] and first == rk["expect_first"]
+        return {"id": cid, "ok": ok, "detail": {"drift": rep, "ra": ra, "rb": rb}}
     return {"id": cid, "ok": False, "detail": {"error": f"unknown family {fam}"}}
 
 

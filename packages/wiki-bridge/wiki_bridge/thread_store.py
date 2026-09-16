@@ -476,6 +476,8 @@ def reverse_index(wiki_root: Path) -> dict[str, Any]:
 
 # --- Relevance (MVP: term bag; no embedding) ---
 
+PROFILE_WEIGHT = 0.15
+
 _STOP = {
     "the",
     "a",
@@ -554,6 +556,7 @@ def score_paper_against_thread(
     summary: str = "",
     tags: list[str] | None = None,
     keyword: str = "",
+    profile: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return R in [0,1], rationale[], claim/gap hints."""
     paper_text = " ".join(
@@ -605,6 +608,13 @@ def score_paper_against_thread(
         + 0.15 * member_j
         + 0.05 * kw_hit
     )
+    factors_extra: dict[str, float] = {}
+    if profile is not None:
+        from .interest_profile import profile_match  # local import: interest_profile imports _tokenize from here
+
+        pm = profile_match(profile, sorted(paper_bag))
+        r = (1.0 - PROFILE_WEIGHT) * r + PROFILE_WEIGHT * pm
+        factors_extra["profile_match"] = pm
     rationale: list[str] = []
     if term_overlap >= 0.08:
         shared = sorted(paper_bag & thread_bag)[:8]
@@ -616,6 +626,8 @@ def score_paper_against_thread(
         rationale.append("gaps:" + ",".join(gap_hits))
     if kw_hit:
         rationale.append(f"keyword:{keyword}")
+    if profile is not None and factors_extra.get("profile_match", 0) >= 0.2:
+        rationale.append(f"profile:{factors_extra['profile_match']}")
 
     return {
         "R": round(float(r), 4),
@@ -628,6 +640,7 @@ def score_paper_against_thread(
             "gap_match": round(gap_score, 4),
             "member_jaccard": round(member_j, 4),
             "keyword_hit": kw_hit,
+            **factors_extra,
         },
     }
 

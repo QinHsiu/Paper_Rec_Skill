@@ -101,6 +101,12 @@ def run_delta(
     claims = data.get("claims") or []
     last = watch.get("last_delta_at")
     events = ts.list_events(wiki_root, thread_id, limit=500)
+    from .interest_profile import build_profile, drift_report, split_events_for_drift
+
+    fb_events = [e for e in events if e.get("kind") == "feedback"]
+    profile = build_profile(fb_events) if len(fb_events) >= 3 else None
+    older, recent = split_events_for_drift(fb_events, window=20)
+    drift = drift_report(build_profile(older), build_profile(recent)) if older else None
     has_delta = any(e.get("kind") == "delta" for e in events)
 
     if mode == "auto":
@@ -127,6 +133,7 @@ def run_delta(
             summary=str(p.get("summary") or ""),
             tags=list(p.get("tags") or []),
             keyword=str(p.get("keyword") or ""),
+            profile=profile,
         )
         if mode == "gap_focus":
             # boost gap_match
@@ -194,6 +201,8 @@ def run_delta(
             for p in top
         ],
         "claim_suggestions": claim_suggestions.get("suggestions") or [],
+        "profile": None if profile is None else {"n_events": profile["n_events"], "top_terms": list(profile["terms"])[:10]},
+        "drift": drift,
         "markdown": md,
         "delta_path": None,
     }
