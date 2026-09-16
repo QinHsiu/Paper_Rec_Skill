@@ -21,6 +21,7 @@ from wiki_bridge.interest_profile import build_profile, drift_report
 from wiki_bridge.thread_store import score_paper_against_thread
 from wiki_bridge.wiki_filters import apply_filters
 from wiki_bridge.novelty_critic import run_novelty_critic
+from wiki_bridge.survey_write import build_survey_draft
 from wiki_bridge.writer import resolve_content_root
 
 
@@ -131,6 +132,17 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         if "expect_distinguishing_contains" in case:
             ok = ok and any(case["expect_distinguishing_contains"] in d for d in out["distinguishing_points"])
         return {"id": cid, "ok": ok, "detail": {"verdict": out["verdict"], "shared": out["shared_points"], "distinguishing": out["distinguishing_points"]}}
+    if fam == "survey":
+        base = build_survey_draft(case["papers"], chunk_size=int(case["chunk_size"]), rag_k=int(case["rag_k"]))
+        hard = build_survey_draft(case["papers"], chunk_size=int(case["chunk_size"]), rag_k=int(case["rag_k"]), tau=float(case["strict_tau"]))
+        ok = (
+            (base["section_n"] or 0) >= int(case["default"]["expect_min_sections"])
+            and base["cite_audit"]["unknown_keys"] == case["default"]["expect_unknown_keys"]
+            and hard["cite_audit"]["unsupported_n"] > int(case["expect_strict_unsupported_gt"])
+            and case["expect_strict_marker"] in hard["markdown"]
+            and hard["ok"] is False
+        )
+        return {"id": cid, "ok": ok, "detail": {"section_n": base["section_n"], "base_unsupported": base["cite_audit"]["unsupported_n"], "hard_unsupported": hard["cite_audit"]["unsupported_n"]}}
     return {"id": cid, "ok": False, "detail": {"error": f"unknown family {fam}"}}
 
 

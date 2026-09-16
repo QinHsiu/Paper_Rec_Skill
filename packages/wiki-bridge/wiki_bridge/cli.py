@@ -814,17 +814,24 @@ def cmd_stats_rigor(args: argparse.Namespace) -> int:
 
 
 def cmd_survey_draft(args: argparse.Namespace) -> int:
+    from .llm_client import LlmUnconfigured
     from .survey_write import build_survey_draft
 
     papers = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
     if isinstance(papers, dict):
         papers = list(papers.get("papers") or papers.get("documents") or [])
-    out = build_survey_draft(
-        papers,
-        chunk_size=args.chunk_size,
-        rag_k=args.rag_k,
-        topic=getattr(args, "topic", "") or "",
-    )
+    try:
+        out = build_survey_draft(
+            papers,
+            chunk_size=args.chunk_size,
+            rag_k=args.rag_k,
+            topic=getattr(args, "topic", "") or "",
+            use_llm=args.use_llm,
+            tau=args.tau,
+        )
+    except LlmUnconfigured as exc:
+        print(json.dumps({"error": "llm_required_but_unconfigured", "detail": str(exc)}), file=sys.stderr)
+        return 2
     if args.out:
         Path(args.out).write_text(out["markdown"], encoding="utf-8")
     if args.json_out:
@@ -835,6 +842,8 @@ def cmd_survey_draft(args: argparse.Namespace) -> int:
                 "section_n": out["section_n"],
                 "outline_chunks": out["outline_chunks"],
                 "cite_ok": (out.get("cite_audit") or {}).get("ok"),
+                "unsupported_n": out["cite_audit"].get("unsupported_n"),
+                "llm_applied": out["llm"]["applied"],
                 "out": args.out or None,
             },
             ensure_ascii=False,
@@ -1960,9 +1969,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--topic", default="")
     s.add_argument("--chunk-size", type=int, default=8)
     s.add_argument("--rag-k", type=int, default=5)
+    s.add_argument("--use-llm", default="off", choices=["off", "auto", "required"])
+    s.add_argument("--tau", type=float, default=0.12, help="min claim/abstract support ratio")
     s.add_argument("--out", default="", help="markdown path")
     s.add_argument("--json-out", default="")
-    s.add_argument("--strict", action="store_true", help="exit 1 if cite audit fails")
+    s.add_argument("--strict", action="store_true", help="exit 1 if cite audit fails or any claim is unsupported")
     s.set_defaults(func=cmd_survey_draft)
 
     s = sub.add_parser("novelty-check", help="Idea novelty vs local corpus (+ optional OpenAlex)")

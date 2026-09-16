@@ -1,0 +1,8 @@
+{"id": "survey_cite_needed", "family": "survey",
+ "papers": [{"title": "Dense passage retrieval for open-domain QA", "abstract": "Dense passage retrieval learns dual encoders for open-domain question answering with contrastive training.", "year": 2020},
+            {"title": "Hard negatives for dense retrieval", "abstract": "Mining hard negatives improves dense retrieval encoders and passage ranking.", "year": 2021},
+            {"title": "BM25 lexical baselines", "abstract": "BM25 sparse lexical matching remains a strong retrieval baseline on TREC collections.", "year": 2019},
+            {"title": "Retrieval evaluation benchmarks", "abstract": "Benchmarks for retrieval evaluation including MS MARCO and BEIR measure recall and nDCG.", "year": 2021}],
+ "chunk_size": 2, "rag_k": 2,
+ "default": {"expect_min_sections": 1, "expect_unknown_keys": []},
+ "strict_tau": 0.99, "expect_strict_unsupported_gt": 0, "expect_strict_marker": "[citation needed]"}
