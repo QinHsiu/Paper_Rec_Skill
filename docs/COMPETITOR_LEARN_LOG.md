@@ -220,3 +220,16 @@ Do **not** market "全方位超过" until W1 Critical clear + gold-set wave gate
 Shared: `http_client` (injectable transport, typed errors, key redaction). Gold-set: 11 cases incl. trust ×3, fig ×1, parallel ×1, stoppers ×2.
 
 Scorecard: four Critical cells `落后 → 持平` (8 cells). `GAP_PRIORITY.md` now has zero Critical rows. No `领先` claims added; "全方位超过" remains gated on W2/W3 + benchmarks.
+
+## Pass 8 — 2026-09-16 — W2 High coverage
+
+| Gap | Engine | CLI |
+|-----|--------|-----|
+| Wiki filter apply | `wiki_filters.apply_filters` + per-clause reasons | `wiki-filter-apply --wiki-root --query [--fulltext] [--limit 50]` |
+| Interest drift | `interest_profile` decayed feedback + `drift_report` | `thread-delta --drift` (profile_match in Watch R) |
+| Novelty critic | `novelty_critic.run_novelty_critic` 3-round facet | `novelty-check --rounds 3 --use-llm off\|auto\|required` |
+| Survey gate | `survey_write` TF-IDF RAG + cite audit + LLM prose gate | `survey-draft --use-llm off\|auto\|required --tau 0.12` |
+
+Shared: `llm_client` (`PAPER_REC_LLM_API_KEY` / `PAPER_REC_LLM_BASE_URL` / `PAPER_REC_LLM_MODEL`). Tests: 151 pytest; gold-set 16/16.
+
+Scorecard: four High cells `落后 → 持平` (AI-Scientist `b_novelty`, AutoSurvey `b_survey`, ResearchRabbit `c_drift_watch`, khoj `c_wiki_filter`). `GAP_PRIORITY.md` now has zero Critical/High rows.

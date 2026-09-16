@@ -4,6 +4,22 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.21.0] — 2026-09-16
+
+### Added
+
+- `wiki-filter-apply`: apply `+term -term dt>=YYYY file:pdf` filters over wiki pages with per-clause reasons; `--fulltext`
+- `interest_profile`: decayed feedback profile, `drift_report` (emerging/fading), folded into Watch R via `profile_match`; `thread-delta --drift`
+- `novelty-check --rounds 3 --use-llm off|auto|required`: 3-round facet critic (`duplicate|incremental|novel`); LLM tightening-only
+- `survey-draft --use-llm off|auto|required --tau 0.12`: TF-IDF subsection RAG + claim-support gate + validated LLM outline/prose with unknown-key hallucination gate
+- `wiki_bridge.llm_client`: text JSON chat; env `PAPER_REC_LLM_API_KEY` (fallback `OPENAI_API_KEY`), `PAPER_REC_LLM_BASE_URL`, `PAPER_REC_LLM_MODEL`
+- Gold-set families: `wiki_filter_apply`, `drift_emerging_term`, `novelty_duplicate_blocks`, `novelty_facet_incremental`, `survey_cite_needed`
+
+### Changed
+
+- `survey-draft` `ok` now requires all claims supported (`cite_ok` and `unsupported_n==0` and no `unknown_keys`)
+- Competitor scorecard: 4 High dimensions (4 competitor cells) upgraded `落后→持平`; `GAP_PRIORITY.md` has no Critical/High rows
+
 ## [1.20.0] — 2026-09-16
 
 ### Added

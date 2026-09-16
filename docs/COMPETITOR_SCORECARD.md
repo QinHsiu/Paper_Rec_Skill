@@ -39,7 +39,7 @@ Cell = Paper_Rec relative to competitor: 领先 / 持平 / 落后 / 不适用.
 | Competitor | b_grounded_qa | b_citation_trust | b_hard_gate | b_survey | b_novelty | b_parallel_deep | b_fig_vlm | b_al_stop |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | AutoResearchClaw | 持平 | 持平 | 持平 | 不适用 | 不适用 | 不适用 | 持平 | 持平 |
-| AI-Scientist | 持平 | 持平 | 领先 | 不适用 | 落后 | 不适用 | 持平 | 持平 |
+| AI-Scientist | 持平 | 持平 | 领先 | 不适用 | 持平 | 不适用 | 持平 | 持平 |
 | AI-Scientist-v2 | 持平 | 持平 | 领先 | 不适用 | 持平 | 不适用 | 持平 | 持平 |
 | AgentLaboratory | 持平 | 持平 | 领先 | 持平 | 持平 | 持平 | 持平 | 持平 |
 | AI-Researcher | 不适用 | 不适用 | 不适用 | 不适用 | 不适用 | 不适用 | 不适用 | 不适用 |
@@ -49,7 +49,7 @@ Cell = Paper_Rec relative to competitor: 领先 / 持平 / 落后 / 不适用.
 | paper-qa | 落后 | 持平 | 领先 | 持平 | 持平 | 持平 | 持平 | 持平 |
 | OpenScholar | 落后 | 持平 | 领先 | 持平 | 持平 | 持平 | 持平 | 持平 |
 | asreview | 持平 | 持平 | 领先 | 不适用 | 不适用 | 不适用 | 不适用 | 持平 |
-| AutoSurvey | 持平 | 持平 | 领先 | 落后 | 持平 | 持平 | 持平 | 持平 |
+| AutoSurvey | 持平 | 持平 | 领先 | 持平 | 持平 | 持平 | 持平 | 持平 |
 | gpt-researcher | 持平 | 持平 | 领先 | 持平 | 持平 | 持平 | 持平 | 持平 |
 | STORM | 持平 | 持平 | 领先 | 持平 | 不适用 | 持平 | 不适用 | 不适用 |
 | open_deep_research | 持平 | 持平 | 领先 | 持平 | 持平 | 持平 | 持平 | 持平 |
@@ -84,32 +84,28 @@ Cell = Paper_Rec relative to competitor: 领先 / 持平 / 落后 / 不适用.
 | STORM | 领先 | 持平 | 持平 | 持平 | 持平 | 领先 |
 | open_deep_research | 领先 | 持平 | 持平 | 持平 | 持平 | 领先 |
 | Curie | 领先 | 不适用 | 不适用 | 持平 | 持平 | 领先 |
-| khoj | 领先 | 持平 | 落后 | 持平 | 持平 | 领先 |
+| khoj | 领先 | 持平 | 持平 | 持平 | 持平 | 领先 |
 | gptr-mcp | 领先 | 持平 | 持平 | 落后 | 持平 | 领先 |
 | Elicit | 领先 | 持平 | 领先 | 领先 | 持平 | 领先 |
 | Consensus | 领先 | 持平 | 领先 | 领先 | 持平 | 领先 |
 | Scite | 领先 | 持平 | 领先 | 领先 | 持平 | 领先 |
-| ResearchRabbit | 领先 | 落后 | 领先 | 领先 | 持平 | 领先 |
+| ResearchRabbit | 领先 | 持平 | 领先 | 领先 | 持平 | 领先 |
 | Connected Papers | 领先 | 持平 | 领先 | 领先 | 持平 | 领先 |
 | Semantic Scholar | 领先 | 持平 | 领先 | 领先 | 持平 | 领先 |
 | NotebookLM | 领先 | 持平 | 领先 | 领先 | 持平 | 领先 |
 
 ## Notes (selected gaps)
 
-- **AI-Scientist / b_novelty**: AI-Scientist multi-round novelty critic deeper than single-shot novelty-check. `(code)`
 - **paper-qa / b_grounded_qa**: paper-qa map-reduce relevance + refuse; Paper_Rec cutoff thinner than agentic paper-qa. `(code)`
 - **OpenScholar / b_grounded_qa**: ScholarQA feedback→edit→re-retrieve deeper than one-shot answer-ground. `(code)`
 - **asreview / a_ranking**: Nature-grade AL ranking/balancer deeper than screen-next TF-IDF hybrid. `(code)`
 - **AutoSurvey / a_report**: Large-corpus survey generation quality ahead of TF-IDF survey-draft. `(code)`
-- **AutoSurvey / b_survey**: outline-merge + subsection RAG + cite check deeper than survey-draft heuristic. `(code)`
 - **STORM / a_query_rewrite**: Persona-parallel question lanes / Co-STORM mind map cover skew better than single rewrite. `(code)`
-- **khoj / c_wiki_filter**: khoj applies wiki filters on pages; Paper_Rec parse-only without apply. `(code)`
 - **gptr-mcp / c_mcp_session**: research_id → deferred write_report first-class; Paper_Rec research-session thinner in thread-MCP. `(code)`
 - **Elicit / a_report**: Elicit structured research reports / tables stronger than Pack CLI summaries. `(public-docs)`
 - **Elicit / b_grounded_qa**: Elicit systematic Q&A over papers UX ahead of answer-ground cutoff. `(public-docs)`
 - **Consensus / b_grounded_qa**: Consensus evidence-synthesis answers stronger than thin chunk cutoff. `(public-docs)`
 - **ResearchRabbit / a_graph_explore**: ResearchRabbit visual related-paper graph ahead of Paper_Rec graph exploration. `(public-docs)`
-- **ResearchRabbit / c_drift_watch**: Interest/collection drift patterns; Paper_Rec feedback unused for Watch/rank profile. `(public-docs)`
 - **Connected Papers / a_graph_explore**: Connected Papers similarity graph is the product; Paper_Rec graph explore thin. `(public-docs)`
 - **Semantic Scholar / a_graph_explore**: S2 citation/influential graph UX ahead of Paper_Rec graph explore. `(public-docs)`
 - **NotebookLM / b_grounded_qa**: Notebook-grounded multimodal Q&A UX ahead of answer-ground for uploaded corpora. `(public-docs)`

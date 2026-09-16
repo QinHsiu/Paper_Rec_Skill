@@ -73,3 +73,14 @@ Bots (Feishu / Telegram / WeCom / QQ): [`docs/BOTS.md`](../../docs/BOTS.md).
 | `fig-review --draft ... --use-vlm off\|auto\|required` | Figure/caption/ref consistency; real OpenAI-compatible VLM when key set (`PAPER_REC_VLM_*` / `OPENAI_API_KEY`) |
 | `deep-research --topic ... --json hits.json --parallel [--max-concurrent N] [--search-cmd CMD]` | Learnings tree → follow-up queries; concurrent lanes + compression |
 | `screen-next --candidates pool.json [--stop-n N] [--stop-max-labels N] [--stop-window W] [--stop-max-relevant R] [--min-labels N]` | Active screening next batch + configurable stoppers |
+
+## Coverage & thread CLIs (W2)
+
+| Command | Purpose |
+|---------|---------|
+| `wiki-filter-apply --wiki-root ROOT --query "+term -term dt>=YYYY file:pdf" [--fulltext] [--limit N]` | Apply parsed library filters over wiki pages with per-clause reasons |
+| `thread-delta --wiki-root ROOT --id ID [--drift]` | Watch digest; `--drift` prints interest-drift brief (emerging/fading, profile_match in R) |
+| `novelty-check --idea ... --papers-json corpus.json [--rounds 3] [--use-llm off\|auto\|required]` | 3-round facet critic (`duplicate\|incremental\|novel`); LLM tightening-only |
+| `survey-draft --json papers.json [--use-llm off\|auto\|required] [--tau 0.12]` | TF-IDF subsection RAG + claim-support gate (`[citation needed]`, `unsupported_n`) + validated LLM prose |
+
+Shared LLM client: `PAPER_REC_LLM_API_KEY` (fallback `OPENAI_API_KEY`), `PAPER_REC_LLM_BASE_URL`, `PAPER_REC_LLM_MODEL` (default `gpt-4o-mini`); `resolve_llm(off|auto|required)`.
