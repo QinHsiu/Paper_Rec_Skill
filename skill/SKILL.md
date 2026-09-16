@@ -1,6 +1,6 @@
 ---
 name: paper-rec
-version: 1.20.0
+version: 1.21.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
@@ -138,8 +138,9 @@ python -m wiki_bridge.cli research-brief --topic "..." --must-answer "q1,q2" --o
 Module 1 rewrite + packs must stay inside the brief’s must-answer / out-of-scope.
 
 Idea seeds (no finished paper yet): [`references/idea-template.md`](references/idea-template.md).  
-Library search operators: [`references/wiki-query-filters.md`](references/wiki-query-filters.md) — parse via `wiki-filter-parse`.  
-Screening stop: [`references/screening-stop.md`](references/screening-stop.md) — use `screen-next` after feedback.
+Library search operators: [`references/wiki-query-filters.md`](references/wiki-query-filters.md) — parse via `wiki-filter-parse`; apply over pages via `wiki-filter-apply --query`.  
+Screening stop: [`references/screening-stop.md`](references/screening-stop.md) — use `screen-next` after feedback.  
+Optional LLM (`novelty-check`, `survey-draft`): `PAPER_REC_LLM_API_KEY` (fallback `OPENAI_API_KEY`), `PAPER_REC_LLM_BASE_URL`, `PAPER_REC_LLM_MODEL` (default `gpt-4o-mini`); `--use-llm off|auto|required`.
 
 ---
 
@@ -605,8 +606,10 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki number-verify --hard-gate` | BLOCK Results floats not in verified registry |
 | `/wiki feedback-edit` | Critique → rewrite markers → re-retrieve queries |
 | `/wiki stats-rigor` | Results claims need ±/std/CI/seeds cues |
-| `/wiki survey-draft` | Outline-merge + subsection RAG related-work draft |
-| `/wiki novelty-check` | Idea novelty vs local corpus (+ optional OpenAlex) |
+| `/wiki survey-draft` | TF-IDF subsection RAG related-work draft; `--use-llm off\|auto\|required`, `--tau` claim-support gate |
+| `/wiki novelty-check` | 3-round facet critic (`duplicate\|incremental\|novel`); `--rounds`, `--use-llm off\|auto\|required` |
+| `/wiki wiki-filter-apply` | Apply `+term -term dt>=YYYY file:pdf` filters over wiki pages with per-clause reasons; `--fulltext` |
+| `/wiki thread-delta --drift` | Watch digest + interest-drift brief (`emerging`/`fading`, profile_match in R) |
 | `/wiki fig-review` | Figure/caption/ref consistency (+ `--use-vlm auto` real vision check when key set) |
 | `/wiki deep-research` | Learnings tree → follow-up queries; `--parallel` lanes + compression |
 | `/wiki deep-search` | Live Search→Read→Reason (depth×breadth) |
@@ -638,7 +641,10 @@ pip install -e .
 python -m wiki_bridge.cli thread-list --wiki-root ../..
 python -m wiki_bridge.cli thread-show --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli thread-create --wiki-root ../.. --title "..." --hypothesis "..." --keywords "a,b"
-python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id <thread_id> --mode auto --print-md
+python -m wiki_bridge.cli thread-delta --wiki-root ../.. --id <thread_id> --mode auto --print-md --drift
+python -m wiki_bridge.cli wiki-filter-apply --wiki-root ../.. --query "+transformer -survey dt>=2024"
+python -m wiki_bridge.cli survey-draft --json papers.json --out related.md --use-llm auto --tau 0.12
+python -m wiki_bridge.cli novelty-check --idea "..." --papers-json corpus.json --rounds 3 --use-llm auto
 python -m wiki_bridge.cli thread-graph --wiki-root ../.. --id <thread_id>
 python -m wiki_bridge.cli related-work --wiki-root ../.. --thread <thread_id> --print-md
 python -m wiki_bridge.cli paper-draft --wiki-root ../.. --thread <thread_id> --venue generic
@@ -655,8 +661,6 @@ python -m wiki_bridge.cli posthoc-cite --wiki-root ../.. --thread <id> --evidenc
 python -m wiki_bridge.cli answer-ground --answer "Result holds (E1)." --evidences-json evs.json --relevance-cutoff 3.0
 python -m wiki_bridge.cli gather-evidence --question "..." --documents docs.json --out evs.json
 python -m wiki_bridge.cli stats-rigor --wiki-root ../.. --thread <id> --strict
-python -m wiki_bridge.cli survey-draft --json papers.json --out related.md
-python -m wiki_bridge.cli novelty-check --idea "..." --papers-json corpus.json
 python -m wiki_bridge.cli fig-review --draft draft.md --strict
 python -m wiki_bridge.cli deep-research --topic "..." --json papers.json
 python skill/scripts/deep_search.py --topic "..." --breadth 3 --depth 2 --thread <id>

@@ -99,13 +99,21 @@ def check_idea_novelty(
     *,
     use_openalex: bool = False,
     mailto: str = "paper-rec@local",
+    rounds: int = 3,
+    use_llm: str = "off",
+    transport=None,
 ) -> dict[str, Any]:
+    from .novelty_critic import run_novelty_critic  # local import avoids cycle
+
     local = novelty_against_corpus(idea, papers or [])
     remote = novelty_openalex(idea, mailto=mailto) if use_openalex else None
-    novel = local["novel"] and (remote.get("novel", True) if remote and remote.get("ok") else True)
+    critic = run_novelty_critic(idea, papers or [], rounds=rounds, use_llm=use_llm, transport=transport)
+    remote_ok = remote.get("novel", True) if remote and remote.get("ok") else True
+    novel = critic["verdict"] != "duplicate" and remote_ok
     return {
         "novel": novel,
         "decision": "novel" if novel else "not novel",
         "local": local,
         "openalex": remote,
+        "critic": critic,
     }

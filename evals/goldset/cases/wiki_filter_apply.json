@@ -1,0 +1,12 @@
+{
+  "id": "wiki_filter_apply",
+  "family": "wiki_filter",
+  "query": "+transformer -survey dt>=2023",
+  "pages": [
+    {"kw": "retrieval", "year": 2024, "slug": "dense-a", "title": "Dense Transformer Retrieval", "tags": ["transformer"]},
+    {"kw": "retrieval", "year": 2022, "slug": "bm25-b", "title": "BM25 Sparse Baseline", "tags": ["sparse"]},
+    {"kw": "survey", "year": 2023, "slug": "survey-c", "title": "A Survey of Transformer Retrieval", "tags": ["transformer", "survey"]}
+  ],
+  "expect_slugs": ["dense-a"],
+  "expect_reasons": ["must:transformer", "not:survey", "dt>=2023"]
+}

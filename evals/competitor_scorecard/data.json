@@ -161,8 +161,8 @@
           "evidence": "code"
         },
         "b_novelty": {
-          "state": "落后",
-          "note": "AI-Scientist multi-round novelty critic deeper than single-shot novelty-check.",
+          "state": "持平",
+          "note": "novelty_critic.run_novelty_critic: 3-round whole→facet→aggregate critic, duplicate|incremental|novel, optional --use-llm tightening-only (tests/test_w2_novelty_critic.py; goldset novelty_duplicate_blocks, novelty_facet_incremental)",
           "evidence": "code"
         },
         "b_parallel_deep": {
@@ -1206,8 +1206,8 @@
           "evidence": "code"
         },
         "b_survey": {
-          "state": "落后",
-          "note": "outline-merge + subsection RAG + cite check deeper than survey-draft heuristic.",
+          "state": "持平",
+          "note": "survey_write: TF-IDF subsection RAG + claim-support gate ([citation needed], unsupported_n) + validated LLM outline/prose (--use-llm) with unknown-key hallucination gate (tests/test_w2_survey_gate.py; goldset survey_cite_needed)",
           "evidence": "code"
         },
         "b_novelty": {
@@ -1766,8 +1766,8 @@
           "evidence": "code"
         },
         "c_wiki_filter": {
-          "state": "落后",
-          "note": "khoj applies wiki filters on pages; Paper_Rec parse-only without apply.",
+          "state": "持平",
+          "note": "wiki_filters.apply_filters + CLI wiki-filter-apply: applies +/-/dt/file filters over wiki pages with per-clause reasons, --fulltext (tests/test_w2_wiki_filter_apply.py; goldset wiki_filter_apply)",
           "evidence": "code"
         },
         "c_mcp_session": {
@@ -2286,8 +2286,8 @@
           "evidence": "public-docs"
         },
         "c_drift_watch": {
-          "state": "落后",
-          "note": "Interest/collection drift patterns; Paper_Rec feedback unused for Watch/rank profile.",
+          "state": "持平",
+          "note": "interest_profile: decayed feedback profile folded into Watch R (profile_match), drift_report emerging/fading, thread-delta --drift (tests/test_w2_interest_profile.py; goldset drift_emerging_term)",
           "evidence": "public-docs"
         },
         "c_wiki_filter": {

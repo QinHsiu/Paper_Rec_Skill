@@ -6,6 +6,13 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.44.0] — 2026-09-16
+
+### Added
+
+- **paper-rec** v1.21.0 (W2 coverage engines): `wiki-filter-apply`, `interest_profile` + `thread-delta --drift`, `novelty-check --rounds --use-llm`, `survey-draft --use-llm --tau`, `wiki_bridge.llm_client`
+- Competitor scorecard Pass 8: 4 High dimensions (4 competitor cells) `落后→持平`; `docs/GAP_PRIORITY.md` has no Critical/High rows
+
 ## [2.43.0] — 2026-09-16
 
 ### Added

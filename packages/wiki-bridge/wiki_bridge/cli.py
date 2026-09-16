@@ -221,6 +221,12 @@ def cmd_thread_delta(args: argparse.Namespace) -> int:
     # ensure thread_id for notify
     result.setdefault("thread_id", args.id)
     print(json.dumps({k: v for k, v in result.items() if k != "markdown"}, ensure_ascii=False, indent=2))
+    if getattr(args, "drift", False):
+        d = result.get("drift")
+        if d is None:
+            print("\n## Drift\n\nnot enough feedback yet (need > 20 feedback events)")
+        else:
+            print(f"\n## Drift (score {d['drift_score']})\n\n- emerging: {', '.join(d['emerging']) or '-'}\n- fading: {', '.join(d['fading']) or '-'}")
     if args.print_md:
         print("\n" + result.get("markdown", ""))
     if getattr(args, "webhook", "") or getattr(args, "notify", False):
@@ -808,17 +814,24 @@ def cmd_stats_rigor(args: argparse.Namespace) -> int:
 
 
 def cmd_survey_draft(args: argparse.Namespace) -> int:
+    from .llm_client import LlmUnconfigured
     from .survey_write import build_survey_draft
 
     papers = json.loads(Path(args.json).read_text(encoding="utf-8-sig"))
     if isinstance(papers, dict):
         papers = list(papers.get("papers") or papers.get("documents") or [])
-    out = build_survey_draft(
-        papers,
-        chunk_size=args.chunk_size,
-        rag_k=args.rag_k,
-        topic=getattr(args, "topic", "") or "",
-    )
+    try:
+        out = build_survey_draft(
+            papers,
+            chunk_size=args.chunk_size,
+            rag_k=args.rag_k,
+            topic=getattr(args, "topic", "") or "",
+            use_llm=args.use_llm,
+            tau=args.tau,
+        )
+    except LlmUnconfigured as exc:
+        print(json.dumps({"error": "llm_required_but_unconfigured", "detail": str(exc)}), file=sys.stderr)
+        return 2
     if args.out:
         Path(args.out).write_text(out["markdown"], encoding="utf-8")
     if args.json_out:
@@ -829,6 +842,8 @@ def cmd_survey_draft(args: argparse.Namespace) -> int:
                 "section_n": out["section_n"],
                 "outline_chunks": out["outline_chunks"],
                 "cite_ok": (out.get("cite_audit") or {}).get("ok"),
+                "unsupported_n": out["cite_audit"].get("unsupported_n"),
+                "llm_applied": out["llm"]["applied"],
                 "out": args.out or None,
             },
             ensure_ascii=False,
@@ -839,16 +854,28 @@ def cmd_survey_draft(args: argparse.Namespace) -> int:
 
 
 def cmd_novelty_check(args: argparse.Namespace) -> int:
+    from .llm_client import LlmUnconfigured
     from .novelty_check import check_idea_novelty
 
     papers = []
     if args.papers_json:
         raw = json.loads(Path(args.papers_json).read_text(encoding="utf-8-sig"))
         papers = raw if isinstance(raw, list) else list(raw.get("papers") or raw.get("documents") or [])
-    out = check_idea_novelty(args.idea, papers, use_openalex=args.openalex, mailto=args.mailto)
+    try:
+        out = check_idea_novelty(
+            args.idea,
+            papers,
+            use_openalex=args.openalex,
+            mailto=args.mailto,
+            rounds=args.rounds,
+            use_llm=args.use_llm,
+        )
+    except LlmUnconfigured as exc:
+        print(json.dumps({"error": "llm_required_but_unconfigured", "detail": str(exc)}), file=sys.stderr)
+        return 2
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"novel": out["novel"], "decision": out["decision"]}, ensure_ascii=False, indent=2))
+    print(json.dumps({"novel": out["novel"], "decision": out["decision"], "verdict": out["critic"]["verdict"]}, ensure_ascii=False, indent=2))
     return 0 if out.get("novel") else (1 if args.strict else 0)
 
 
@@ -1300,6 +1327,16 @@ def cmd_wiki_filter_parse(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_wiki_filter_apply(args: argparse.Namespace) -> int:
+    from .wiki_filters import apply_filters
+
+    out = apply_filters(Path(args.wiki_root), args.query, fulltext=bool(args.fulltext), limit=int(args.limit))
+    if args.out:
+        Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_related_work(args: argparse.Namespace) -> int:
     from .related_work import build_related_work_outline
 
@@ -1701,6 +1738,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--threshold", type=float, default=0.45)
     s.add_argument("--dry-run", action="store_true")
     s.add_argument("--print-md", action="store_true")
+    s.add_argument("--drift", action="store_true", help="print interest-drift brief after candidates")
     s.add_argument("--webhook", default="", help="POST Delta summary (or PAPER_REC_WEBHOOK_URL)")
     s.add_argument("--notify", action="store_true", help="notify using PAPER_REC_WEBHOOK_URL")
     s.set_defaults(func=cmd_thread_delta)
@@ -1931,9 +1969,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--topic", default="")
     s.add_argument("--chunk-size", type=int, default=8)
     s.add_argument("--rag-k", type=int, default=5)
+    s.add_argument("--use-llm", default="off", choices=["off", "auto", "required"])
+    s.add_argument("--tau", type=float, default=0.12, help="min claim/abstract support ratio")
     s.add_argument("--out", default="", help="markdown path")
     s.add_argument("--json-out", default="")
-    s.add_argument("--strict", action="store_true", help="exit 1 if cite audit fails")
+    s.add_argument("--strict", action="store_true", help="exit 1 if cite audit fails or any claim is unsupported")
     s.set_defaults(func=cmd_survey_draft)
 
     s = sub.add_parser("novelty-check", help="Idea novelty vs local corpus (+ optional OpenAlex)")
@@ -1941,6 +1981,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--papers-json", default="")
     s.add_argument("--openalex", action="store_true")
     s.add_argument("--mailto", default="paper-rec@local")
+    s.add_argument("--rounds", type=int, default=3, help="critic rounds 1-3")
+    s.add_argument("--use-llm", default="off", choices=["off", "auto", "required"])
     s.add_argument("--strict", action="store_true")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_novelty_check)
@@ -2093,6 +2135,14 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("wiki-filter-parse", help="Parse +term -term dt>=YYYY file:pdf library query")
     s.add_argument("--query", required=True)
     s.set_defaults(func=cmd_wiki_filter_parse)
+
+    s = sub.add_parser("wiki-filter-apply", help="Apply +term -term dt>=YYYY file:pdf filters to wiki pages (auditable reasons)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--query", required=True)
+    s.add_argument("--fulltext", action="store_true", help="also match terms against page body")
+    s.add_argument("--limit", type=int, default=50)
+    s.add_argument("--out", default="")
+    s.set_defaults(func=cmd_wiki_filter_apply)
 
     s = sub.add_parser(
         "citation-verify",

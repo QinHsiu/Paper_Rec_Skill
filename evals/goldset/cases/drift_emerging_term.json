@@ -1,0 +1,10 @@
+{
+  "id": "drift_emerging_term",
+  "family": "drift",
+  "older": [{"action": "accept", "path": "r/2023/bm25-sparse-index"}, {"action": "accept", "path": "r/2023/bm25-query-expansion"}, {"action": "read", "path": "r/2023/sparse-lexical-matching"}],
+  "recent": [{"action": "accept", "path": "r/2024/contrastive-dense-retrieval"}, {"action": "pin", "path": "r/2024/contrastive-hard-negatives"}, {"action": "skip", "path": "r/2024/bm25-tuning"}],
+  "expect_emerging_contains": "contrastive",
+  "expect_fading_contains": "bm25",
+  "rank": {"thread": {"hypothesis": "retrieval", "claims": [], "evidence_gaps": [], "tags": [], "keywords": []},
+           "a": "Contrastive retrieval with hard negatives", "b": "BM25 retrieval tuning", "expect_first": "a"}
+}
