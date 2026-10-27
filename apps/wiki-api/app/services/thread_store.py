@@ -112,7 +112,10 @@ def accept_claim(thread_id: str, claim_id: str, status: str, reason: str = ""):
 
 
 def score_papers(thread_id: str, papers: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    from wiki_bridge.thread_engine import feedback_profile
+
     data = _ts.load_thread(wiki_root(), thread_id)
+    profile = feedback_profile(wiki_root(), thread_id)
     out = []
     for p in papers:
         scored = _ts.score_paper_against_thread(
@@ -121,6 +124,8 @@ def score_papers(thread_id: str, papers: list[dict[str, Any]]) -> list[dict[str,
             summary=str(p.get("summary") or p.get("core_idea") or ""),
             tags=list(p.get("tags") or []),
             keyword=str(p.get("keyword") or ""),
+            feedback_entities=profile["accepted_entities"],
+            rejected_terms=profile["rejected_terms"],
         )
         out.append({"path": p.get("path"), "title": p.get("title"), **scored})
     return out
@@ -367,6 +372,79 @@ def pdf_ingest(pdf: str, paper_path: str, title: str = "") -> dict[str, Any]:
     from wiki_bridge.pdf_ingest import ingest_pdf
 
     return ingest_pdf(wiki_root(), Path(pdf), paper_path, title=title)
+
+
+def _engine():
+    from wiki_bridge import thread_engine as engine
+
+    return engine
+
+
+def list_proposals(thread_id: str) -> list[dict[str, Any]]:
+    return _engine().list_proposals(wiki_root(), thread_id)
+
+
+def proposal_stats(thread_id: str) -> dict[str, Any]:
+    return _engine().proposal_stats(wiki_root(), thread_id)
+
+
+def thread_memory(thread_id: str) -> dict[str, Any]:
+    return _engine().rebuild_hot_memory(wiki_root(), thread_id)
+
+
+def propose_update(
+    thread_id: str,
+    op: str,
+    payload: dict[str, Any] | None = None,
+    *,
+    source: str = "api",
+    reason: str = "",
+    force_pending: bool = False,
+) -> dict[str, Any]:
+    return _engine().propose(
+        wiki_root(),
+        thread_id,
+        op,
+        payload or {},
+        source=source,
+        by="api",
+        reason=reason,
+        force_pending=force_pending,
+    )
+
+
+def decide_proposal(thread_id: str, proposal_id: str, action: str, reason: str = "") -> dict[str, Any]:
+    return _engine().decide(wiki_root(), thread_id, proposal_id, action, reason=reason, by="user")
+
+
+def rollback_proposal(thread_id: str, proposal_id: str) -> dict[str, Any]:
+    return _engine().rollback(wiki_root(), thread_id, proposal_id, by="user")
+
+
+def bootstrap_thread(thread_id: str, papers: list[dict[str, Any]], title: str = "", hypothesis: str = "") -> dict[str, Any]:
+    return _engine().bootstrap_thread(
+        wiki_root(),
+        papers,
+        thread_id=thread_id,
+        title=title,
+        hypothesis=hypothesis,
+    )
+
+
+def verify_papers(thread_id: str, papers: list[dict[str, Any]], *, propose_updates: bool = False) -> dict[str, Any]:
+    return _engine().verify_papers(wiki_root(), thread_id, papers, propose_updates=propose_updates)
+
+
+def consolidate_thread(thread_id: str) -> dict[str, Any]:
+    return _engine().consolidate(wiki_root(), thread_id)
+
+
+def distill_thread(thread_id: str, threshold: int = 3) -> dict[str, Any]:
+    return _engine().distill_skills(wiki_root(), thread_id, threshold=threshold)
+
+
+def rerank_papers(thread_id: str, papers: list[dict[str, Any]]) -> dict[str, Any]:
+    return _engine().rerank_with_feedback(wiki_root(), thread_id, papers)
 
 
 def claim_suggest(paper_path: str, thread_id: str = "", apply: bool = False, max_claims: int = 5):

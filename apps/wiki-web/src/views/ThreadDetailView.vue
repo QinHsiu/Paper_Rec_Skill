@@ -68,6 +68,41 @@
     </section>
 
     <section class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0;font-size:1.15rem">更新提议</h2>
+        <button :disabled="consolidateBusy" @click="runConsolidate">{{ consolidateBusy ? '巩固…' : '巩固' }}</button>
+      </div>
+      <p v-if="proposalStats && proposalStats.acceptance_rate != null" class="muted" style="margin:0.6rem 0 0">
+        提议接受率 {{ Math.round(proposalStats.acceptance_rate * 100) }}%
+        （接受 {{ proposalStats.accepted }} · 拒绝 {{ proposalStats.rejected }}）
+      </p>
+      <p v-if="!proposals.length" class="muted" style="margin:0.75rem 0 0">暂无提议。检索、验证和巩固的结果会出现在这里，确认后才写入主线。</p>
+      <div v-for="p in proposals" :key="p.proposal_id" class="week-item">
+        <div class="row" style="justify-content:space-between;align-items:flex-start;gap:0.75rem">
+          <div>
+            <code>{{ p.proposal_id }}</code>
+            <span class="badge" style="margin-left:0.35rem">{{ p.risk }}</span>
+            <span class="badge" style="margin-left:0.35rem">{{ p.status }}</span>
+            <span class="muted"> · {{ p.op }}</span>
+            <p class="muted" style="margin:0.25rem 0 0;font-size:0.88rem">{{ proposalText(p) }}</p>
+            <input
+              v-if="p.status === 'pending' && p.risk === 'high'"
+              v-model="proposalReasons[p.proposal_id]"
+              placeholder="高风险操作需要理由"
+              style="margin-top:0.4rem;width:100%"
+            />
+          </div>
+          <div class="row" style="gap:0.35rem;flex-wrap:wrap">
+            <button v-if="p.status === 'pending'" class="primary" @click="decideProposal(p, 'accept')">接受</button>
+            <button v-if="p.status === 'pending'" @click="decideProposal(p, 'reject')">拒绝</button>
+            <button v-if="p.status === 'pending'" @click="decideProposal(p, 'defer')">挂起</button>
+            <button v-if="p.rollback_id && p.status !== 'rolled_back'" @click="rollbackProposal(p)">回滚</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
       <h2 style="margin-top:0;font-size:1.15rem">假设</h2>
       <p style="margin:0;line-height:1.65;white-space:pre-wrap">{{ thread.hypothesis || '—' }}</p>
     </section>
@@ -105,6 +140,7 @@
         <li v-for="c in thread.claims" :key="c.id" style="margin-bottom:0.4rem">
           <code>{{ c.id }}</code>
           <span class="badge" style="margin-left:0.35rem">{{ c.status }}</span>
+          <span class="badge" v-if="c.node_state" style="margin-left:0.35rem">{{ c.node_state }}</span>
           {{ c.text }}
           <span class="muted" v-if="(c.evidence_ids || []).length">
             · evidences {{ (c.evidence_ids || []).length }}
@@ -305,6 +341,10 @@ import {
   runThreadDelta,
   setThreadEvidenceGate,
   threadFeedback,
+  listThreadProposals,
+  decideThreadProposal,
+  rollbackThreadProposal,
+  consolidateThread,
 } from '../api'
 
 Chart.register(...registerables)
@@ -315,6 +355,10 @@ const graph = ref(null)
 const coverage = ref(null)
 const deltaResult = ref(null)
 const suggestions = ref([])
+const proposals = ref([])
+const proposalStats = ref(null)
+const proposalReasons = ref({})
+const consolidateBusy = ref(false)
 const deltaBusy = ref(false)
 const suggestBusy = ref(false)
 const rwBusy = ref(false)
@@ -464,6 +508,11 @@ function renderGraph() {
   graphChart.$edgeMeta = { edges: graphEdges.value, positions }
 }
 
+function proposalText(p) {
+  const payload = p.payload || {}
+  return payload.text || payload.note || payload.quote || payload.reason || p.reason || p.op
+}
+
 async function load() {
   thread.value = await getThread(props.id)
   graph.value = await getThreadGraph(props.id)
@@ -472,8 +521,54 @@ async function load() {
   } catch {
     coverage.value = null
   }
+  try {
+    const data = await listThreadProposals(props.id)
+    const rows = data.proposals || []
+    proposals.value = rows.slice().reverse().slice(0, 20)
+    proposalStats.value = data.stats || null
+  } catch {
+    proposals.value = []
+  }
   await nextTick()
   renderGraph()
+}
+
+async function decideProposal(p, action) {
+  const reason = proposalReasons.value[p.proposal_id] || ''
+  if (action === 'accept' && p.risk === 'high' && !reason.trim()) {
+    actionMsg.value = '高风险接受需要填写理由'
+    return
+  }
+  try {
+    await decideThreadProposal(props.id, p.proposal_id, action, reason)
+    actionMsg.value = `${p.proposal_id} 已${action === 'accept' ? '接受' : action === 'reject' ? '拒绝' : '挂起'}`
+    await load()
+  } catch (err) {
+    actionMsg.value = err?.response?.data?.detail || err.message || String(err)
+  }
+}
+
+async function rollbackProposal(p) {
+  try {
+    await rollbackThreadProposal(props.id, p.proposal_id)
+    actionMsg.value = `${p.proposal_id} 已回滚`
+    await load()
+  } catch (err) {
+    actionMsg.value = err?.response?.data?.detail || err.message || String(err)
+  }
+}
+
+async function runConsolidate() {
+  consolidateBusy.value = true
+  try {
+    const data = await consolidateThread(props.id)
+    actionMsg.value = `巩固完成 · 提议 ${(data.proposals || []).length} 条`
+    await load()
+  } catch (err) {
+    actionMsg.value = err?.response?.data?.detail || err.message || String(err)
+  } finally {
+    consolidateBusy.value = false
+  }
 }
 
 async function acceptEvidence(e) {

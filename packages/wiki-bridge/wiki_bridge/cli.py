@@ -1375,6 +1375,16 @@ def cmd_paper_draft(args: argparse.Namespace) -> int:
     return 0
 
 
+def _feedback_terms(args: argparse.Namespace) -> list[str] | None:
+    thread_id = getattr(args, "thread", "") or ""
+    if not thread_id:
+        return None
+    from .thread_engine import feedback_profile
+
+    profile = feedback_profile(Path(args.wiki_root), thread_id)
+    return list(profile.get("accepted_entities") or [])
+
+
 def cmd_prerank(args: argparse.Namespace) -> int:
     from .prerank import prerank_from_json
 
@@ -1384,6 +1394,7 @@ def cmd_prerank(args: argparse.Namespace) -> int:
         query=args.query,
         top_k=args.top_k,
         use_citations=not args.no_citations,
+        feedback_terms=_feedback_terms(args),
     )
     if args.out:
         Path(args.out).write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -1530,6 +1541,156 @@ def cmd_thread_feedback(args: argparse.Namespace) -> int:
         note=args.note,
     )
     print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _engine_call(fn, args: argparse.Namespace) -> int:
+    try:
+        out = fn()
+    except (ValueError, KeyError, FileNotFoundError) as exc:
+        print(json.dumps({"error": str(exc)}, ensure_ascii=False))
+        return 2
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_thread_propose(args: argparse.Namespace) -> int:
+    from .thread_engine import propose
+
+    payload = json.loads(args.json) if args.json else {}
+    if args.text:
+        payload.setdefault("text", args.text)
+    return _engine_call(
+        lambda: propose(
+            Path(args.wiki_root),
+            args.thread,
+            args.op,
+            payload,
+            source=args.source or "cli",
+            reason=args.reason or "",
+            force_pending=args.pending,
+        ),
+        args,
+    )
+
+
+def cmd_thread_decide(args: argparse.Namespace) -> int:
+    from .thread_engine import decide
+
+    return _engine_call(
+        lambda: decide(
+            Path(args.wiki_root),
+            args.thread,
+            args.proposal,
+            args.action,
+            reason=args.reason or "",
+        ),
+        args,
+    )
+
+
+def cmd_thread_rollback(args: argparse.Namespace) -> int:
+    from .thread_engine import rollback
+
+    return _engine_call(lambda: rollback(Path(args.wiki_root), args.thread, args.proposal), args)
+
+
+def cmd_thread_bootstrap(args: argparse.Namespace) -> int:
+    from .thread_engine import bootstrap_thread, load_papers
+
+    papers = load_papers(Path(args.json))
+    return _engine_call(
+        lambda: bootstrap_thread(
+            Path(args.wiki_root),
+            papers,
+            thread_id=args.thread or "",
+            title=args.title or "",
+            hypothesis=args.hypothesis or "",
+        ),
+        args,
+    )
+
+
+def cmd_thread_verify(args: argparse.Namespace) -> int:
+    from .thread_engine import load_papers, verify_papers
+
+    papers = load_papers(Path(args.json))
+    return _engine_call(
+        lambda: verify_papers(
+            Path(args.wiki_root),
+            args.thread,
+            papers,
+            propose_updates=args.propose,
+            readme_path=args.readme or "",
+        ),
+        args,
+    )
+
+
+def cmd_thread_consolidate(args: argparse.Namespace) -> int:
+    from .thread_engine import consolidate
+
+    return _engine_call(lambda: consolidate(Path(args.wiki_root), args.thread), args)
+
+
+def cmd_thread_memory(args: argparse.Namespace) -> int:
+    from .thread_engine import rebuild_hot_memory
+
+    return _engine_call(lambda: rebuild_hot_memory(Path(args.wiki_root), args.thread), args)
+
+
+def cmd_thread_distill(args: argparse.Namespace) -> int:
+    from .thread_engine import distill_skills
+
+    return _engine_call(
+        lambda: distill_skills(Path(args.wiki_root), args.thread, threshold=args.threshold),
+        args,
+    )
+
+
+def cmd_thread_rerank(args: argparse.Namespace) -> int:
+    from .thread_engine import load_papers, rerank_with_feedback
+
+    papers = load_papers(Path(args.json))
+    return _engine_call(lambda: rerank_with_feedback(Path(args.wiki_root), args.thread, papers), args)
+
+
+def cmd_thread_stats(args: argparse.Namespace) -> int:
+    from .thread_engine import proposal_stats
+
+    return _engine_call(lambda: proposal_stats(Path(args.wiki_root), args.thread), args)
+
+
+def cmd_skill_route(args: argparse.Namespace) -> int:
+    from .thread_engine import skill_catalog
+
+    print(json.dumps(skill_catalog(Path(args.wiki_root), args.domain or ""), ensure_ascii=False, indent=2))
+    return 0
+
+
+def cmd_exp_contract(args: argparse.Namespace) -> int:
+    from .thread_engine import load_papers, write_exp_contract
+
+    papers = load_papers(Path(args.json))
+    if not papers:
+        print(json.dumps({"error": "no paper in json"}, ensure_ascii=False))
+        return 2
+    out = write_exp_contract(
+        papers[0],
+        Path(args.out),
+        generate=args.generate,
+        wiki_root=Path(args.wiki_root) if args.wiki_root else None,
+        thread_id=args.thread or "",
+        fetch_github=not args.no_github,
+    )
+    printable = {
+        "out_dir": out["out_dir"],
+        "missing": out["contract"]["missing"],
+        "coverage": out["contract"]["coverage"],
+        "github": out["contract"]["github"],
+        "proposals": out.get("proposals") or [],
+    }
+    print(json.dumps(printable, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -2193,6 +2354,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--query", default="")
     s.add_argument("--top-k", type=int, default=30)
     s.add_argument("--no-citations", action="store_true")
+    s.add_argument("--wiki-root", default=".")
+    s.add_argument("--thread", default="", help="apply accepted-paper entity boost from feedback.jsonl")
     s.add_argument("--out", default="")
     s.set_defaults(func=cmd_prerank)
 
@@ -2262,6 +2425,88 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--path", default="", help="wiki paper path")
     s.add_argument("--note", default="")
     s.set_defaults(func=cmd_thread_feedback)
+
+    s = sub.add_parser("thread-propose", help="Propose a thread update (low risk auto-applies)")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--op", required=True)
+    s.add_argument("--json", default="", help="payload JSON object")
+    s.add_argument("--text", default="")
+    s.add_argument("--source", default="cli")
+    s.add_argument("--reason", default="")
+    s.add_argument("--pending", action="store_true", help="do not auto-apply low-risk ops")
+    s.set_defaults(func=cmd_thread_propose)
+
+    s = sub.add_parser("thread-decide", help="Accept, reject, or defer a thread proposal")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--proposal", required=True, help="proposal id or all")
+    s.add_argument("--action", required=True, choices=["accept", "reject", "defer"])
+    s.add_argument("--reason", default="", help="required when accepting a high-risk proposal")
+    s.set_defaults(func=cmd_thread_decide)
+
+    s = sub.add_parser("thread-rollback", help="Roll back an applied thread proposal")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--proposal", required=True)
+    s.set_defaults(func=cmd_thread_rollback)
+
+    s = sub.add_parser("thread-bootstrap", help="Draft a thread from Top-N papers as pending proposals")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--json", required=True, help="papers JSON")
+    s.add_argument("--thread", default="")
+    s.add_argument("--title", default="")
+    s.add_argument("--hypothesis", default="")
+    s.set_defaults(func=cmd_thread_bootstrap)
+
+    s = sub.add_parser("thread-verify", help="Non-compensatory thread verify gate for Top-N papers")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--json", required=True)
+    s.add_argument("--propose", action="store_true", help="propose evidence for thread_pass papers")
+    s.add_argument("--readme", default="", help="upsert 覆盖检查 into this README.md")
+    s.set_defaults(func=cmd_thread_verify)
+
+    s = sub.add_parser("thread-consolidate", help="Propose unused-evidence and duplicate-gap maintenance")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.set_defaults(func=cmd_thread_consolidate)
+
+    s = sub.add_parser("thread-memory", help="Rebuild hot memory cache for a thread")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.set_defaults(func=cmd_thread_memory)
+
+    s = sub.add_parser("thread-distill", help="Propose a skill when a thread operation sequence repeats")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--threshold", type=int, default=3)
+    s.set_defaults(func=cmd_thread_distill)
+
+    s = sub.add_parser("thread-rerank", help="Rerank papers with feedback entity overlap")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.add_argument("--json", required=True)
+    s.set_defaults(func=cmd_thread_rerank)
+
+    s = sub.add_parser("exp-contract", help="Draft an implementation contract (not a reproduction)")
+    s.add_argument("--json", required=True, help="one paper object or a papers list")
+    s.add_argument("--out", required=True)
+    s.add_argument("--wiki-root", default="")
+    s.add_argument("--thread", default="", help="propose the contract onto this thread")
+    s.add_argument("--no-github", action="store_true", help="do not call the public GitHub API")
+    s.add_argument("--generate", action="store_true", help="write a scaffold README with no training code")
+    s.set_defaults(func=cmd_exp_contract)
+
+    s = sub.add_parser("thread-stats", help="Measure proposal and paper-feedback acceptance")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--thread", required=True)
+    s.set_defaults(func=cmd_thread_stats)
+
+    s = sub.add_parser("skill-route", help="List distilled skills by domain, then task")
+    s.add_argument("--wiki-root", required=True)
+    s.add_argument("--domain", default="")
+    s.set_defaults(func=cmd_skill_route)
 
     s = sub.add_parser("thread-bench", help="Run Thread-Bench evaluation (claim coverage / R@K)")
     s.add_argument(

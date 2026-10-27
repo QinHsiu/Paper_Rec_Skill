@@ -40,6 +40,28 @@ content/threads/<thread_id>/
 | **L** | Template marketplace; multi-channel Thread Bot | done (2.21.0) |
 | **M** | Benchmark REPORT + LitSearch adapter (credibility P0/1A) | done (2.22.0) |
 | **N** | CEBM-lite evidence_level (1a–5) supplement | done (2.23.0) |
+| **O** | Thread proposals, feedback.jsonl, non-compensatory `/verify`, bootstrap, consolidate, exp contract | done |
+
+## Thread engine (Phase O)
+
+Thread JSON stays the only research state. Other modules propose updates.
+
+- States on claims, gaps, and evidence: `candidate` / `verified` / `rejected` / `pending`
+- `proposals.jsonl`: low risk auto-applies with `rollbacks.jsonl`; medium waits; high accept needs a reason
+- `feedback.jsonl`: paper accept/skip and proposal accept/reject. Accepted paper entities are a small prerank / `thread-rerank` boost. Rejected patterns hold the next similar low-risk proposal
+- `thread-verify`: problem × method × experiment-support, non-compensatory. Optional README section `覆盖检查`
+- `thread-bootstrap`: draft thread + pending claim/gap/evidence proposals
+- `thread-consolidate`: unused evidence may auto-mark pending; gap merges stay pending
+- `thread-distill`: repeated operation sequences become a proposed skill under `content/threads/<id>/skills/`
+- `exp-contract`: obligation draft (algorithm, metrics, split, hyperparameters, missing fields, GitHub activity). Not a reproduction
+- Hot cache: `memory_hot.json`. Archive remains the thread files
+
+```text
+thread-propose | thread-decide | thread-rollback | thread-bootstrap
+thread-verify | thread-consolidate | thread-memory | thread-distill | thread-rerank
+exp-contract
+prerank --thread <id>
+```
 
 ## Watch / Delta (Phase B)
 
@@ -149,6 +171,9 @@ thread-create | thread-list | thread-show
 thread-link-paper | thread-link-exp
 thread-evidence-add | thread-evidence-list | thread-evidence-gate
 thread-delta | thread-claim
+thread-propose | thread-decide | thread-rollback | thread-bootstrap
+thread-verify | thread-consolidate | thread-memory | thread-distill | thread-rerank
+exp-contract
 thread-template-list | thread-template-export | thread-template-import
 query-trace
 sync-report --thread <id> [--auto-link]
@@ -157,5 +182,5 @@ sync-exp --thread <id>
 
 ## API
 
-`/api/threads` — CRUD + link + timeline + delta + context + score + claims + evidences + evidence-map + query-trace + **templates** + by-paper / by-exp.
+`/api/threads` — CRUD + link + timeline + delta + context + score + claims + evidences + evidence-map + query-trace + **templates** + by-paper / by-exp + proposals / decide / rollback + memory + bootstrap + verify + consolidate + distill + rerank.
 `/api/exp/{id}` — includes `curves` + `curve_runs`.

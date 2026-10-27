@@ -124,6 +124,20 @@ def norm_cite_boost(item: dict[str, Any], max_citations: float) -> float:
     return min(1.0, citation_count(item) / max_citations)
 
 
+def feedback_overlap_boost(text: str, feedback_terms: list[str] | None) -> float:
+    """Slight additive boost when a candidate shares entities with accepted papers.
+
+    Capped at 1.5 so it can change close ranks without outrunning BM25.
+    """
+    terms = {t.lower() for t in (feedback_terms or []) if t}
+    if not terms:
+        return 0.0
+    overlap = len(set(tokenize(text)) & terms)
+    if overlap <= 0:
+        return 0.0
+    return min(1.5, 0.5 * overlap)
+
+
 def prerank(
     query: str,
     candidates: list[dict[str, Any]],
@@ -132,6 +146,7 @@ def prerank(
     use_citations: bool = True,
     norm_cite: bool = True,
     now_year: int | None = None,
+    feedback_terms: list[str] | None = None,
 ) -> dict[str, Any]:
     """Score candidates and keep Top-K for LLM fine-rank.
 
@@ -156,13 +171,15 @@ def prerank(
         rec = recency_boost(year, now_year=now_year)
         cite = citation_boost(c) if use_citations else 0.0
         nc = norm_cite_boost(c, max_c) if (use_citations and norm_cite) else 0.0
-        total = lex + rec + cite + nc
+        fb = feedback_overlap_boost(docs[i], feedback_terms)
+        total = lex + rec + cite + nc + fb
         row = dict(c)
         row["prerank_score"] = round(total, 4)
         row["prerank_lexical"] = round(lex, 4)
         row["prerank_recency"] = round(rec, 4)
         row["prerank_cite"] = round(cite, 4)
         row["prerank_norm_cite"] = round(nc, 4)
+        row["prerank_feedback"] = round(fb, 4)
         scored.append(row)
     scored.sort(key=lambda r: r["prerank_score"], reverse=True)
     kept = scored[: max(1, top_k)]
@@ -173,6 +190,7 @@ def prerank(
         "kept_n": len(kept),
         "top_k": top_k,
         "norm_cite": bool(use_citations and norm_cite),
+        "feedback_terms": list(feedback_terms or []),
         "items": kept,
         "dropped_n": max(0, len(candidates) - len(kept)),
     }
@@ -185,6 +203,7 @@ def prerank_from_json(
     top_k: int = 30,
     use_citations: bool = True,
     norm_cite: bool = True,
+    feedback_terms: list[str] | None = None,
 ) -> dict[str, Any]:
     if isinstance(payload, list):
         cands = payload
@@ -192,4 +211,13 @@ def prerank_from_json(
     else:
         cands = list(payload.get("papers") or payload.get("candidates") or [])
         q = query or str(payload.get("query") or payload.get("original_query") or "")
-    return prerank(q, cands, top_k=top_k, use_citations=use_citations, norm_cite=norm_cite)
+        if feedback_terms is None and payload.get("feedback_terms"):
+            feedback_terms = [str(t) for t in payload.get("feedback_terms") or []]
+    return prerank(
+        q,
+        cands,
+        top_k=top_k,
+        use_citations=use_citations,
+        norm_cite=norm_cite,
+        feedback_terms=feedback_terms,
+    )

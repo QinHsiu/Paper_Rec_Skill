@@ -6,6 +6,12 @@ Skill-specific history: [`skill/CHANGELOG.md`](skill/CHANGELOG.md), [`skill-exp/
 
 ---
 
+## [2.45.0] — 2026-10-27
+
+### Added
+
+- **paper-rec** v1.22.0: Thread proposals (rollbackable low-risk writes, confirmed medium/high-risk writes), feedback prior on rerank, `/verify` non-compensatory gate, `/thread` bootstrap, `/consolidate`, `/exp` contract draft
+
 ## [2.44.0] — 2026-09-16
 
 ### Added
