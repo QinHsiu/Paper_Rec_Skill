@@ -1,13 +1,15 @@
 ---
 name: paper-rec
-version: 1.21.0
+version: 1.22.0
 description: >-
   Retrieves and recommends academic papers via query rewriting, multi-source
   search, scoring, and structured reports. Activated by /query_english,
-  /query_chinese, /query_other, /wiki, /ppt, or /rebuttal. Use when the user asks
-  for paper recommendations, literature search, related work,
+  /query_chinese, /query_other, /wiki, /ppt, or /rebuttal. Optional thread
+  commands /verify, /thread, /consolidate, and /exp stay unloaded until asked.
+  Use when the user asks for paper recommendations, literature search, related work,
   OpenAlex/arXiv/HuggingFace/GitHub paper discovery, query改写/论文检索/论文推荐,
   wiki library status / start wiki UI, research thread / 研究主线 association,
+  thread bootstrap / 主线验证 / 主线巩固 / 实现合约,
   paper deep-read / 精读 / group-meeting PPT / 组会PPT / slides / three-layer QA,
   peer-review rebuttal / 审稿回复 / author response / OpenReview / CVPR rebuttal.
   WeChat 公众号发布 belongs to sibling skill-wxmp (/wxmp), not this skill.
@@ -29,6 +31,7 @@ Task Progress:
 - [ ] Module 2a/2b (optional): multi-path + iterative refine when thread/iterative
 - [ ] Module 2c (optional): live deep-search when --breadth/--depth
 - [ ] Module 2.5 (optional): Thread-aware rerank + rationale section
+- [ ] Module 2.6 (only if the user invoked it): /verify, /thread, /consolidate, /exp
 - [ ] Module 3: Output — structured report (≤2 sentences per field)
 - [ ] Module 4 (optional): Persist selected papers to Wiki (`content/wiki/pages`)
 - [ ] Module 5 (`/wiki`): List library papers and/or launch Wiki UI / threads
@@ -54,6 +57,10 @@ After installing this skill, the user **must** prefix the query with one of thre
 | `/wiki` | Wiki ops | List library papers / start Wiki UI (language follows user) |
 | `/ppt` | Deep-read → PPT | Language follows user (or paper venue); see Module 6 |
 | `/rebuttal` | Author response | Match review language (usually English); see Module 7 |
+| `/verify` | Optional audit | Thread-derived 3-gate; language follows the active query mode |
+| `/thread` | Optional state | Bootstrap / proposals / rollback; language follows the user |
+| `/consolidate` | Optional maintenance | Unused evidence and duplicate gaps; language follows the user |
+| `/exp` | Optional contract | Implementation-contract draft, not a reproduction |
 
 ### Usage format / 使用格式
 
@@ -69,6 +76,10 @@ After installing this skill, the user **must** prefix the query with one of thre
 /ppt 组会PPT content/wiki/pages/llm/2024/foo
 /rebuttal venue:iclr thread:mm-align reviews.txt
 /rebuttal venue:cvpr round:1 --reviews path/to/reviews.md --draft content/threads/x/drafts/paper_draft
+/verify thread:mm-align papers.json
+/thread bootstrap papers.json title:Adapters
+/consolidate thread:mm-align
+/exp contract paper.json
 ```
 
 The slash command is stripped before processing; the remaining text is the research query (or paper / review payload for `/ppt` / `/rebuttal`).
@@ -493,6 +504,82 @@ python -m wiki_bridge.cli thread-evidence-add \
 
 Or Wiki: open paper → select text →「挂到主线」.
 
+When `feedback.jsonl` already contains accepted papers, rerank with that prior. It is a small entity overlap boost, not a new score:
+
+```bash
+python -m wiki_bridge.cli prerank --json fused.json --query "<rewritten>" --wiki-root . --thread <id>
+python -m wiki_bridge.cli thread-rerank --wiki-root . --thread <id> --json cands.json
+```
+
+Skip this when the thread has no accepts. Do not change the default `/query_*` path to call it.
+
+---
+
+## Module 2.6: Optional thread kernel / 可选主线状态
+
+**When**: The user sends `/verify`, `/thread`, `/consolidate`, or `/exp`. A plain `/query_*` does not enter this module.
+
+Thread JSON is the only research state. Retrieval, verify, and experiment results **propose** updates. They do not keep a second copy of claims or gaps in a side file.
+
+| Risk | Examples | Behavior |
+|------|----------|----------|
+| low | new candidate claim, gap, or evidence; mark a node pending | auto-apply, and record a rollback |
+| medium | change `node_state`; confirm a draft thread | wait for accept / reject / defer |
+| high | delete a node, merge gaps, distill a skill | accept requires a written reason |
+
+A rejected pattern (for example “preprint only”) holds the next matching low-risk proposal for confirmation.
+
+Node state on claims, gaps, and evidence: `candidate` / `verified` / `rejected` / `pending`.
+
+### `/verify`
+
+Input is the last Top-N plus the current thread. Do not search again. For each paper, judge three checks and keep the reasons:
+
+1. problem vs an open gap
+2. method vs an open claim
+3. conclusion vs the paper’s own reported experiment
+
+All three must be non-failing to mark **主线验证通过 / thread_pass**. Any failure is **主线冲突 / thread_conflict**, even if metrics look strong. Mixed uncertain checks are **待人工筛选 / needs_screen**. With no claims and no gaps, abstain.
+
+```bash
+python -m wiki_bridge.cli thread-verify --wiki-root . --thread <id> --json papers.json --readme content/wiki/pages/<keyword>/README.md
+```
+
+Add `--propose` only when the user wants passing papers to become evidence proposals. Conflict papers are not added.
+
+### `/thread` bootstrap and decisions
+
+```bash
+python -m wiki_bridge.cli thread-bootstrap --wiki-root . --json papers.json --title "..." --thread <id>
+python -m wiki_bridge.cli thread-decide --wiki-root . --thread <id> --proposal all --action accept
+python -m wiki_bridge.cli thread-decide --wiki-root . --thread <id> --proposal P3 --action accept --reason "..."
+python -m wiki_bridge.cli thread-rollback --wiki-root . --thread <id> --proposal P1
+python -m wiki_bridge.cli thread-memory --wiki-root . --thread <id>
+```
+
+Bootstrap writes a **draft** thread and pending proposals (claims, gaps, evidence). It does not ask the user to hand-build the thread. Accept claims before evidence proposals that point at those claims. `thread-decide --proposal all` skips high-risk items until `--reason` is set.
+
+Hot memory is `memory_hot.json` (recent nodes plus preference). Full history stays in `thread.json`, `events.jsonl`, and `feedback.jsonl`.
+
+### `/consolidate` and skill distillation
+
+```bash
+python -m wiki_bridge.cli thread-consolidate --wiki-root . --thread <id>
+python -m wiki_bridge.cli thread-distill --wiki-root . --thread <id> --threshold 3
+python -m wiki_bridge.cli skill-route --wiki-root . --domain <keyword>
+python -m wiki_bridge.cli thread-stats --wiki-root . --thread <id>
+```
+
+Consolidate may auto-mark unused evidence as pending, and it proposes `pending` when a verified claim no longer has live support. Merging gaps stays pending until the user accepts with a reason. Distill proposes a `SKILL.md` plus `run.py` only after the same operation sequence repeats. Accepting it writes both under the thread and under `content/skills/distilled/<domain>/<task>/`. Route with `skill-route` by domain, then task slug. `thread-stats` reports the explicit accept/reject rate.
+
+### `/exp` contract
+
+```bash
+python -m wiki_bridge.cli exp-contract --json paper.json --out content/threads/<id>/exp_contract --wiki-root . --thread <id> --generate
+```
+
+The contract lists algorithm, metrics, data split, and hyperparameters that are actually present, and marks the rest missing. When a GitHub URL is present it attaches stars, last push, the latest commit subject, and open issue titles from the public API. Failure stays `unknown`. `--thread` turns the draft into pending experiment and gap proposals. `--generate` writes a scaffold README and no training code. `--no-github` skips the API call.
+
 ---
 
 ## Module 3: Output / 输出模块
@@ -628,7 +715,13 @@ When writing JSON for bridge, include: `title`, `score`, `summary` (or `core_ide
 | `/wiki cite-expand <path>` | 1-hop citation expand (S2/Crossref; no auto ingest) |
 | `/wiki fetch-pdf <path>` | Legal OA PDF → fulltext.md |
 | `/wiki arxiv-watch` | Multi-cat arXiv harvest → day JSON + watermark; optional ingest |
-| `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + seeds |
+| `/wiki feedback <thread> accept|skip|pin --path` | Weak feedback → events + `feedback.jsonl` + seeds |
+| `/wiki thread propose` | `thread-propose` (low risk auto-applies) |
+| `/wiki thread decide` | accept / reject / defer a proposal (`--reason` if high risk) |
+| `/wiki thread bootstrap` | Draft thread from Top-N; proposals stay pending |
+| `/verify` | Non-compensatory 3-gate + optional README 覆盖检查 |
+| `/consolidate` | Unused evidence + duplicate-gap proposals |
+| `/exp` | Implementation contract draft |
 
 Writing checklist: [`references/writing-gates.md`](references/writing-gates.md) (contribution → Figure 1 → SEARCH→VERIFY cites).  
 Draft review gate: [`references/neurips-review-gate.md`](references/neurips-review-gate.md) (AI-Scientist).

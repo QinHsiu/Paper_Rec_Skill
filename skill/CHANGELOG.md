@@ -4,6 +4,12 @@ All notable changes to **Paper_Rec_Skill** follow [Semantic Versioning](https://
 
 ---
 
+## [1.22.0] — 2026-10-27
+
+### Added
+
+- Optional thread kernel, kept off the default `/query_*` path: proposal/confirm with low/medium/high risk, `feedback.jsonl` entity boost, `/verify` non-compensatory 3-gate, `/thread` bootstrap, `/consolidate`, and `/exp` implementation-contract draft
+
 ## [1.21.0] — 2026-09-16
 
 ### Added

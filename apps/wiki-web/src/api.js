@@ -232,6 +232,26 @@ export async function threadFeedback(id, payload) {
   return data
 }
 
+export async function listThreadProposals(id) {
+  const { data } = await api.get(`/threads/${id}/proposals`)
+  return data
+}
+
+export async function decideThreadProposal(id, proposalId, action, reason = '') {
+  const { data } = await api.post(`/threads/${id}/proposals/${proposalId}/decide`, { action, reason })
+  return data
+}
+
+export async function rollbackThreadProposal(id, proposalId) {
+  const { data } = await api.post(`/threads/${id}/proposals/${proposalId}/rollback`)
+  return data
+}
+
+export async function consolidateThread(id) {
+  const { data } = await api.post(`/threads/${id}/consolidate`)
+  return data
+}
+
 export async function exportCslJson(paths) {
   const { data } = await api.get('/wiki/csl-json', { params: { paths: paths.join(',') } })
   return data

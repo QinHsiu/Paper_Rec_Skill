@@ -239,14 +239,104 @@ try:
         )
 
     @mcp.tool()
-    def prerank_papers(query: str, papers_json: str, top_k: int = 30) -> str:
-        """BM25+recency pre-rank before LLM fine-rank. papers_json = JSON list."""
+    def prerank_papers(query: str, papers_json: str, top_k: int = 30, thread_id: str = "") -> str:
+        """BM25+recency pre-rank before LLM fine-rank. papers_json = JSON list.
+
+        thread_id applies a small boost from accepted-paper entities in feedback.jsonl.
+        """
         from wiki_bridge.prerank import prerank
+        from wiki_bridge.thread_engine import feedback_profile
 
         papers = json.loads(papers_json)
         if not isinstance(papers, list):
             raise ValueError("papers_json must be a JSON list")
-        return json.dumps(prerank(query, papers, top_k=top_k), ensure_ascii=False, indent=2)
+        terms = feedback_profile(_root(), thread_id)["accepted_entities"] if thread_id else None
+        return json.dumps(
+            prerank(query, papers, top_k=top_k, feedback_terms=terms),
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    def _papers(papers_json: str) -> list:
+        papers = json.loads(papers_json) if papers_json else []
+        if isinstance(papers, dict):
+            papers = papers.get("papers") or papers.get("items") or []
+        if not isinstance(papers, list):
+            raise ValueError("papers_json must be a JSON list")
+        return papers
+
+    @mcp.tool()
+    def thread_proposals(thread_id: str) -> str:
+        """List thread update proposals (pending, applied, accepted, rejected)."""
+        from wiki_bridge.thread_engine import list_proposals
+
+        return json.dumps(list_proposals(_root(), thread_id), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def thread_propose(thread_id: str, op: str, payload_json: str = "{}", reason: str = "") -> str:
+        """Propose a thread update. Low risk auto-applies; medium/high stay pending."""
+        from wiki_bridge.thread_engine import propose
+
+        payload = json.loads(payload_json or "{}")
+        return json.dumps(
+            propose(_root(), thread_id, op, payload, source="mcp", by="mcp", reason=reason),
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    @mcp.tool()
+    def thread_decide(thread_id: str, proposal_id: str, action: str, reason: str = "") -> str:
+        """Accept, reject, or defer a proposal. High-risk accept requires reason."""
+        from wiki_bridge.thread_engine import decide
+
+        return json.dumps(
+            decide(_root(), thread_id, proposal_id, action, reason=reason, by="user"),
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    @mcp.tool()
+    def thread_rollback(thread_id: str, proposal_id: str) -> str:
+        """Roll back an applied or accepted proposal using its timeline snapshot."""
+        from wiki_bridge.thread_engine import rollback
+
+        return json.dumps(rollback(_root(), thread_id, proposal_id, by="user"), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def thread_bootstrap(thread_id: str, papers_json: str, title: str = "") -> str:
+        """Draft candidate claims, gaps, and evidence as pending proposals."""
+        from wiki_bridge.thread_engine import bootstrap_thread
+
+        return json.dumps(
+            bootstrap_thread(_root(), _papers(papers_json), thread_id=thread_id, title=title),
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    @mcp.tool()
+    def thread_verify(thread_id: str, papers_json: str, propose_updates: bool = False) -> str:
+        """Non-compensatory 3-gate audit. A strong metric cannot hide a failed dimension."""
+        from wiki_bridge.thread_engine import verify_papers
+
+        return json.dumps(
+            verify_papers(_root(), thread_id, _papers(papers_json), propose_updates=propose_updates),
+            ensure_ascii=False,
+            indent=2,
+        )
+
+    @mcp.tool()
+    def thread_consolidate(thread_id: str) -> str:
+        """Propose maintenance for unused evidence and duplicate gaps."""
+        from wiki_bridge.thread_engine import consolidate
+
+        return json.dumps(consolidate(_root(), thread_id), ensure_ascii=False, indent=2)
+
+    @mcp.tool()
+    def thread_memory(thread_id: str) -> str:
+        """Rebuild and return the hot memory cache (recent nodes + preference)."""
+        from wiki_bridge.thread_engine import rebuild_hot_memory
+
+        return json.dumps(rebuild_hot_memory(_root(), thread_id), ensure_ascii=False, indent=2)
 
     @mcp.tool()
     def rrf_fuse(lanes_json: str, k: int = 60, top_n: int = 200) -> str:

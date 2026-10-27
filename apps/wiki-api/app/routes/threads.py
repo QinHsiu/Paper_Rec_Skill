@@ -104,6 +104,27 @@ class QueryTraceBody(BaseModel):
     retrieval_trace: list[dict[str, Any]] = Field(default_factory=list)
 
 
+class ProposalBody(BaseModel):
+    op: str
+    payload: dict[str, Any] = Field(default_factory=dict)
+    source: str = "api"
+    reason: str = ""
+    force_pending: bool = False
+
+
+class ProposalDecision(BaseModel):
+    action: str
+    reason: str = ""
+
+
+class PapersBody(BaseModel):
+    papers: list[dict[str, Any]] = Field(default_factory=list)
+    title: str = ""
+    hypothesis: str = ""
+    propose: bool = False
+    threshold: int = 3
+
+
 @router.get("")
 def list_threads():
     return {"threads": thread_store.list_threads()}
@@ -390,6 +411,90 @@ def evidence_coverage(thread_id: str):
         return thread_store.evidence_coverage(thread_id)
     except FileNotFoundError:
         raise HTTPException(404, f"thread not found: {thread_id}") from None
+
+
+def _engine_http(fn):
+    try:
+        return fn()
+    except FileNotFoundError:
+        raise HTTPException(404, "thread or proposal not found") from None
+    except KeyError as e:
+        raise HTTPException(404, f"not found: {e}") from e
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+
+
+@router.get("/{thread_id}/proposals")
+def list_proposals(thread_id: str):
+    return _engine_http(
+        lambda: {
+            "proposals": thread_store.list_proposals(thread_id),
+            "stats": thread_store.proposal_stats(thread_id),
+        }
+    )
+
+
+@router.post("/{thread_id}/proposals")
+def create_proposal(thread_id: str, body: ProposalBody):
+    return _engine_http(
+        lambda: thread_store.propose_update(
+            thread_id,
+            body.op,
+            body.payload,
+            source=body.source,
+            reason=body.reason,
+            force_pending=body.force_pending,
+        )
+    )
+
+
+@router.post("/{thread_id}/proposals/{proposal_id}/decide")
+def decide_proposal(thread_id: str, proposal_id: str, body: ProposalDecision):
+    return _engine_http(
+        lambda: thread_store.decide_proposal(thread_id, proposal_id, body.action, body.reason)
+    )
+
+
+@router.post("/{thread_id}/proposals/{proposal_id}/rollback")
+def rollback_proposal(thread_id: str, proposal_id: str):
+    return _engine_http(lambda: thread_store.rollback_proposal(thread_id, proposal_id))
+
+
+@router.get("/{thread_id}/memory")
+def thread_memory(thread_id: str):
+    return _engine_http(lambda: thread_store.thread_memory(thread_id))
+
+
+@router.post("/{thread_id}/bootstrap")
+def bootstrap_thread(thread_id: str, body: PapersBody):
+    return _engine_http(
+        lambda: thread_store.bootstrap_thread(
+            thread_id, body.papers, title=body.title, hypothesis=body.hypothesis
+        )
+    )
+
+
+@router.post("/{thread_id}/verify")
+def verify_thread(thread_id: str, body: PapersBody):
+    return _engine_http(
+        lambda: thread_store.verify_papers(thread_id, body.papers, propose_updates=body.propose)
+    )
+
+
+@router.post("/{thread_id}/consolidate")
+def consolidate_thread(thread_id: str):
+    return _engine_http(lambda: thread_store.consolidate_thread(thread_id))
+
+
+@router.post("/{thread_id}/distill")
+def distill_thread(thread_id: str, body: PapersBody | None = None):
+    threshold = body.threshold if body else 3
+    return _engine_http(lambda: thread_store.distill_thread(thread_id, threshold))
+
+
+@router.post("/{thread_id}/rerank")
+def rerank_thread(thread_id: str, body: PapersBody):
+    return _engine_http(lambda: thread_store.rerank_papers(thread_id, body.papers))
 
 
 @router.post("/{thread_id}/section-outline")

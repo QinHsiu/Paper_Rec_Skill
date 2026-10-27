@@ -65,6 +65,7 @@ def default_thread(
         "profile_notes": "",
         "paper_paths": [],
         "experiment_ids": [],
+        "experiment_nodes": [],
         "watch": {
             "enabled": False,
             "cadence": "weekly",
@@ -84,8 +85,13 @@ def _readme_from_thread(data: dict[str, Any], notes: str = "") -> str:
     claims = data.get("claims") or []
     questions = data.get("open_questions") or []
     gaps = data.get("evidence_gaps") or []
+    def _claim_label(c: dict[str, Any]) -> str:
+        status = str(c.get("status") or "open")
+        node = str(c.get("node_state") or "")
+        return f"{status}/{node}" if node else status
+
     claim_lines = "\n".join(
-        f"- `{c.get('id', '')}` [{c.get('status', 'open')}] {c.get('text', '')}" for c in claims
+        f"- `{c.get('id', '')}` [{_claim_label(c)}] {c.get('text', '')}" for c in claims
     ) or "- (none)"
     q_lines = "\n".join(f"- `{q.get('id', '')}` {q.get('text', '')}" for q in questions) or "- (none)"
     gap_lines = (
@@ -296,7 +302,21 @@ def record_feedback(
             data["seed_terms"] = [s for s in seeds if s.lower() not in lower] or seeds
             save_thread(wiki_root, data)
 
-    return {"thread_id": thread_id, "event": event, "seed_terms": data.get("seed_terms")}
+    from .thread_engine import note_paper_feedback
+
+    feedback_row = note_paper_feedback(
+        wiki_root,
+        thread_id,
+        action=action,
+        path=path,
+        note=note,
+    )
+    return {
+        "thread_id": thread_id,
+        "event": event,
+        "seed_terms": data.get("seed_terms"),
+        "feedback": feedback_row,
+    }
 
 
 def list_events(wiki_root: Path, thread_id: str, *, limit: int = 100) -> list[dict[str, Any]]:
@@ -370,8 +390,10 @@ def update_thread(wiki_root: Path, thread_id: str, patch: dict[str, Any]) -> dic
         "seed_terms",
         "paper_paths",
         "experiment_ids",
+        "experiment_nodes",
         "watch",
         "profile_notes",
+        "preference",
     }
     for k, v in patch.items():
         if k in allowed:
@@ -438,10 +460,14 @@ def link_exp(
 ) -> dict[str, Any]:
     data = load_thread(wiki_root, thread_id)
     eid = experiment_id.strip()
-    exps = list(data.get("experiment_ids") or [])
-    if gate == "accepted" and eid and eid not in exps:
-        exps.append(eid)
-        data["experiment_ids"] = exps
+    ids = list(data.get("experiment_ids") or [])
+    nodes = [dict(n) for n in (data.get("experiment_nodes") or [])]
+    if gate == "accepted" and eid and eid not in ids:
+        ids.append(eid)
+        if not any(str(n.get("id")) == eid for n in nodes):
+            nodes.append({"id": eid, "node_state": "candidate", "source": source})
+        data["experiment_ids"] = ids
+        data["experiment_nodes"] = nodes
         save_thread(wiki_root, data)
     append_event(
         wiki_root,
@@ -557,6 +583,8 @@ def score_paper_against_thread(
     tags: list[str] | None = None,
     keyword: str = "",
     profile: dict[str, Any] | None = None,
+    feedback_entities: list[str] | None = None,
+    rejected_terms: list[str] | None = None,
 ) -> dict[str, Any]:
     """Return R in [0,1], rationale[], claim/gap hints."""
     paper_text = " ".join(
@@ -615,6 +643,15 @@ def score_paper_against_thread(
         pm = profile_match(profile, sorted(paper_bag))
         r = (1.0 - PROFILE_WEIGHT) * r + PROFILE_WEIGHT * pm
         factors_extra["profile_match"] = pm
+    accepted = {t.lower() for t in (feedback_entities or []) if t}
+    rejected = {t.lower() for t in (rejected_terms or []) if t}
+    feedback_boost = 0.0
+    feedback_penalty = 0.0
+    if accepted:
+        feedback_boost = min(0.08, 0.04 * len(paper_bag & accepted))
+    if rejected and (paper_bag & rejected):
+        feedback_penalty = 0.05
+    r = max(0.0, min(1.0, r + feedback_boost - feedback_penalty))
     rationale: list[str] = []
     if term_overlap >= 0.08:
         shared = sorted(paper_bag & thread_bag)[:8]
@@ -628,6 +665,10 @@ def score_paper_against_thread(
         rationale.append(f"keyword:{keyword}")
     if profile is not None and factors_extra.get("profile_match", 0) >= 0.2:
         rationale.append(f"profile:{factors_extra['profile_match']}")
+    if feedback_boost:
+        rationale.append("feedback_entities:" + ",".join(sorted(paper_bag & accepted)[:8]))
+    if feedback_penalty:
+        rationale.append("rejected_pattern")
 
     return {
         "R": round(float(r), 4),
@@ -641,6 +682,8 @@ def score_paper_against_thread(
             "member_jaccard": round(member_j, 4),
             "keyword_hit": kw_hit,
             **factors_extra,
+            "feedback_boost": round(feedback_boost, 4),
+            "feedback_penalty": round(feedback_penalty, 4),
         },
     }
 
@@ -655,7 +698,10 @@ def sync_papers_to_thread(
     source: str = "sync-report",
 ) -> list[dict[str, Any]]:
     """Score papers; append events; optionally accept into paper_paths."""
+    from .thread_engine import feedback_profile
+
     data = load_thread(wiki_root, thread_id)
+    profile = feedback_profile(wiki_root, thread_id)
     results: list[dict[str, Any]] = []
     for p in papers:
         path = str(p.get("path") or p.get("wiki_path") or "").strip()
@@ -666,6 +712,8 @@ def sync_papers_to_thread(
             summary=str(p.get("summary") or p.get("core_idea") or ""),
             tags=list(p.get("tags") or []),
             keyword=str(p.get("keyword") or ""),
+            feedback_entities=profile["accepted_entities"],
+            rejected_terms=profile["rejected_terms"],
         )
         gate = "suggested"
         if auto_link and scored["R"] >= threshold and path:
